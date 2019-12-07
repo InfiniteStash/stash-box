@@ -77,7 +77,7 @@ func ensureTx(tx *sqlx.Tx) {
 }
 
 func getByID(tx *sqlx.Tx, table string, id uuid.UUID, object interface{}) error {
-	return tx.Get(object, `SELECT * FROM `+table+` WHERE id = ? LIMIT 1`, id)
+	return tx.Get(object, `SELECT * FROM `+table+` WHERE id = $1 LIMIT 1`, id)
 }
 
 func insertObject(tx *sqlx.Tx, table string, object interface{}) error {
@@ -110,7 +110,7 @@ func executeDeleteQuery(tableName string, id uuid.UUID, tx *sqlx.Tx) error {
 	}
 	idColumnName := getColumn(tableName, "id")
 	_, err := tx.Exec(
-		`DELETE FROM `+tableName+` WHERE `+idColumnName+` = ?`,
+		`DELETE FROM `+tableName+` WHERE `+idColumnName+` = $1`,
 		id,
 	)
 	return err
@@ -118,7 +118,7 @@ func executeDeleteQuery(tableName string, id uuid.UUID, tx *sqlx.Tx) error {
 
 func deleteObjectsByColumn(tx *sqlx.Tx, table string, column string, value interface{}) error {
 	ensureTx(tx)
-	_, err := tx.Exec(`DELETE FROM `+table+` WHERE `+column+` = ?`, value)
+	_, err := tx.Exec(`DELETE FROM `+table+` WHERE `+column+` = $1`, value)
 	return err
 }
 
@@ -135,7 +135,7 @@ func sqlGenKeysCreate(i interface{}) (string, string) {
 		values = append(values, ":"+key)
 	}
 
-	v := reflect.ValueOf(i)
+	v := reflect.ValueOf(i).Elem()
 	for i := 0; i < v.NumField(); i++ {
 		//get key for struct tag
 		rawKey := v.Type().Field(i).Tag.Get("db")

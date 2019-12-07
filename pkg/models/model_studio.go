@@ -24,7 +24,6 @@ var (
 type Studio struct {
 	ID             uuid.UUID       `db:"id" json:"id"`
 	Name           string          `db:"name" json:"name"`
-	Image          []byte          `db:"image" json:"image"`
 	ParentStudioID uuid.NullUUID   `db:"parent_studio_id,omitempty" json:"parent_studio_id"`
 	CreatedAt      SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt      SQLiteTimestamp `db:"updated_at" json:"updated_at"`
@@ -63,7 +62,7 @@ func (p *StudioUrl) ToURL() URL {
 	}
 }
 
-type StudioUrls []StudioUrl
+type StudioUrls []*StudioUrl
 
 func (p StudioUrls) Each(fn func(interface{})) {
 	for _, v := range p {
@@ -72,14 +71,14 @@ func (p StudioUrls) Each(fn func(interface{})) {
 }
 
 func (p *StudioUrls) Add(o interface{}) {
-	*p = append(*p, o.(StudioUrl))
+	*p = append(*p, (o.(*StudioUrl)))
 }
 
-func CreateStudioUrls(studioId uuid.UUID, urls []*URLInput) []StudioUrl {
-	var ret []StudioUrl
+func CreateStudioUrls(studioId uuid.UUID, urls []*URLInput) StudioUrls {
+	var ret StudioUrls
 
 	for _, urlInput := range urls {
-		ret = append(ret, StudioUrl{
+		ret = append(ret, &StudioUrl{
 			StudioID: studioId,
 			URL:      urlInput.URL,
 			Type:     urlInput.Type,
