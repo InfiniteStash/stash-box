@@ -198,3 +198,14 @@ func (qb *SceneQueryBuilder) GetUrls(id uuid.UUID) (SceneUrls, error) {
 
 	return joins, err
 }
+
+func (qb *SceneQueryBuilder) SearchScenes(term string) ([]*Scene, error) {
+	query := `
+        SELECT S.* FROM scenes S
+        LEFT JOIN scene_search SS ON SS.scene_id = S.id
+        WHERE tsv @@ websearch_to_tsquery(?)
+        LIMIT 10`
+	var args []interface{}
+	args = append(args, term)
+	return qb.queryScenes(query, args)
+}
