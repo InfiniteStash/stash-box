@@ -203,7 +203,11 @@ func (qb *SceneQueryBuilder) SearchScenes(term string) ([]*Scene, error) {
 	query := `
         SELECT S.* FROM scenes S
         LEFT JOIN scene_search SS ON SS.scene_id = S.id
-        WHERE tsv @@ websearch_to_tsquery(?)
+        WHERE (
+            to_tsvector('english', scene_title) ||
+            to_tsvector('english', studio_name)  ||
+            to_tsvector('simple', COALESCE(performer_names, ''))
+        ) @@ websearch_to_tsquery(?)
         LIMIT 10`
 	var args []interface{}
 	args = append(args, term)
