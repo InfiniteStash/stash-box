@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@apollo/react-hooks';
 import { Link } from 'react-router-dom';
 import useForm from 'react-hook-form';
@@ -8,16 +8,18 @@ import * as yup from 'yup';
 import { faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import cx from 'classnames';
+import { Table } from 'react-bootstrap';
 
 import { Studios, StudiosVariables } from 'src/definitions/Studios';
 import { Scene_findScene as Scene } from 'src/definitions/Scene';
 import StudioQuery from 'src/queries/Studios.gql';
-import { SceneUpdateInput } from 'src/definitions/globalTypes';
+import { SceneUpdateInput, FingerprintInput } from 'src/definitions/globalTypes';
+import { SearchPerformers_searchPerformer as PerformerResult } from '../../definitions/SearchPerformers';
 import { getUrlByType } from 'src/utils/transforms';
 
 import { GenderIcon, LoadingIndicator } from 'src/components/fragments';
 import SearchField, { SearchType } from 'src/components/searchField';
-import { SearchPerformers_searchPerformer as PerformerResult } from '../../definitions/SearchPerformers';
+import TagSelect from 'src/components/tagSelect';
 
 const nullCheck = ((input:string|null) => (input === '' || input === 'null' ? null : input));
 
@@ -52,6 +54,8 @@ interface PerformerInfo {
 }
 
 const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
+    const fingerprintHash = useRef(null);
+    const fingerprintAlgorithm = useRef(null);
     const { register, handleSubmit, setValue, errors } = useForm({
         validationSchema: schema,
     });
@@ -64,12 +68,15 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
             gender: p.performer.gender
         }))
     );
+    const [fingerprints, setFingerprints] = useState<FingerprintInput[]>(scene.fingerprints);
     const { loading: loadingStudios, data: studios } = useQuery<Studios, StudiosVariables>(StudioQuery, {
         variables: { filter: { page: 0, per_page: 1000 } }
     });
     useEffect(() => {
         register({ name: 'studioId' });
         setValue('studioId', scene.studio ? scene.studio.id : null);
+        register({ name: 'tags' });
+        setValue('tags', scene.tags ? scene.tags.map(tag => tag.name) : null);
     }, [register]);
 
     if (loadingStudios)
@@ -79,6 +86,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         setPhotoURL(e.currentTarget.value));
     const onStudioChange = (selectedOption:{label:string, value:string}) => (
         setValue('studioId', selectedOption.value));
+    const onTagChange = (selectedTags:string[]) => (
+        setValue('tags', selectedTags));
 
     const onSubmit = (data:SceneFormData) => {
         const sceneData:SceneUpdateInput = {
@@ -89,7 +98,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
             studio_id: data.studioId,
             performers: data.performers.map((performance) => (
                 { performer_id: performance.performerId, as: performance.alias }
-            ))
+            )),
+            fingerprints
         };
         const urls = [];
         if (data.photoURL)
@@ -111,7 +121,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     const removePerformer = (id:string) => setPerformers(performers.filter((p) => p.id !== id));
     const performerList = performers.map((p, index) => (
         <div className="performer-item" key={p.id}>
-            <button className="performer-remove" type="button" onClick={() => (removePerformer(p.id))}>
+            <button className="remove-item" type="button" onClick={() => (removePerformer(p.id))}>
                 <FontAwesomeIcon icon={faTimesCircle} />
             </button>
             <GenderIcon gender={p.gender} />
@@ -129,6 +139,27 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
                 />
             </label>
         </div>
+    ));
+
+    const addFingerprint = () => {
+        const hash = fingerprintHash.current.value.trim();
+        const algorithm = fingerprintAlgorithm.current.value;
+        if(!algorithm || fingerprints.some(f => f.hash === hash) || hash === '')
+            return;
+        setFingerprints([...fingerprints, { hash, algorithm }]);
+        fingerprintHash.current.value = '';
+    }
+    const removeFingerprint = (hash:string) => setFingerprints(fingerprints.filter((f) => f.hash !== hash));
+    const fingerprintList = fingerprints.map((f) => (
+        <tr>
+            <td>
+                <button className="remove-item" type="button" onClick={() => (removeFingerprint(f.hash))}>
+                    <FontAwesomeIcon icon={faTimesCircle} />
+                </button>
+            </td>
+            <td>{f.algorithm}</td>
+            <td>{f.hash}</td>
+        </tr>
     ));
 
     return (
@@ -211,6 +242,44 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
                                 ref={register}
                             />
                         </label>
+                    </div>
+
+                    <div className="form-group row">
+                        <TagSelect tags={scene.tags.map(tag => tag.name)} onChange={onTagChange} />
+                    </div>
+
+                    <div className="form-group row">
+                        <div className="col">
+                            <label htmlFor="fingerprints">Fingerprints</label>
+                            <Table size="sm">
+                                <thead>
+                                    <th />
+                                    <th>Algorithm</th>
+                                    <th>Hash</th>
+                                </thead>
+                                <tbody>
+                                    { fingerprintList }
+                                </tbody>
+                            </Table>
+                            <div className="add-fingerprint">
+                                <span>Add fingerprint:</span>
+                                <label htmlFor="algorithm">
+                                    <select name="algorithm" ref={fingerprintAlgorithm}>
+                                        <option value="OSO">OSO</option>
+                                        <option value="MD5">MD5</option>
+                                    </select>
+                                </label>
+                                <label htmlFor="hash">
+                                    <input type="text" name="hash" ref={fingerprintHash} />
+                                </label>
+                                <input
+                                    className="btn btn-primary col-2 add-performer-button"
+                                    type="button"
+                                    value="Add"
+                                    onClick={addFingerprint}
+                                />
+                            </div>
+                        </div>
                     </div>
 
                     <div className="form-group button-row">
