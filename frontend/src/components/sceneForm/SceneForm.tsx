@@ -13,11 +13,11 @@ import { Table } from 'react-bootstrap';
 import { Studios, StudiosVariables } from 'src/definitions/Studios';
 import { Scene_findScene as Scene } from 'src/definitions/Scene';
 import StudioQuery from 'src/queries/Studios.gql';
-import { SceneUpdateInput, FingerprintInput } from 'src/definitions/globalTypes';
+import { SceneUpdateInput, FingerprintInput, FingerprintAlgorithm } from 'src/definitions/globalTypes';
 import { SearchPerformers_searchPerformer as PerformerResult } from '../../definitions/SearchPerformers';
 import { getUrlByType } from 'src/utils/transforms';
 
-import { GenderIcon, LoadingIndicator } from 'src/components/fragments';
+import { GenderIcon, LoadingIndicator, CloseButton } from 'src/components/fragments';
 import SearchField, { SearchType } from 'src/components/searchField';
 import TagSelect from 'src/components/tagSelect';
 
@@ -36,7 +36,12 @@ const schema = yup.object().shape({
     performers: yup.array().of(yup.object().shape({
         performerId: yup.string().required(),
         alias: yup.string().transform(nullCheck).nullable()
-    })).nullable()
+    })).nullable(),
+    fingerprints: yup.array().of(yup.object().shape({
+        algorithm: yup.string().oneOf(Object.keys(FingerprintAlgorithm)).required(),
+        hash: yup.string().required()
+    })).nullable(),
+    tags: yup.array().of(yup.string()).nullable()
 });
 
 type SceneFormData = yup.InferType<typeof schema>;
@@ -76,7 +81,9 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         register({ name: 'studioId' });
         setValue('studioId', scene.studio ? scene.studio.id : null);
         register({ name: 'tags' });
-        setValue('tags', scene.tags ? scene.tags.map(tag => tag.name) : null);
+        setValue('tags', scene.tags ? scene.tags.map(tag => tag.id) : null);
+        register({ name: 'fingerprints' });
+        setValue('tags', scene.fingerprints);
     }, [register]);
 
     if (loadingStudios)
@@ -99,7 +106,8 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
             performers: data.performers.map((performance) => (
                 { performer_id: performance.performerId, as: performance.alias }
             )),
-            fingerprints
+            fingerprints: data.fingerprints as FingerprintInput[],
+            tag_ids: data.tags
         };
         const urls = [];
         if (data.photoURL)
@@ -121,9 +129,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     const removePerformer = (id:string) => setPerformers(performers.filter((p) => p.id !== id));
     const performerList = performers.map((p, index) => (
         <div className="performer-item" key={p.id}>
-            <button className="remove-item" type="button" onClick={() => (removePerformer(p.id))}>
-                <FontAwesomeIcon icon={faTimesCircle} />
-            </button>
+            <CloseButton className="remove-item" handler={() => (removePerformer(p.id))} />
             <GenderIcon gender={p.gender} />
             <input type="hidden" value={p.id} name={`performers[${index}].performerId`} ref={register} />
             <span className="performer-name">{p.name}</span>
@@ -146,10 +152,16 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         const algorithm = fingerprintAlgorithm.current.value;
         if(!algorithm || fingerprints.some(f => f.hash === hash) || hash === '')
             return;
-        setFingerprints([...fingerprints, { hash, algorithm }]);
+        const newFingerprints = [...fingerprints, { hash, algorithm }];
+        setFingerprints(newFingerprints);
+        setValue('fingerprints', newFingerprints);
         fingerprintHash.current.value = '';
     }
-    const removeFingerprint = (hash:string) => setFingerprints(fingerprints.filter((f) => f.hash !== hash));
+    const removeFingerprint = (hash:string) => {
+        const newFingerprints = fingerprints.filter((f) => f.hash !== hash);
+        setFingerprints(newFingerprints);
+        setValue('fingerprints', newFingerprints);
+    };
     const fingerprintList = fingerprints.map((f) => (
         <tr>
             <td>
@@ -245,7 +257,10 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
                     </div>
 
                     <div className="form-group row">
-                        <TagSelect tags={scene.tags.map(tag => tag.name)} onChange={onTagChange} />
+                        <div className="col">
+                            <div className="label">Tags</div>
+                            <TagSelect tags={scene.tags} onChange={onTagChange} />
+                        </div>
                     </div>
 
                     <div className="form-group row">

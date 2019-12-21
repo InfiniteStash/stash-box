@@ -58,7 +58,7 @@ const SceneComponent: React.FC = () => {
     ));
     const tags = scene.tags.map((tag) => (
         <li>
-            <Link to={`/tag/${tag.name}`} title={tag.description}>{tag.name}</Link>
+            <a href={`/tag/${tag.name}`} title={tag.description} className="badge badge-secondary">{tag.name}</a>
         </li>
     ));
 

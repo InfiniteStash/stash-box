@@ -48,13 +48,6 @@
 
     li {
         display: inline;
-
-        &::after {
-            content: ", ";
-        }
-        
-        &:last-child::after {
-            content: "";
-        }
+        margin-right: .5rem;
     }
 }
