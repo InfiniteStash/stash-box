@@ -8,7 +8,7 @@ import * as yup from 'yup';
 import { faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import cx from 'classnames';
-import { Table } from 'react-bootstrap';
+import { Button, Form, Table } from 'react-bootstrap';
 
 import { Studios, StudiosVariables } from 'src/definitions/Studios';
 import { Scene_findScene as Scene } from 'src/definitions/Scene';
@@ -73,7 +73,12 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
             gender: p.performer.gender
         }))
     );
-    const [fingerprints, setFingerprints] = useState<FingerprintInput[]>(scene.fingerprints);
+    const [fingerprints, setFingerprints] = useState<FingerprintInput[]>(
+        scene.fingerprints.map((f) => ({
+            hash: f.hash,
+            algorithm: f.algorithm
+        }))
+    );
     const { loading: loadingStudios, data: studios } = useQuery<Studios, StudiosVariables>(StudioQuery, {
         variables: { filter: { page: 0, per_page: 1000 } }
     });
@@ -81,9 +86,9 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         register({ name: 'studioId' });
         setValue('studioId', scene.studio ? scene.studio.id : null);
         register({ name: 'tags' });
-        setValue('tags', scene.tags ? scene.tags.map(tag => tag.id) : null);
+        setValue('tags', scene.tags ? scene.tags.map(tag => tag.id) : []);
         register({ name: 'fingerprints' });
-        setValue('tags', scene.fingerprints);
+        setValue('fingerprints', fingerprints);
     }, [register]);
 
     if (loadingStudios)
@@ -150,7 +155,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
     const addFingerprint = () => {
         const hash = fingerprintHash.current.value.trim();
         const algorithm = fingerprintAlgorithm.current.value;
-        if(!algorithm || fingerprints.some(f => f.hash === hash) || hash === '')
+        if (!algorithm || fingerprints.some(f => f.hash === hash) || hash === '')
             return;
         const newFingerprints = [...fingerprints, { hash, algorithm }];
         setFingerprints(newFingerprints);
@@ -162,17 +167,35 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
         setFingerprints(newFingerprints);
         setValue('fingerprints', newFingerprints);
     };
-    const fingerprintList = fingerprints.map((f) => (
-        <tr>
-            <td>
-                <button className="remove-item" type="button" onClick={() => (removeFingerprint(f.hash))}>
-                    <FontAwesomeIcon icon={faTimesCircle} />
-                </button>
-            </td>
-            <td>{f.algorithm}</td>
-            <td>{f.hash}</td>
-        </tr>
-    ));
+
+    const renderFingerprints = () => {
+        const fingerprintList = fingerprints.map((f) => (
+            <tr>
+                <td>
+                    <button className="remove-item" type="button" onClick={() => (removeFingerprint(f.hash))}>
+                        <FontAwesomeIcon icon={faTimesCircle} />
+                    </button>
+                </td>
+                <td>{f.algorithm}</td>
+                <td>{f.hash}</td>
+            </tr>
+        ));
+
+        return fingerprints.length > 0 ? (
+            <Table size="sm">
+                <thead>
+                    <th className="col-1" />
+                    <th className="col-3">Algorithm</th>
+                    <th>Hash</th>
+                </thead>
+                <tbody>
+                    { fingerprintList }
+                </tbody>
+            </Table>
+        ) : (
+            <div>No fingerprints found for this scene.</div>
+        );
+    };
 
     return (
         <form className="SceneForm" onSubmit={handleSubmit(onSubmit)}>
@@ -256,46 +279,27 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
                         </label>
                     </div>
 
-                    <div className="form-group row">
-                        <div className="col">
-                            <div className="label">Tags</div>
-                            <TagSelect tags={scene.tags} onChange={onTagChange} />
-                        </div>
-                    </div>
+                    <Form.Group>
+                        <Form.Label>Tags</Form.Label>
+                        <TagSelect tags={scene.tags} onChange={onTagChange} />
+                    </Form.Group>
 
-                    <div className="form-group row">
-                        <div className="col">
-                            <label htmlFor="fingerprints">Fingerprints</label>
-                            <Table size="sm">
-                                <thead>
-                                    <th />
-                                    <th>Algorithm</th>
-                                    <th>Hash</th>
-                                </thead>
-                                <tbody>
-                                    { fingerprintList }
-                                </tbody>
-                            </Table>
-                            <div className="add-fingerprint">
-                                <span>Add fingerprint:</span>
-                                <label htmlFor="algorithm">
-                                    <select name="algorithm" ref={fingerprintAlgorithm}>
-                                        <option value="OSO">OSO</option>
-                                        <option value="MD5">MD5</option>
-                                    </select>
-                                </label>
-                                <label htmlFor="hash">
-                                    <input type="text" name="hash" ref={fingerprintHash} />
-                                </label>
-                                <input
-                                    className="btn btn-primary col-2 add-performer-button"
-                                    type="button"
-                                    value="Add"
-                                    onClick={addFingerprint}
-                                />
-                            </div>
-                        </div>
-                    </div>
+                    <Form.Group>
+                        <Form.Label>Fingerprints</Form.Label>
+                        { renderFingerprints() }
+                    </Form.Group>
+
+                    <Form.Group className="add-fingerprint row">
+                        <Form.Label htmlFor="hash" column>Add fingerprint:</Form.Label>
+                        <Form.Control id="algorithm" as="select" className="col-2 mr-1" ref={fingerprintAlgorithm}>
+                            <option value="OSO">OSO</option>
+                            <option value="MD5">MD5</option>
+                        </Form.Control>
+                        <Form.Control id="hash" className="col-4 mr-2" ref={fingerprintHash} />
+                        <Button className="col-2 add-performer-button" onClick={addFingerprint}>
+                            Add
+                        </Button>
+                    </Form.Group>
 
                     <div className="form-group button-row">
                         <input className="btn btn-primary col-2 save-button" type="submit" value="Save" />

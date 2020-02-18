@@ -49,7 +49,7 @@ const TagSelect: React.FC<TagSelectProps> = ({ tags: initialTags, onChange }) =>
         a.name > b.name ? 1 : 
         a.name < b.name ? -1 : 0
     )).map(tag => (
-        <span className="badge badge-pill badge-light">
+        <span className="badge badge-pill badge-light" key={tag.id}>
             <span>{tag.name}</span>
             <CloseButton className="remove-item" handler={() => (removeTag(tag.id))} />
         </span>
