@@ -53,6 +53,9 @@ type Query {
 
   queryUsers(user_filter: UserFilterType, filter: QuerySpec): QueryUsersResultType!
 
+  """Returns currently authenticated user"""
+  me: User
+
   ### Full text search ###
   searchPerformer(term: String!): [Performer]!
   searchScene(term: String!): [Scene]!
