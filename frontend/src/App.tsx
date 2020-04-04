@@ -23,7 +23,6 @@ import Studios from './components/studios';
 import StudioEdit from './components/studioEdit';
 import StudioAdd from './components/studioAdd';
 
-import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.scss';
 
 // Set fontawesome/free-solid-svg as default fontawesome icons

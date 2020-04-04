@@ -248,6 +248,7 @@ export interface SceneCreateInput {
   performers?: PerformerAppearanceInput[] | null;
   tag_ids?: string[] | null;
   fingerprints: FingerprintInput[];
+  duration?: number | null;
 }
 
 export interface SceneDestroyInput {
@@ -275,6 +276,7 @@ export interface SceneUpdateInput {
   performers?: PerformerAppearanceInput[] | null;
   tag_ids?: string[] | null;
   fingerprints?: FingerprintInput[] | null;
+  duration?: number | null;
 }
 
 export interface StringCriterionInput {

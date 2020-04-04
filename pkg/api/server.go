@@ -148,6 +148,12 @@ func Start() {
 	r.HandleFunc("/login", handleLogin)
 	r.HandleFunc("/logout", handleLogout)
 
+	r.HandleFunc("/image", func(w http.ResponseWriter, r *http.Request) {
+        id := r.URL.Query()["id"][0]
+        path := "/mnt/lager/scraped-images/" + id[0:2] + "/" + id[2:4] + "/" + id
+        http.ServeFile(w, r, path)
+    })
+
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)

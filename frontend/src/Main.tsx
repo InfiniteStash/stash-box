@@ -69,7 +69,7 @@ const Main: React.FC = ({ children }) => {
 
     return (
         <div>
-            <Navbar bg="light">
+            <Navbar bg="dark" variant="dark">
                 <Nav className="row mr-auto">
                     <NavLink exact to="/" className="nav-link">Home</NavLink>
                     <NavLink to="/performers" className="nav-link">Performers</NavLink>

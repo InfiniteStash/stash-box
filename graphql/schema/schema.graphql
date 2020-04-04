@@ -108,6 +108,8 @@ type Mutation {
   editVote(input: EditVoteInput!): Edit!
   """Comment on an edit"""
   editComment(input: EditCommentInput!): Edit!
+
+  submitFingerprint(input: FingerprintSubmission!): Boolean!
 }
 
 schema {

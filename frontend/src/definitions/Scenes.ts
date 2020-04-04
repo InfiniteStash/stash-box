@@ -33,6 +33,7 @@ export interface Scenes_queryScenes_scenes {
   id: string;
   date: any | null;
   title: string | null;
+  duration: number | null;
   urls: Scenes_queryScenes_scenes_urls[];
   studio: Scenes_queryScenes_scenes_studio | null;
   performers: Scenes_queryScenes_scenes_performers[];
