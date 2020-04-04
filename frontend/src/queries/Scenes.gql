@@ -21,7 +21,6 @@ query Scenes($filter: QuerySpec, $sceneFilter: SceneFilterType) {
                     gender
                 }
             }
-
         }
     }
 }
