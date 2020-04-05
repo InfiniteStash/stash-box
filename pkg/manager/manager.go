@@ -108,8 +108,8 @@ Please ensure this database is created and available, or change the connection s
 }
 
 func initFlags() {
-	pflag.IP("host", net.IPv4(0, 0, 0, 0), "ip address for the host")
-	pflag.Int("port", 9998, "port to serve from")
+	pflag.IP("host", net.IPv4(157, 245, 72, 234), "ip address for the host")
+	pflag.Int("port", 80, "port to serve from")
 	configFilePath = pflag.String("config_file", "", "location of the config file")
 
 	pflag.Parse()

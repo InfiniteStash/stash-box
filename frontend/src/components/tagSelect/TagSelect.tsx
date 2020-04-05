@@ -64,7 +64,8 @@ const TagSelect: React.FC<TagSelectProps> = ({ tags: initialTags, onChange }) =>
                 <span>Add tag:</span>
                 <Select
                     value={null}
-                    className={CLASSNAME_SELECT}
+                    classNamePrefix="react-select"
+                    className={`react-select ${CLASSNAME_SELECT}`}
                     options={options}
                     onChange={addTag}
                 />

@@ -7,6 +7,9 @@ query Scene($id: ID!) {
       urls {
         url,
         type
+        image_id
+        height
+        width
       }
       studio {
         id

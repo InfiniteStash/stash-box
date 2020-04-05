@@ -12,6 +12,9 @@ import { GenderEnum, FingerprintAlgorithm } from "./globalTypes";
 export interface Scene_findScene_urls {
   url: string;
   type: string;
+  image_id: string | null;
+  height: number | null;
+  width: number | null;
 }
 
 export interface Scene_findScene_studio {

@@ -117,13 +117,29 @@ type PerformerUrl struct {
 	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
 	URL         string    `db:"url" json:"url"`
 	Type        string    `db:"type" json:"type"`
+	ImageID uuid.NullUUID `db:"id" json:"image_id"`
+	Height  sql.NullInt32 `db:"height" json:"height"`
+	Width   sql.NullInt32 `db:"width" json:"width"`
 }
 
 func (p *PerformerUrl) ToURL() URL {
-	return URL{
+    url := URL{
 		URL:  p.URL,
 		Type: p.Type,
 	}
+    if p.ImageID.Valid {
+        imageID := p.ImageID.UUID.String()
+        url.ImageID = &imageID
+    }
+    if p.Height.Valid {
+        height := int(p.Height.Int32)
+        url.Height = &height
+    }
+    if p.Width.Valid {
+        width := int(p.Width.Int32)
+        url.Width = &width
+    }
+    return url
 }
 
 type PerformerUrls []*PerformerUrl

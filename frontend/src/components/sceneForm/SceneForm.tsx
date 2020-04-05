@@ -245,6 +245,7 @@ const SceneForm: React.FC<SceneProps> = ({ scene, callback }) => {
                         <label htmlFor="studioId" className="studio-select col-6">
                             <div>Studio</div>
                             <Select
+                                classNamePrefix="react-select"
                                 className={cx({ 'is-invalid': errors.studioId })}
                                 name="studioId"
                                 onChange={onStudioChange}
