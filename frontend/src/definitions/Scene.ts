@@ -53,6 +53,7 @@ export interface Scene_findScene {
   date: any | null;
   title: string | null;
   details: string | null;
+  director: string | null;
   urls: Scene_findScene_urls[];
   studio: Scene_findScene_studio | null;
   performers: Scene_findScene_performers[];

@@ -1,13 +1,14 @@
 import React, { useState, useContext } from 'react';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { Link, useHistory, useParams } from 'react-router-dom';
-import { Card, Tabs, Tab, Table} from 'react-bootstrap';
+import { Card, Tabs, Tab, Table } from 'react-bootstrap';
 
 import AuthContext from 'src/AuthContext';
 import SceneQuery from 'src/queries/Scene.gql';
 import DeleteScene from 'src/mutations/DeleteScene.gql';
 import { Scene } from 'src/definitions/Scene';
 import { getUrlByType } from 'src/utils/transforms';
+import { canEdit } from 'src/utils/auth';
 import {
     DeleteSceneMutation,
     DeleteSceneMutationVariables
@@ -69,7 +70,12 @@ const SceneComponent: React.FC = () => {
         />
     );
     const deleteButton = auth.user.roles.includes('ADMIN') && (
-        <button type="button" disabled={showDelete || deleting} className="btn btn-danger" onClick={toggleModal}>
+        <button
+            type="button"
+            disabled={showDelete || deleting}
+            className="btn btn-danger"
+            onClick={toggleModal}
+        >
             Delete
         </button>
     );
@@ -80,9 +86,11 @@ const SceneComponent: React.FC = () => {
             <Card className="scene-info">
                 <Card.Header>
                     <div className="float-right">
-                        <Link to={`${id}/edit`}>
-                            <button type="button" className="btn btn-secondary">Edit</button>
-                        </Link>
+                        { canEdit(auth.user) && (
+                            <Link to={`${id}/edit`}>
+                                <button type="button" className="btn btn-secondary">Edit</button>
+                            </Link>
+                        )}
                         { deleteButton }
                     </div>
                     <h2>{scene.title}</h2>
@@ -95,15 +103,22 @@ const SceneComponent: React.FC = () => {
                     </h6>
                 </Card.Header>
                 <Card.Body className="scene-photo">
-                    <img alt="" src={getUrlByType(scene.urls, 'PHOTO', 'landscape')} className="scene-photo-element" />
+                    <img
+                        alt=""
+                        src={getUrlByType(scene.urls, 'PHOTO', 'landscape')}
+                        className="scene-photo-element"
+                    />
                 </Card.Body>
-                <Card.Footer>
+                <Card.Footer className="row mx-1">
                     <div className="scene-performers">{ performers }</div>
+                    { scene.director && (
+                        <div className="ml-auto">Director: <strong>{ scene.director }</strong></div>
+                    )}
                 </Card.Footer>
             </Card>
             <Tabs defaultActiveKey="description" id="scene-tab">
                 <Tab eventKey="description" title="Description">
-                    <div className="scene-description">
+                    <div className="scene-description my-4">
                         <h4>Description:</h4>
                         <div>{scene.details}</div>
                         <div className="scene-tags">
@@ -113,11 +128,16 @@ const SceneComponent: React.FC = () => {
                             </ul>
                         </div>
                         <hr />
-                        <a href={getUrlByType(scene.urls, 'STUDIO')}>{getUrlByType(scene.urls, 'STUDIO')}</a>
+                        <div>
+                            <strong className="mr-2">Studio: </strong>
+                            <a href={getUrlByType(scene.urls, 'STUDIO')}>
+                                {getUrlByType(scene.urls, 'STUDIO')}
+                            </a>
+                        </div>
                     </div>
                 </Tab>
                 <Tab eventKey="fingerprints" title="Fingerprints">
-                    <div className="scene-fingerprints">
+                    <div className="scene-fingerprints my-4">
                         <h4>Fingerprints:</h4>
                         { fingerprints.length === 0 ? <h6>No fingerprints found for this scene.</h6> : (
                             <Table striped bordered hover size="sm">

@@ -249,6 +249,7 @@ export interface SceneCreateInput {
   tag_ids?: string[] | null;
   fingerprints: FingerprintInput[];
   duration?: number | null;
+  director?: string | null;
 }
 
 export interface SceneDestroyInput {
@@ -277,6 +278,7 @@ export interface SceneUpdateInput {
   tag_ids?: string[] | null;
   fingerprints?: FingerprintInput[] | null;
   duration?: number | null;
+  director?: string | null;
 }
 
 export interface StringCriterionInput {

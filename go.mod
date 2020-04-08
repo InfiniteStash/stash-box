@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/99designs/gqlgen v0.10.2
+	github.com/aws/aws-sdk-go v1.17.7
 	github.com/cpuguy83/go-md2man v1.0.10 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-chi/chi v4.0.2+incompatible
@@ -43,6 +44,7 @@ require (
 	github.com/spf13/viper v1.4.0
 	github.com/vektah/gqlparser v1.2.0
 	golang.org/x/crypto v0.0.0-20200403201458-baeed622b8d8
+	golang.org/x/image v0.0.0-20190802002840-cff245a6509b
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a // indirect
 	golang.org/x/sys v0.0.0-20200331124033-c3d80250170d // indirect
 	golang.org/x/tools v0.0.0-20200403190813-44a64ad78b9b // indirect
