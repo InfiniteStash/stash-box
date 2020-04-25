@@ -33,14 +33,9 @@ input StudioEditDetailsInput {
 }
 
 input StudioEditInput {
-  """Not required for create type"""
-  id: ID
-  operation: OperationEnum!
-  """Only required for merge type"""
-  merge_source_ids: [ID!]
+  edit: EditInput!
   """Not required for destroy type"""
   details: StudioEditDetailsInput
-  comment: String
 }
 
 type StudioEdit {
