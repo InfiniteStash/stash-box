@@ -31,7 +31,7 @@ func ModifyTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, in
 	}
 
 	// perform a diff against the input and the current object
-	tagEdit := input.Details.TagEditFromDiff(*tag)
+	newTagEdit, originalTagEdit := input.Details.TagEditFromDiff(*tag)
 
 	// determine unspecified aliases vs no aliases
 	if len(input.Details.Aliases) != 0 || inputSpecified("aliases") {
@@ -41,8 +41,9 @@ func ModifyTagEdit(tx *sqlx.Tx, edit *models.Edit, input models.TagEditInput, in
 			return err
 		}
 
-		tagEdit.AddedAliases, tagEdit.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases)
+		newTagEdit.AddedAliases, newTagEdit.RemovedAliases = utils.StrSliceCompare(input.Details.Aliases, aliases)
 	}
 
-	return edit.SetData(tagEdit)
+    edit.SetBaseData(originalTagEdit)
+	return edit.SetData(newTagEdit)
 }

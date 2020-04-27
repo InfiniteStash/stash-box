@@ -43,6 +43,7 @@ type Edit struct {
 	Status      string          `db:"status" json:"status"`
 	Applied     bool            `db:"applied" json:"applied"`
 	Data        types.JSONText  `db:"data" json:"data"`
+	BaseData    types.JSONText  `db:"base_data" json:"base_data"`
 	CreatedAt   SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt   SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
@@ -90,6 +91,20 @@ func (e *Edit) SetData(data interface{}) error {
 	return nil
 }
 
+func (e *Edit) SetBaseData(base_data interface{}) error {
+	buffer := &bytes.Buffer{}
+	encoder := json.NewEncoder(buffer)
+	encoder.SetEscapeHTML(false)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(base_data); err != nil {
+		return err
+	}
+	e.BaseData = buffer.Bytes()
+	return nil
+}
+
+
+
 type Edits []*Edit
 
 func (p Edits) Each(fn func(interface{})) {
@@ -118,6 +133,14 @@ func (p EditTags) Each(fn func(interface{})) {
 func (p *EditTags) Add(o interface{}) {
 	*p = append(*p, o.(*EditTag))
 }
+
+type TagEdit struct {
+	Name           *string  `json:"name,omitempty"`
+	Description    *string  `json:"description,omitempty"`
+	AddedAliases   []string `json:"added_aliases,omitempty"`
+	RemovedAliases []string `json:"removed_aliases,omitempty"`
+}
+func (TagEdit) IsEditDetails() {}
 
 // type VoteComment struct {
 // 	ID      uuid.UUID      `db:"id" json:"id"`

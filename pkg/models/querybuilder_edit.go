@@ -44,7 +44,7 @@ func (qb *EditQueryBuilder) Find(id uuid.UUID) (*Edit, error) {
 }
 
 func (qb *EditQueryBuilder) CreateEditTag(newJoin EditTag) error {
-	return qb.dbi.InsertJoin(editTagTable, &newJoin)
+	return qb.dbi.InsertJoin(editTagTable, newJoin)
 }
 
 // func (qb *SceneQueryBuilder) FindByStudioID(sceneID int) ([]*Scene, error) {
