@@ -14,9 +14,10 @@ import getFuzzyDate from "src/utils/date";
 import { boobJobStatus, getBodyModification } from "src/utils/transforms";
 import { EthnicityTypes, HairColorTypes, EyeColorTypes } from "src/constants";
 
-import ImageCarousel from "src/components/imageCarousel";
-import Modal from "src/components/modal";
-import { GenderIcon } from "src/components/fragments";
+import ImageCarousel from 'src/components/imageCarousel';
+import Modal from 'src/components/modal';
+import { GenderIcon } from 'src/components/fragments';
+import { canEdit } from 'src/utils/auth';
 
 const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
   const history = useHistory();
@@ -61,11 +62,13 @@ const PerformerInfo: React.FC<{ performer: Performer }> = ({ performer }) => {
           <Card>
             <Card.Header>
               <div className="float-right">
+				{ canEdit(auth.user) && (
                 <Link to={`${performer.id}/edit`}>
                   <button type="button" className="btn btn-secondary">
                     Edit
                   </button>
                 </Link>
+				)}
                 {deleteButton}
               </div>
               <h2>

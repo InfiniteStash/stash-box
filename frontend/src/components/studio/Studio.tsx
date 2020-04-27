@@ -62,51 +62,40 @@ const StudioComponent: React.FC = () => {
 
   return (
     <>
-      <div className="studio-header">
-        <div className="studio-title">
-          <h2>{studio.name}</h2>
-          <h6>
-            <a href={getUrlByType(studio.urls, "HOME")}>
-              {getUrlByType(studio.urls, "HOME")}
-            </a>
-          </h6>
+        <div className="studio-header">
+            <div className="studio-title">
+                <h2>{studio.name}</h2>
+                <h6>
+                    <a href={getUrlByType(studio.urls, 'HOME')} rel="noreferrer">{getUrlByType(studio.urls, 'HOME')}</a>
+                </h6>
+            </div>
+            <div className="studio-photo">
+                <img src={getImage(studio.images, 'landscape')} alt="Studio logo" />
+            </div>
+            { canEdit(auth.user) && (
+                <div className="studio-edit">
+                    <Link to={`${id}/edit`}>
+                        <button type="button" className="btn btn-secondary">Edit</button>
+                    </Link>
+                    <button type="button" className="btn btn-danger" onClick={handleDelete}>Delete</button>
+                </div>
+            )}
         </div>
-        <div className="studio-photo">
-          <img src={getImage(studio.images, "landscape")} alt="Studio logo" />
-        </div>
-        {canEdit(auth.user) && (
-          <div className="studio-edit">
-            <Link to={`${id}/edit`}>
-              <button type="button" className="btn btn-secondary">
-                Edit
-              </button>
-            </Link>
-            <button
-              type="button"
-              className="btn btn-danger"
-              onClick={handleDelete}
-            >
-              Delete
-            </button>
-          </div>
-        )}
-      </div>
-      <hr />
-      {scenes.length === 0 ? (
-        <h4>No scenes found for this studio</h4>
-      ) : (
-        <>
-          <div className="row">
-            <h3 className="col-4">Scenes</h3>
-            <Pagination onClick={setPage} pages={totalPages} active={page} />
-          </div>
-          <div className="row">{scenes}</div>
-          <div className="row">
-            <Pagination onClick={setPage} pages={totalPages} active={page} />
-          </div>
+        <hr />{ scenes.length === 0 ? <h4>No scenes found for this studio</h4> : (
+            <>
+                <div className="row">
+                    <h3 className="col-4">Scenes</h3>
+                    <Pagination onClick={setPage} pages={totalPages} active={page} />
+                </div>
+                <div className="row">
+                    { scenes }
+                </div>
+                <div className="row">
+                    <Pagination onClick={setPage} pages={totalPages} active={page} />
+                </div>
+            </>
+            )}
         </>
-      )}
-    </>
   );
 };
 
