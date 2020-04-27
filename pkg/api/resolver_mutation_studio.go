@@ -1,20 +1,20 @@
 package api
 
 import (
-    "bytes"
+    //"bytes"
 	"context"
-    "database/sql"
-    "fmt"
+    //"database/sql"
+    //"fmt"
 	"github.com/gofrs/uuid"
-    "net/http"
+    //"net/http"
 	"time"
-    "image"
-    _ "image/jpeg"
-    _ "image/png"
-    _ "golang.org/x/image/webp"
-    "github.com/aws/aws-sdk-go/aws"
-    "github.com/aws/aws-sdk-go/aws/session"
-    "github.com/aws/aws-sdk-go/service/s3/s3manager"
+    //"image"
+    //_ "image/jpeg"
+    //_ "image/png"
+    //_ "golang.org/x/image/webp"
+    //"github.com/aws/aws-sdk-go/aws"
+    //"github.com/aws/aws-sdk-go/aws/session"
+    //"github.com/aws/aws-sdk-go/service/s3/s3manager"
 
 	"github.com/stashapp/stashdb/pkg/database"
 	"github.com/stashapp/stashdb/pkg/models"
@@ -103,6 +103,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	// TODO - only do this if provided
 	studioUrls := models.CreateStudioUrls(studio.ID, input.Urls)
     // if photo, download image, check mimetype, compress if webp or too large
+    /*
     for _, url := range studioUrls {
         if url.Type == "PHOTO" {
             resp, err := http.Get(url.URL)
@@ -163,6 +164,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
             url.Height = sql.NullInt32{Int32: int32(height), Valid: true}
         }
     }
+    */
 	if err := qb.UpdateUrls(studio.ID, studioUrls); err != nil {
 		_ = tx.Rollback()
 		return nil, err
