@@ -1,6 +1,6 @@
 CREATE TABLE images (
     id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-    url VARCHAR NOT NULL UNIQUE,
+    url VARCHAR NOT NULL,
     width INT,
     height INT
 );
@@ -22,19 +22,20 @@ CREATE TABLE studio_images (
 
 INSERT INTO images (id, url, width, height)
 SELECT id, url, width, height FROM performer_urls
-WHERE type = 'PHOTO';
+WHERE type = 'PHOTO' AND is IS NOT NULL;
 
 INSERT INTO performer_images (performer_id, image_id)
 SELECT performer_id, id FROM performer_urls
-WHERE type = 'PHOTO';
+WHERE type = 'PHOTO' AND is IS NOT NULL;
 
 INSERT INTO images (id, url, width, height)
-SELECT id, url, width, height FROM scene_urls
-WHERE type = 'PHOTO';
+SELECT id, MIN(url), MIN(width), MIN(height) FROM scene_urls
+WHERE type = 'PHOTO' AND id IS NOT NULL
+GROUP BY id;
 
 INSERT INTO scene_images (scene_id, image_id)
 SELECT scene_id, id FROM scene_urls
-WHERE type = 'PHOTO';
+WHERE type = 'PHOTO' AND id IS NOT NULL;
 
 DELETE FROM performer_urls
 WHERE type = 'PHOTO';
@@ -48,11 +49,6 @@ DROP COLUMN width,
 DROP COLUMN height;
 
 ALTER TABLE scene_urls
-DROP COLUMN id,
-DROP COLUMN width,
-DROP COLUMN height;
-
-ALTER TABLE studio_urls
 DROP COLUMN id,
 DROP COLUMN width,
 DROP COLUMN height;
