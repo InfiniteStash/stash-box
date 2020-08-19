@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 
+	"github.com/stashapp/stashdb/pkg/dataloader"
 	"github.com/stashapp/stashdb/pkg/models"
 )
 
@@ -49,7 +50,6 @@ func (r *sceneResolver) Images(ctx context.Context, obj *models.Scene) ([]*model
 	return qb.FindBySceneID(obj.ID)
 }
 func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*models.PerformerAppearance, error) {
-	pqb := models.NewPerformerQueryBuilder(nil)
 	sqb := models.NewSceneQueryBuilder(nil)
 	performersScenes, err := sqb.GetPerformers(obj.ID)
 
@@ -60,7 +60,7 @@ func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*m
 	// TODO - probably a better way to do this
 	var ret []*models.PerformerAppearance
 	for _, appearance := range performersScenes {
-		performer, err := pqb.Find(appearance.PerformerID)
+		performer, err := dataloader.For(ctx).PerformerById.Load(appearance.PerformerID.String())
 
 		if err != nil {
 			return nil, err
