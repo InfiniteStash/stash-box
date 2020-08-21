@@ -26,6 +26,10 @@ var (
 		return &SceneImage{}
 	})
 
+	sceneImageDBTable = database.NewTable("scene_images", func() interface{} {
+		return &SceneImage{}
+	})
+
 	imageSceneTable = sceneImageTable.Inverse(imageJoinKey)
 
 	performerImageTable = database.NewTableJoin(performerTable, "performer_images", sceneJoinKey, func() interface{} {

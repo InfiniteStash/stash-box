@@ -46,21 +46,17 @@ func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) ([]*models.
 	return qb.FindBySceneID(obj.ID)
 }
 func (r *sceneResolver) Images(ctx context.Context, obj *models.Scene) ([]*models.Image, error) {
-	qb := models.NewImageQueryBuilder(nil)
-	return qb.FindBySceneID(obj.ID)
+  imageIDs, _ := dataloader.For(ctx).SceneImageIDsById.Load(obj.ID)
+  images, _ := dataloader.For(ctx).ImageById.LoadAll(imageIDs)
+  return images, nil
 }
 func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*models.PerformerAppearance, error) {
-	sqb := models.NewSceneQueryBuilder(nil)
-	performersScenes, err := sqb.GetPerformers(obj.ID)
-
-	if err != nil {
-		return nil, err
-	}
+  appearances, _ := dataloader.For(ctx).SceneAppearancesById.Load(obj.ID)
 
 	// TODO - probably a better way to do this
 	var ret []*models.PerformerAppearance
-	for _, appearance := range performersScenes {
-		performer, err := dataloader.For(ctx).PerformerById.Load(appearance.PerformerID.String())
+	for _, appearance := range appearances {
+		performer, err := dataloader.For(ctx).PerformerById.Load(appearance.PerformerID)
 
 		if err != nil {
 			return nil, err
@@ -83,12 +79,7 @@ func (r *sceneResolver) Fingerprints(ctx context.Context, obj *models.Scene) ([]
 }
 
 func (r *sceneResolver) Urls(ctx context.Context, obj *models.Scene) ([]*models.URL, error) {
-	qb := models.NewSceneQueryBuilder(nil)
-	urls, err := qb.GetUrls(obj.ID)
-
-	if err != nil {
-		return nil, err
-	}
+  urls, _ := dataloader.For(ctx).SceneUrlsById.Load(obj.ID)
 
 	var ret []*models.URL
 	for _, url := range urls {

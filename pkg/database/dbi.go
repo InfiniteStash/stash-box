@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"reflect"
+  "time"
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
@@ -52,6 +53,10 @@ type DBI interface {
 	// FindJoins returns join objects where the foreign key id is equal to the
 	// provided id. The join objects are output to the provided output slice.
 	FindJoins(tableJoin TableJoin, id uuid.UUID, output Joins) error
+
+  // FindAllJoins returns join objects where the foreign key id is equal to the
+  // provided ids. The join objects are output to the provided output slice.
+	FindAllJoins(tableJoin TableJoin, ids []uuid.UUID, output Joins) error
 
 	// RawQuery performs a query on the provided table using the query string
 	// and argument slice. It outputs the results to the output slice.
@@ -268,13 +273,25 @@ func (q dbi) FindJoins(tableJoin TableJoin, id uuid.UUID, output Joins) error {
 	return q.RawQuery(tableJoin.Table, query, args, output)
 }
 
+// FindAllJoins returns join objects where the foreign key id is equal to the
+// provided ids. The join objects are output to the provided output slice.
+func (q dbi) FindAllJoins(tableJoin TableJoin, ids []uuid.UUID, output Joins) error {
+	query := selectStatement(tableJoin.Table) + " WHERE " + tableJoin.joinColumn + " = ?"
+  query, args, _ := sqlx.In(query, ids)
+
+	return q.RawQuery(tableJoin.Table, query, args, output)
+}
+
 // RawQuery performs a query on the provided table using the query string
 // and argument slice. It outputs the results to the output slice.
 func (q dbi) RawQuery(table Table, query string, args []interface{}, output Models) error {
 	var rows *sqlx.Rows
 	var err error
 
+  //start := time.Now()
 	rows, err = q.queryx(query, args...)
+  //elapsed := time.Since(start)
+  //fmt.Println(fmt.Printf("%s time spent for query: %s", elapsed, query))
 
 	if err != nil && err != sql.ErrNoRows {
 		// TODO - log error instead of returning SQL

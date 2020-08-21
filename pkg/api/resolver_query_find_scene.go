@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+  "runtime/pprof"
+  "os"
 	"github.com/gofrs/uuid"
 
 	"github.com/stashapp/stashdb/pkg/models"
@@ -34,6 +36,10 @@ func (r *queryResolver) QueryScenes(ctx context.Context, sceneFilter *models.Sce
 	}
 
 	qb := models.NewSceneQueryBuilder(nil)
+
+  f, _ := os.Create("export.prof")
+  pprof.StartCPUProfile(f)
+  defer pprof.StopCPUProfile()
 
 	scenes, count := qb.Query(sceneFilter, filter)
 	return &models.QueryScenesResultType{

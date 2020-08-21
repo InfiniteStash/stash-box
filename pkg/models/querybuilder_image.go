@@ -55,6 +55,38 @@ func (qb *ImageQueryBuilder) FindBySceneID(sceneID uuid.UUID) ([]*Image, error) 
 	return qb.queryImages(query, args)
 }
 
+func (qb *ImageQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Image, []error) {
+	query := `
+		SELECT images.* FROM images
+		WHERE id IN (?)
+	`
+	query, args, _ := sqlx.In(query, ids)
+  images, _ := qb.queryImages(query, args)
+  return images, nil
+}
+
+func (qb *ImageQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+	query := `
+		SELECT * FROM scene_images
+		WHERE scene_id IN (?)
+	`
+	query, args, _ := sqlx.In(query, ids)
+
+	images := SceneImages{}
+	_ = qb.dbi.RawQuery(sceneImageDBTable, query, args, &images)
+
+  m := make(map[uuid.UUID][]uuid.UUID)
+  for _, image := range images {
+    m[image.SceneID] = append(m[image.SceneID], image.ImageID)
+  }
+
+  result := make([][]uuid.UUID, len(ids))
+  for i, id := range ids {
+    result[i] = m[id]
+  }
+  return result, nil
+}
+
 func (qb *ImageQueryBuilder) FindByPerformerID(performerID uuid.UUID) ([]*Image, error) {
 	query := `
 		SELECT images.* FROM images

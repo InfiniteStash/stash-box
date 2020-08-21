@@ -269,11 +269,43 @@ func (qb *SceneQueryBuilder) GetPerformers(id uuid.UUID) (PerformersScenes, erro
 	return joins, err
 }
 
+func (qb *SceneQueryBuilder) GetAllAppearances(ids []uuid.UUID) ([]PerformersScenes, []error) {
+	joins := PerformersScenes{}
+	_ = qb.dbi.FindAllJoins(scenePerformerTable, ids, &joins)
+
+  m := make(map[uuid.UUID]PerformersScenes)
+  for _, join := range joins {
+    m[join.SceneID] = append(m[join.SceneID], join)
+  }
+
+  result := make([]PerformersScenes, len(ids))
+  for i, id := range ids {
+    result[i] = m[id]
+  }
+  return result, nil
+}
+
 func (qb *SceneQueryBuilder) GetUrls(id uuid.UUID) (SceneUrls, error) {
 	joins := SceneUrls{}
 	err := qb.dbi.FindJoins(sceneUrlTable, id, &joins)
 
 	return joins, err
+}
+
+func (qb *SceneQueryBuilder) GetAllUrls(ids []uuid.UUID) ([]SceneUrls, []error) {
+	joins := SceneUrls{}
+	_ = qb.dbi.FindAllJoins(sceneUrlTable, ids, &joins)
+
+  m := make(map[uuid.UUID]SceneUrls)
+  for _, join := range joins {
+    m[join.SceneID] = append(m[join.SceneID], join)
+  }
+
+  result := make([]SceneUrls, len(ids))
+  for i, id := range ids {
+    result[i] = m[id]
+  }
+  return result, nil
 }
 
 func (qb *SceneQueryBuilder) SearchScenes(term string) ([]*Scene, error) {

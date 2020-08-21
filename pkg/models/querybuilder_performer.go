@@ -79,14 +79,21 @@ func (qb *PerformerQueryBuilder) Find(id uuid.UUID) (*Performer, error) {
 	return qb.toModel(ret), err
 }
 
-func (qb *PerformerQueryBuilder) FindByIds(ids []string) ([]*Performer, []error) {
+func (qb *PerformerQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Performer, []error) {
 	query := "SELECT performers.* FROM performers WHERE id IN (?)"
-	query, args, err := sqlx.In(query, ids)
-	if err != nil {
-		return nil, nil
-	}
-	res, _ := qb.queryPerformers(query, args)
-	return res, nil
+	query, args, _ := sqlx.In(query, ids)
+	performers, _ := qb.queryPerformers(query, args)
+
+  m := make(map[uuid.UUID]*Performer)
+  for _, performer := range performers {
+    m[performer.ID] = performer
+  }
+
+  result := make([]*Performer, len(ids))
+  for i, id := range ids {
+    result[i] = m[id]
+  }
+  return result, nil
 }
 
 func (qb *PerformerQueryBuilder) FindBySceneID(sceneID uuid.UUID) (Performers, error) {

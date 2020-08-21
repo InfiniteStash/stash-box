@@ -1,6 +1,6 @@
 module github.com/stashapp/stashdb
 
-go 1.12
+go 1.15
 
 require (
 	github.com/99designs/gqlgen v0.10.2

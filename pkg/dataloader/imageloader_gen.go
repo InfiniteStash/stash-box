@@ -10,10 +10,10 @@ import (
 	"github.com/stashapp/stashdb/pkg/models"
 )
 
-// PerformerLoaderConfig captures the config to create a new PerformerLoader
-type PerformerLoaderConfig struct {
+// ImageLoaderConfig captures the config to create a new ImageLoader
+type ImageLoaderConfig struct {
 	// Fetch is a method that provides the data for the loader
-	Fetch func(keys []uuid.UUID) ([]*models.Performer, []error)
+	Fetch func(keys []uuid.UUID) ([]*models.Image, []error)
 
 	// Wait is how long wait before sending a batch
 	Wait time.Duration
@@ -22,19 +22,19 @@ type PerformerLoaderConfig struct {
 	MaxBatch int
 }
 
-// NewPerformerLoader creates a new PerformerLoader given a fetch, wait, and maxBatch
-func NewPerformerLoader(config PerformerLoaderConfig) *PerformerLoader {
-	return &PerformerLoader{
+// NewImageLoader creates a new ImageLoader given a fetch, wait, and maxBatch
+func NewImageLoader(config ImageLoaderConfig) *ImageLoader {
+	return &ImageLoader{
 		fetch:    config.Fetch,
 		wait:     config.Wait,
 		maxBatch: config.MaxBatch,
 	}
 }
 
-// PerformerLoader batches and caches requests
-type PerformerLoader struct {
+// ImageLoader batches and caches requests
+type ImageLoader struct {
 	// this method provides the data for the loader
-	fetch func(keys []uuid.UUID) ([]*models.Performer, []error)
+	fetch func(keys []uuid.UUID) ([]*models.Image, []error)
 
 	// how long to done before sending a batch
 	wait time.Duration
@@ -45,51 +45,51 @@ type PerformerLoader struct {
 	// INTERNAL
 
 	// lazily created cache
-	cache map[uuid.UUID]*models.Performer
+	cache map[uuid.UUID]*models.Image
 
 	// the current batch. keys will continue to be collected until timeout is hit,
 	// then everything will be sent to the fetch method and out to the listeners
-	batch *performerLoaderBatch
+	batch *imageLoaderBatch
 
 	// mutex to prevent races
 	mu sync.Mutex
 }
 
-type performerLoaderBatch struct {
+type imageLoaderBatch struct {
 	keys    []uuid.UUID
-	data    []*models.Performer
+	data    []*models.Image
 	error   []error
 	closing bool
 	done    chan struct{}
 }
 
-// Load a Performer by key, batching and caching will be applied automatically
-func (l *PerformerLoader) Load(key uuid.UUID) (*models.Performer, error) {
+// Load a Image by key, batching and caching will be applied automatically
+func (l *ImageLoader) Load(key uuid.UUID) (*models.Image, error) {
 	return l.LoadThunk(key)()
 }
 
-// LoadThunk returns a function that when called will block waiting for a Performer.
+// LoadThunk returns a function that when called will block waiting for a Image.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *PerformerLoader) LoadThunk(key uuid.UUID) func() (*models.Performer, error) {
+func (l *ImageLoader) LoadThunk(key uuid.UUID) func() (*models.Image, error) {
 	l.mu.Lock()
 	if it, ok := l.cache[key]; ok {
 		l.mu.Unlock()
-		return func() (*models.Performer, error) {
+		return func() (*models.Image, error) {
 			return it, nil
 		}
 	}
 	if l.batch == nil {
-		l.batch = &performerLoaderBatch{done: make(chan struct{})}
+		l.batch = &imageLoaderBatch{done: make(chan struct{})}
 	}
 	batch := l.batch
 	pos := batch.keyIndex(l, key)
 	l.mu.Unlock()
 
-	return func() (*models.Performer, error) {
+	return func() (*models.Image, error) {
 		<-batch.done
 
-		var data *models.Performer
+		var data *models.Image
 		if pos < len(batch.data) {
 			data = batch.data[pos]
 		}
@@ -114,43 +114,43 @@ func (l *PerformerLoader) LoadThunk(key uuid.UUID) func() (*models.Performer, er
 
 // LoadAll fetches many keys at once. It will be broken into appropriate sized
 // sub batches depending on how the loader is configured
-func (l *PerformerLoader) LoadAll(keys []uuid.UUID) ([]*models.Performer, []error) {
-	results := make([]func() (*models.Performer, error), len(keys))
+func (l *ImageLoader) LoadAll(keys []uuid.UUID) ([]*models.Image, []error) {
+	results := make([]func() (*models.Image, error), len(keys))
 
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
 
-	performers := make([]*models.Performer, len(keys))
+	images := make([]*models.Image, len(keys))
 	errors := make([]error, len(keys))
 	for i, thunk := range results {
-		performers[i], errors[i] = thunk()
+		images[i], errors[i] = thunk()
 	}
-	return performers, errors
+	return images, errors
 }
 
-// LoadAllThunk returns a function that when called will block waiting for a Performers.
+// LoadAllThunk returns a function that when called will block waiting for a Images.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *PerformerLoader) LoadAllThunk(keys []uuid.UUID) func() ([]*models.Performer, []error) {
-	results := make([]func() (*models.Performer, error), len(keys))
+func (l *ImageLoader) LoadAllThunk(keys []uuid.UUID) func() ([]*models.Image, []error) {
+	results := make([]func() (*models.Image, error), len(keys))
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
-	return func() ([]*models.Performer, []error) {
-		performers := make([]*models.Performer, len(keys))
+	return func() ([]*models.Image, []error) {
+		images := make([]*models.Image, len(keys))
 		errors := make([]error, len(keys))
 		for i, thunk := range results {
-			performers[i], errors[i] = thunk()
+			images[i], errors[i] = thunk()
 		}
-		return performers, errors
+		return images, errors
 	}
 }
 
 // Prime the cache with the provided key and value. If the key already exists, no change is made
 // and false is returned.
 // (To forcefully prime the cache, clear the key first with loader.clear(key).prime(key, value).)
-func (l *PerformerLoader) Prime(key uuid.UUID, value *models.Performer) bool {
+func (l *ImageLoader) Prime(key uuid.UUID, value *models.Image) bool {
 	l.mu.Lock()
 	var found bool
 	if _, found = l.cache[key]; !found {
@@ -164,22 +164,22 @@ func (l *PerformerLoader) Prime(key uuid.UUID, value *models.Performer) bool {
 }
 
 // Clear the value at key from the cache, if it exists
-func (l *PerformerLoader) Clear(key uuid.UUID) {
+func (l *ImageLoader) Clear(key uuid.UUID) {
 	l.mu.Lock()
 	delete(l.cache, key)
 	l.mu.Unlock()
 }
 
-func (l *PerformerLoader) unsafeSet(key uuid.UUID, value *models.Performer) {
+func (l *ImageLoader) unsafeSet(key uuid.UUID, value *models.Image) {
 	if l.cache == nil {
-		l.cache = map[uuid.UUID]*models.Performer{}
+		l.cache = map[uuid.UUID]*models.Image{}
 	}
 	l.cache[key] = value
 }
 
 // keyIndex will return the location of the key in the batch, if its not found
 // it will add the key to the batch
-func (b *performerLoaderBatch) keyIndex(l *PerformerLoader, key uuid.UUID) int {
+func (b *imageLoaderBatch) keyIndex(l *ImageLoader, key uuid.UUID) int {
 	for i, existingKey := range b.keys {
 		if key == existingKey {
 			return i
@@ -203,7 +203,7 @@ func (b *performerLoaderBatch) keyIndex(l *PerformerLoader, key uuid.UUID) int {
 	return pos
 }
 
-func (b *performerLoaderBatch) startTimer(l *PerformerLoader) {
+func (b *imageLoaderBatch) startTimer(l *ImageLoader) {
 	time.Sleep(l.wait)
 	l.mu.Lock()
 
@@ -219,7 +219,7 @@ func (b *performerLoaderBatch) startTimer(l *PerformerLoader) {
 	b.end(l)
 }
 
-func (b *performerLoaderBatch) end(l *PerformerLoader) {
+func (b *imageLoaderBatch) end(l *ImageLoader) {
 	b.data, b.error = l.fetch(b.keys)
 	close(b.done)
 }
