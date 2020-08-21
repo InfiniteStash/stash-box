@@ -100,8 +100,7 @@ func (qb *PerformerQueryBuilder) FindBySceneID(sceneID uuid.UUID) (Performers, e
 	query := `
 		SELECT performers.* FROM performers
 		LEFT JOIN performers_scenes as scenes_join on scenes_join.performer_id = performers.id
-		LEFT JOIN scenes on scenes_join.scene_id = scenes.id
-		WHERE scenes.id = ?
+		WHERE scenes_join.scene_id = ?
 		GROUP BY performers.id
 	`
 	args := []interface{}{sceneID}
@@ -299,11 +298,47 @@ func (qb *PerformerQueryBuilder) GetAliases(id uuid.UUID) ([]string, error) {
 	return joins.ToAliases(), err
 }
 
+func (qb *PerformerQueryBuilder) GetAllAliases(ids []uuid.UUID) ([][]string, []error) {
+	joins := PerformerAliases{}
+	_ = qb.dbi.FindAllJoins(performerAliasTable, ids, &joins)
+
+  m := make(map[uuid.UUID][]string)
+  for _, join := range joins {
+    m[join.PerformerID] = append(m[join.PerformerID], join.Alias)
+  }
+
+  result := make([][]string, len(ids))
+  for i, id := range ids {
+    result[i] = m[id]
+  }
+  return result, nil
+}
+
 func (qb *PerformerQueryBuilder) GetUrls(id uuid.UUID) (PerformerUrls, error) {
 	joins := PerformerUrls{}
 	err := qb.dbi.FindJoins(performerUrlTable, id, &joins)
 
 	return joins, err
+}
+
+func (qb *PerformerQueryBuilder) GetAllUrls(ids []uuid.UUID) ([][]*URL, []error) {
+	joins := PerformerUrls{}
+	_ = qb.dbi.FindAllJoins(performerUrlTable, ids, &joins)
+
+  m := make(map[uuid.UUID][]*URL)
+  for _, join := range joins {
+    url := URL{
+      URL: join.URL,
+      Type: join.Type,
+    }
+    m[join.PerformerID] = append(m[join.PerformerID], &url)
+  }
+
+  result := make([][]*URL, len(ids))
+  for i, id := range ids {
+    result[i] = m[id]
+  }
+  return result, nil
 }
 
 func (qb *PerformerQueryBuilder) GetTattoos(id uuid.UUID) (PerformerBodyMods, error) {
@@ -313,11 +348,59 @@ func (qb *PerformerQueryBuilder) GetTattoos(id uuid.UUID) (PerformerBodyMods, er
 	return joins, err
 }
 
+func (qb *PerformerQueryBuilder) GetAllTattoos(ids []uuid.UUID) ([][]*BodyModification, []error) {
+	joins := PerformerBodyMods{}
+	_ = qb.dbi.FindAllJoins(performerTattooTable, ids, &joins)
+
+  m := make(map[uuid.UUID][]*BodyModification)
+  for _, join := range joins {
+    desc := &join.Description.String
+    if !join.Description.Valid {
+      desc = nil
+    }
+    mod := BodyModification{
+      Location: join.Location,
+      Description: desc,
+    }
+    m[join.PerformerID] = append(m[join.PerformerID], &mod)
+  }
+
+  result := make([][]*BodyModification, len(ids))
+  for i, id := range ids {
+    result[i] = m[id]
+  }
+  return result, nil
+}
+
 func (qb *PerformerQueryBuilder) GetPiercings(id uuid.UUID) (PerformerBodyMods, error) {
 	joins := PerformerBodyMods{}
 	err := qb.dbi.FindJoins(performerPiercingTable, id, &joins)
 
 	return joins, err
+}
+
+func (qb *PerformerQueryBuilder) GetAllPiercings(ids []uuid.UUID) ([][]*BodyModification, []error) {
+	joins := PerformerBodyMods{}
+	_ = qb.dbi.FindAllJoins(performerPiercingTable, ids, &joins)
+
+  m := make(map[uuid.UUID][]*BodyModification)
+  for _, join := range joins {
+    desc := &join.Description.String
+    if !join.Description.Valid {
+      desc = nil
+    }
+    mod := BodyModification{
+      Location: join.Location,
+      Description: desc,
+    }
+    m[join.PerformerID] = append(m[join.PerformerID], &mod)
+  }
+
+  result := make([][]*BodyModification, len(ids))
+  for i, id := range ids {
+    result[i] = m[id]
+  }
+  return result, nil
 }
 
 func (qb *PerformerQueryBuilder) SearchPerformers(term string) (Performers, error) {

@@ -12,11 +12,18 @@ import (
 const loadersKey = "dataloaders"
 
 type Loaders struct {
-	PerformerById PerformerLoader
 	ImageById ImageLoader
-	SceneImageIDsById SceneImageIDsLoader
+	PerformerById PerformerLoader
+	PerformerAliasesById StringsLoader
+	PerformerImageIDsById UUIDsLoader
+	PerformerPiercingsById BodyModificationsLoader
+	PerformerTattoosById BodyModificationsLoader
+  PerformerUrlsById URLLoader
+	SceneImageIDsById UUIDsLoader
 	SceneAppearancesById SceneAppearancesLoader
-  SceneUrlsById SceneUrlsLoader
+  SceneUrlsById URLLoader
+	StudioImageIDsById UUIDsLoader
+  StudioUrlsById URLLoader
 }
 
 func Middleware(next http.Handler) http.Handler {
@@ -30,12 +37,44 @@ func Middleware(next http.Handler) http.Handler {
 					return qb.FindByIds(ids)
 				},
 			},
-			SceneImageIDsById: SceneImageIDsLoader{
+			SceneImageIDsById: UUIDsLoader {
 				maxBatch: 100,
 				wait:     1 * time.Millisecond,
 				fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
 					qb := models.NewImageQueryBuilder(nil)
 					return qb.FindIdsBySceneIds(ids)
+				},
+			},
+			PerformerImageIDsById: UUIDsLoader {
+				maxBatch: 100,
+				wait:     1 * time.Millisecond,
+				fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+					qb := models.NewImageQueryBuilder(nil)
+					return qb.FindIdsByPerformerIds(ids)
+				},
+			},
+			PerformerAliasesById: StringsLoader {
+				maxBatch: 100,
+				wait:     1 * time.Millisecond,
+				fetch: func(ids []uuid.UUID) ([][]string, []error) {
+					qb := models.NewPerformerQueryBuilder(nil)
+					return qb.GetAllAliases(ids)
+				},
+			},
+			PerformerTattoosById: BodyModificationsLoader {
+				maxBatch: 100,
+				wait:     1 * time.Millisecond,
+				fetch: func(ids []uuid.UUID) ([][]*models.BodyModification, []error) {
+					qb := models.NewPerformerQueryBuilder(nil)
+					return qb.GetAllTattoos(ids)
+				},
+			},
+			PerformerPiercingsById: BodyModificationsLoader {
+				maxBatch: 100,
+				wait:     1 * time.Millisecond,
+				fetch: func(ids []uuid.UUID) ([][]*models.BodyModification, []error) {
+					qb := models.NewPerformerQueryBuilder(nil)
+					return qb.GetAllPiercings(ids)
 				},
 			},
 			SceneAppearancesById: SceneAppearancesLoader{
@@ -46,11 +85,27 @@ func Middleware(next http.Handler) http.Handler {
 					return qb.GetAllAppearances(ids)
 				},
 			},
-			SceneUrlsById: SceneUrlsLoader{
+			SceneUrlsById: URLLoader{
 				maxBatch: 100,
 				wait:     1 * time.Millisecond,
-				fetch: func(ids []uuid.UUID) ([]models.SceneUrls, []error) {
+				fetch: func(ids []uuid.UUID) ([][]*models.URL, []error) {
 					qb := models.NewSceneQueryBuilder(nil)
+					return qb.GetAllUrls(ids)
+				},
+			},
+			PerformerUrlsById: URLLoader{
+				maxBatch: 100,
+				wait:     1 * time.Millisecond,
+				fetch: func(ids []uuid.UUID) ([][]*models.URL, []error) {
+					qb := models.NewPerformerQueryBuilder(nil)
+					return qb.GetAllUrls(ids)
+				},
+			},
+			StudioUrlsById: URLLoader{
+				maxBatch: 100,
+				wait:     1 * time.Millisecond,
+				fetch: func(ids []uuid.UUID) ([][]*models.URL, []error) {
+					qb := models.NewStudioQueryBuilder(nil)
 					return qb.GetAllUrls(ids)
 				},
 			},
@@ -60,6 +115,14 @@ func Middleware(next http.Handler) http.Handler {
 				fetch: func(ids []uuid.UUID) ([]*models.Image, []error) {
 					qb := models.NewImageQueryBuilder(nil)
 					return qb.FindByIds(ids)
+				},
+			},
+			StudioImageIDsById: UUIDsLoader {
+				maxBatch: 100,
+				wait:     1 * time.Millisecond,
+				fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
+					qb := models.NewImageQueryBuilder(nil)
+					return qb.FindIdsByStudioIds(ids)
 				},
 			},
 		})

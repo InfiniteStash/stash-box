@@ -292,16 +292,20 @@ func (qb *SceneQueryBuilder) GetUrls(id uuid.UUID) (SceneUrls, error) {
 	return joins, err
 }
 
-func (qb *SceneQueryBuilder) GetAllUrls(ids []uuid.UUID) ([]SceneUrls, []error) {
+func (qb *SceneQueryBuilder) GetAllUrls(ids []uuid.UUID) ([][]*URL, []error) {
 	joins := SceneUrls{}
 	_ = qb.dbi.FindAllJoins(sceneUrlTable, ids, &joins)
 
-  m := make(map[uuid.UUID]SceneUrls)
+  m := make(map[uuid.UUID][]*URL)
   for _, join := range joins {
-    m[join.SceneID] = append(m[join.SceneID], join)
+    url := URL{
+      URL: join.URL,
+      Type: join.Type,
+    }
+    m[join.SceneID] = append(m[join.SceneID], &url)
   }
 
-  result := make([]SceneUrls, len(ids))
+  result := make([][]*URL, len(ids))
   for i, id := range ids {
     result[i] = m[id]
   }
