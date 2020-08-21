@@ -140,7 +140,7 @@ func createTestRunner(t *testing.T, user *models.User, roles []models.RoleEnum) 
 	ctx := context.TODO()
 	ctx = context.WithValue(ctx, api.ContextUser, user)
 	ctx = context.WithValue(ctx, api.ContextRoles, roles)
-  ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders())
+	ctx = context.WithValue(ctx, dataloader.GetLoadersKey(), dataloader.GetLoaders())
 
 	return &testRunner{
 		t:        t,

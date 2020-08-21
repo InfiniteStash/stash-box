@@ -20,7 +20,7 @@ func (r *performerResolver) Disambiguation(ctx context.Context, obj *models.Perf
 }
 
 func (r *performerResolver) Aliases(ctx context.Context, obj *models.Performer) ([]string, error) {
-  return dataloader.For(ctx).PerformerAliasesById.Load(obj.ID)
+	return dataloader.For(ctx).PerformerAliasesById.Load(obj.ID)
 }
 
 func (r *performerResolver) Gender(ctx context.Context, obj *models.Performer) (*models.GenderEnum, error) {
@@ -33,7 +33,7 @@ func (r *performerResolver) Gender(ctx context.Context, obj *models.Performer) (
 }
 
 func (r *performerResolver) Urls(ctx context.Context, obj *models.Performer) ([]*models.URL, error) {
-  return dataloader.For(ctx).PerformerUrlsById.Load(obj.ID)
+	return dataloader.For(ctx).PerformerUrlsById.Load(obj.ID)
 }
 
 func (r *performerResolver) Birthdate(ctx context.Context, obj *models.Performer) (*models.FuzzyDate, error) {
@@ -120,15 +120,15 @@ func (r *performerResolver) CareerEndYear(ctx context.Context, obj *models.Perfo
 }
 
 func (r *performerResolver) Tattoos(ctx context.Context, obj *models.Performer) ([]*models.BodyModification, error) {
-  return dataloader.For(ctx).PerformerTattoosById.Load(obj.ID)
+	return dataloader.For(ctx).PerformerTattoosById.Load(obj.ID)
 }
 
 func (r *performerResolver) Piercings(ctx context.Context, obj *models.Performer) ([]*models.BodyModification, error) {
-  return dataloader.For(ctx).PerformerPiercingsById.Load(obj.ID)
+	return dataloader.For(ctx).PerformerPiercingsById.Load(obj.ID)
 }
 
 func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) ([]*models.Image, error) {
-  imageIDs, _ := dataloader.For(ctx).PerformerImageIDsById.Load(obj.ID)
-  images, _ := dataloader.For(ctx).ImageById.LoadAll(imageIDs)
-  return images, nil
+	imageIDs, _ := dataloader.For(ctx).PerformerImageIDsById.Load(obj.ID)
+	images, _ := dataloader.For(ctx).ImageById.LoadAll(imageIDs)
+	return images, nil
 }

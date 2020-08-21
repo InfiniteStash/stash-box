@@ -56,16 +56,16 @@ func (qb *UserQueryBuilder) FindByIds(ids []uuid.UUID) ([]*User, []error) {
 	query, args, _ := sqlx.In(query, ids)
 	users, _ := qb.queryUsers(query, args)
 
-  m := make(map[uuid.UUID]*User)
-  for _, user := range users {
-    m[user.ID] = user
-  }
+	m := make(map[uuid.UUID]*User)
+	for _, user := range users {
+		m[user.ID] = user
+	}
 
-  result := make([]*User, len(ids))
-  for i, id := range ids {
-    result[i] = m[id]
-  }
-  return result, nil
+	result := make([]*User, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
 }
 
 func (qb *UserQueryBuilder) FindByName(name string) (*User, error) {
@@ -153,14 +153,14 @@ func (qb *UserQueryBuilder) GetRolesByIds(ids []uuid.UUID) ([]UserRoles, []error
 	joins := UserRoles{}
 	_ = qb.dbi.FindAllJoins(userRolesTable, ids, &joins)
 
-  m := make(map[uuid.UUID]UserRoles)
-  for _, join := range joins {
-    m[join.UserID] = append(m[join.UserID], join)
-  }
+	m := make(map[uuid.UUID]UserRoles)
+	for _, join := range joins {
+		m[join.UserID] = append(m[join.UserID], join)
+	}
 
-  result := make([]UserRoles, len(ids))
-  for i, id := range ids {
-    result[i] = m[id]
-  }
-  return result, nil
+	result := make([]UserRoles, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
 }

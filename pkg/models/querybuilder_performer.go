@@ -84,16 +84,16 @@ func (qb *PerformerQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Performer, []err
 	query, args, _ := sqlx.In(query, ids)
 	performers, _ := qb.queryPerformers(query, args)
 
-  m := make(map[uuid.UUID]*Performer)
-  for _, performer := range performers {
-    m[performer.ID] = performer
-  }
+	m := make(map[uuid.UUID]*Performer)
+	for _, performer := range performers {
+		m[performer.ID] = performer
+	}
 
-  result := make([]*Performer, len(ids))
-  for i, id := range ids {
-    result[i] = m[id]
-  }
-  return result, nil
+	result := make([]*Performer, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
 }
 
 func (qb *PerformerQueryBuilder) FindBySceneID(sceneID uuid.UUID) (Performers, error) {
@@ -302,16 +302,16 @@ func (qb *PerformerQueryBuilder) GetAllAliases(ids []uuid.UUID) ([][]string, []e
 	joins := PerformerAliases{}
 	_ = qb.dbi.FindAllJoins(performerAliasTable, ids, &joins)
 
-  m := make(map[uuid.UUID][]string)
-  for _, join := range joins {
-    m[join.PerformerID] = append(m[join.PerformerID], join.Alias)
-  }
+	m := make(map[uuid.UUID][]string)
+	for _, join := range joins {
+		m[join.PerformerID] = append(m[join.PerformerID], join.Alias)
+	}
 
-  result := make([][]string, len(ids))
-  for i, id := range ids {
-    result[i] = m[id]
-  }
-  return result, nil
+	result := make([][]string, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
 }
 
 func (qb *PerformerQueryBuilder) GetUrls(id uuid.UUID) (PerformerUrls, error) {
@@ -325,20 +325,20 @@ func (qb *PerformerQueryBuilder) GetAllUrls(ids []uuid.UUID) ([][]*URL, []error)
 	joins := PerformerUrls{}
 	_ = qb.dbi.FindAllJoins(performerUrlTable, ids, &joins)
 
-  m := make(map[uuid.UUID][]*URL)
-  for _, join := range joins {
-    url := URL{
-      URL: join.URL,
-      Type: join.Type,
-    }
-    m[join.PerformerID] = append(m[join.PerformerID], &url)
-  }
+	m := make(map[uuid.UUID][]*URL)
+	for _, join := range joins {
+		url := URL{
+			URL:  join.URL,
+			Type: join.Type,
+		}
+		m[join.PerformerID] = append(m[join.PerformerID], &url)
+	}
 
-  result := make([][]*URL, len(ids))
-  for i, id := range ids {
-    result[i] = m[id]
-  }
-  return result, nil
+	result := make([][]*URL, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
 }
 
 func (qb *PerformerQueryBuilder) GetTattoos(id uuid.UUID) (PerformerBodyMods, error) {
@@ -352,24 +352,24 @@ func (qb *PerformerQueryBuilder) GetAllTattoos(ids []uuid.UUID) ([][]*BodyModifi
 	joins := PerformerBodyMods{}
 	_ = qb.dbi.FindAllJoins(performerTattooTable, ids, &joins)
 
-  m := make(map[uuid.UUID][]*BodyModification)
-  for _, join := range joins {
-    desc := &join.Description.String
-    if !join.Description.Valid {
-      desc = nil
-    }
-    mod := BodyModification{
-      Location: join.Location,
-      Description: desc,
-    }
-    m[join.PerformerID] = append(m[join.PerformerID], &mod)
-  }
+	m := make(map[uuid.UUID][]*BodyModification)
+	for _, join := range joins {
+		desc := &join.Description.String
+		if !join.Description.Valid {
+			desc = nil
+		}
+		mod := BodyModification{
+			Location:    join.Location,
+			Description: desc,
+		}
+		m[join.PerformerID] = append(m[join.PerformerID], &mod)
+	}
 
-  result := make([][]*BodyModification, len(ids))
-  for i, id := range ids {
-    result[i] = m[id]
-  }
-  return result, nil
+	result := make([][]*BodyModification, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
 }
 
 func (qb *PerformerQueryBuilder) GetPiercings(id uuid.UUID) (PerformerBodyMods, error) {
@@ -383,24 +383,24 @@ func (qb *PerformerQueryBuilder) GetAllPiercings(ids []uuid.UUID) ([][]*BodyModi
 	joins := PerformerBodyMods{}
 	_ = qb.dbi.FindAllJoins(performerPiercingTable, ids, &joins)
 
-  m := make(map[uuid.UUID][]*BodyModification)
-  for _, join := range joins {
-    desc := &join.Description.String
-    if !join.Description.Valid {
-      desc = nil
-    }
-    mod := BodyModification{
-      Location: join.Location,
-      Description: desc,
-    }
-    m[join.PerformerID] = append(m[join.PerformerID], &mod)
-  }
+	m := make(map[uuid.UUID][]*BodyModification)
+	for _, join := range joins {
+		desc := &join.Description.String
+		if !join.Description.Valid {
+			desc = nil
+		}
+		mod := BodyModification{
+			Location:    join.Location,
+			Description: desc,
+		}
+		m[join.PerformerID] = append(m[join.PerformerID], &mod)
+	}
 
-  result := make([][]*BodyModification, len(ids))
-  for i, id := range ids {
-    result[i] = m[id]
-  }
-  return result, nil
+	result := make([][]*BodyModification, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
 }
 
 func (qb *PerformerQueryBuilder) SearchPerformers(term string) (Performers, error) {

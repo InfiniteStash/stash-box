@@ -61,50 +61,50 @@ func (qb *ImageQueryBuilder) FindByIds(ids []uuid.UUID) ([]*Image, []error) {
 		WHERE id IN (?)
 	`
 	query, args, _ := sqlx.In(query, ids)
-  images, _ := qb.queryImages(query, args)
+	images, _ := qb.queryImages(query, args)
 
-  m := make(map[uuid.UUID]*Image)
-  for _, image := range images {
-    m[image.ID] = image
-  }
+	m := make(map[uuid.UUID]*Image)
+	for _, image := range images {
+		m[image.ID] = image
+	}
 
-  result := make([]*Image, len(ids))
-  for i, id := range ids {
-    result[i] = m[id]
-  }
-  return result, nil
+	result := make([]*Image, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
 }
 
 func (qb *ImageQueryBuilder) FindIdsBySceneIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
 	images := SceneImages{}
 	_ = qb.dbi.FindAllJoins(sceneImageTable, ids, &images)
 
-  m := make(map[uuid.UUID][]uuid.UUID)
-  for _, image := range images {
-    m[image.SceneID] = append(m[image.SceneID], image.ImageID)
-  }
+	m := make(map[uuid.UUID][]uuid.UUID)
+	for _, image := range images {
+		m[image.SceneID] = append(m[image.SceneID], image.ImageID)
+	}
 
-  result := make([][]uuid.UUID, len(ids))
-  for i, id := range ids {
-    result[i] = m[id]
-  }
-  return result, nil
+	result := make([][]uuid.UUID, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
 }
 
 func (qb *ImageQueryBuilder) FindIdsByPerformerIds(ids []uuid.UUID) ([][]uuid.UUID, []error) {
 	images := PerformerImages{}
 	_ = qb.dbi.FindAllJoins(performerImageTable, ids, &images)
 
-  m := make(map[uuid.UUID][]uuid.UUID)
-  for _, image := range images {
-    m[image.PerformerID] = append(m[image.PerformerID], image.ImageID)
-  }
+	m := make(map[uuid.UUID][]uuid.UUID)
+	for _, image := range images {
+		m[image.PerformerID] = append(m[image.PerformerID], image.ImageID)
+	}
 
-  result := make([][]uuid.UUID, len(ids))
-  for i, id := range ids {
-    result[i] = m[id]
-  }
-  return result, nil
+	result := make([][]uuid.UUID, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
 }
 
 func (qb *ImageQueryBuilder) FindByPerformerID(performerID uuid.UUID) ([]*Image, error) {
@@ -132,16 +132,16 @@ func (qb *ImageQueryBuilder) FindIdsByStudioIds(ids []uuid.UUID) ([][]uuid.UUID,
 	images := StudioImages{}
 	_ = qb.dbi.FindAllJoins(studioImageTable, ids, &images)
 
-  m := make(map[uuid.UUID][]uuid.UUID)
-  for _, image := range images {
-    m[image.StudioID] = append(m[image.StudioID], image.ImageID)
-  }
+	m := make(map[uuid.UUID][]uuid.UUID)
+	for _, image := range images {
+		m[image.StudioID] = append(m[image.StudioID], image.ImageID)
+	}
 
-  result := make([][]uuid.UUID, len(ids))
-  for i, id := range ids {
-    result[i] = m[id]
-  }
-  return result, nil
+	result := make([][]uuid.UUID, len(ids))
+	for i, id := range ids {
+		result[i] = m[id]
+	}
+	return result, nil
 }
 
 func (qb *ImageQueryBuilder) queryImages(query string, args []interface{}) (Images, error) {

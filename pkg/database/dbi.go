@@ -2,7 +2,7 @@ package database
 
 import (
 	"database/sql"
-  "fmt"
+	"fmt"
 	"reflect"
 
 	"github.com/gofrs/uuid"
@@ -53,8 +53,8 @@ type DBI interface {
 	// provided id. The join objects are output to the provided output slice.
 	FindJoins(tableJoin TableJoin, id uuid.UUID, output Joins) error
 
-  // FindAllJoins returns join objects where the foreign key id is equal to the
-  // provided ids. The join objects are output to the provided output slice.
+	// FindAllJoins returns join objects where the foreign key id is equal to the
+	// provided ids. The join objects are output to the provided output slice.
 	FindAllJoins(tableJoin TableJoin, ids []uuid.UUID, output Joins) error
 
 	// RawQuery performs a query on the provided table using the query string
@@ -276,7 +276,7 @@ func (q dbi) FindJoins(tableJoin TableJoin, id uuid.UUID, output Joins) error {
 // provided ids. The join objects are output to the provided output slice.
 func (q dbi) FindAllJoins(tableJoin TableJoin, ids []uuid.UUID, output Joins) error {
 	query := selectStatement(tableJoin.Table) + " WHERE " + tableJoin.joinColumn + " IN (?)"
-  query, args, _ := sqlx.In(query, ids)
+	query, args, _ := sqlx.In(query, ids)
 
 	return q.RawQuery(tableJoin.Table, query, args, output)
 }

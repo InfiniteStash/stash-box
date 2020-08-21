@@ -54,13 +54,13 @@ func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) ([]*models.
 }
 
 func (r *sceneResolver) Images(ctx context.Context, obj *models.Scene) ([]*models.Image, error) {
-  imageIDs, _ := dataloader.For(ctx).SceneImageIDsById.Load(obj.ID)
-  images, _ := dataloader.For(ctx).ImageById.LoadAll(imageIDs)
-  return images, nil
+	imageIDs, _ := dataloader.For(ctx).SceneImageIDsById.Load(obj.ID)
+	images, _ := dataloader.For(ctx).ImageById.LoadAll(imageIDs)
+	return images, nil
 }
 
 func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*models.PerformerAppearance, error) {
-  appearances, _ := dataloader.For(ctx).SceneAppearancesById.Load(obj.ID)
+	appearances, _ := dataloader.For(ctx).SceneAppearancesById.Load(obj.ID)
 
 	// TODO - probably a better way to do this
 	var ret []*models.PerformerAppearance
@@ -86,5 +86,5 @@ func (r *sceneResolver) Fingerprints(ctx context.Context, obj *models.Scene) ([]
 }
 
 func (r *sceneResolver) Urls(ctx context.Context, obj *models.Scene) ([]*models.URL, error) {
-  return dataloader.For(ctx).SceneUrlsById.Load(obj.ID)
+	return dataloader.For(ctx).SceneUrlsById.Load(obj.ID)
 }
