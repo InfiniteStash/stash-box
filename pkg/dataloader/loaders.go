@@ -31,8 +31,8 @@ func Middleware(next http.Handler) http.Handler {
 				},
 			},
 			SceneImageIDsById: SceneImageIDsLoader{
-				maxBatch: 1000,
-				wait:     10 * time.Millisecond,
+				maxBatch: 100,
+				wait:     1 * time.Millisecond,
 				fetch: func(ids []uuid.UUID) ([][]uuid.UUID, []error) {
 					qb := models.NewImageQueryBuilder(nil)
 					return qb.FindIdsBySceneIds(ids)
@@ -56,7 +56,7 @@ func Middleware(next http.Handler) http.Handler {
 			},
 			ImageById: ImageLoader{
 				maxBatch: 1000,
-				wait:     10 * time.Millisecond,
+				wait:     1 * time.Millisecond,
 				fetch: func(ids []uuid.UUID) ([]*models.Image, []error) {
 					qb := models.NewImageQueryBuilder(nil)
 					return qb.FindByIds(ids)

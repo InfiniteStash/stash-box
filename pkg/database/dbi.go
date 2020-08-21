@@ -2,9 +2,8 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
+  "fmt"
 	"reflect"
-  "time"
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
@@ -288,10 +287,7 @@ func (q dbi) RawQuery(table Table, query string, args []interface{}, output Mode
 	var rows *sqlx.Rows
 	var err error
 
-  //start := time.Now()
 	rows, err = q.queryx(query, args...)
-  //elapsed := time.Since(start)
-  //fmt.Println(fmt.Printf("%s time spent for query: %s", elapsed, query))
 
 	if err != nil && err != sql.ErrNoRows {
 		// TODO - log error instead of returning SQL
