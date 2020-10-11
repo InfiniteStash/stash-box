@@ -138,5 +138,6 @@ func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) (
 			return nil, err
 		}
 	}
+	models.Images(images).SortPortrait()
 	return images, nil
 }

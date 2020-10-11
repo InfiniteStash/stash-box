@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"github.com/gofrs/uuid"
+	"sort"
 
 	"github.com/stashapp/stashdb/pkg/database"
 )
@@ -54,4 +55,38 @@ func (p *Image) CopyFromCreateInput(input ImageCreateInput) {
 
 func (p *Image) CopyFromUpdateInput(input ImageUpdateInput) {
 	CopyFull(p, input)
+}
+
+func (p Images) SortPortrait() {
+	sort.Slice(p, func(a, b int) bool {
+		aspectA := p[a].GetHeight() / p[a].GetWidth()
+		aspectB := p[b].GetHeight() / p[b].GetWidth()
+		if aspectA > aspectB {
+			return false
+		}
+		if aspectA < aspectB {
+			return true
+		}
+		if p[a].GetHeight() < p[b].GetHeight() {
+			return false
+		}
+		return true
+	})
+
+}
+
+func (p *Image) GetHeight() int {
+	if p.Height.Valid {
+		return int(p.Height.Int64)
+	} else {
+		return 1
+	}
+}
+
+func (p *Image) GetWidth() int {
+	if p.Width.Valid {
+		return int(p.Width.Int64)
+	} else {
+		return 1
+	}
 }
