@@ -106,6 +106,12 @@ func (p PerformerAliases) Each(fn func(interface{})) {
 	}
 }
 
+func (p PerformerAliases) EachPtr(fn func(interface{})) {
+	for _, v := range p {
+		fn(v)
+	}
+}
+
 func (p *PerformerAliases) Add(o interface{}) {
 	*p = append(*p, o.(*PerformerAlias))
 }
@@ -185,6 +191,10 @@ func (p *PerformerUrl) ToURL() URL {
 	return url
 }
 
+func (p *PerformerUrl) ID() string {
+	return p.URL + p.Type
+}
+
 type PerformerUrls []*PerformerUrl
 
 func (p PerformerUrls) Each(fn func(interface{})) {
@@ -193,8 +203,24 @@ func (p PerformerUrls) Each(fn func(interface{})) {
 	}
 }
 
+func (p PerformerUrls) EachPtr(fn func(interface{})) {
+	for _, v := range p {
+		fn(v)
+	}
+}
+
 func (p *PerformerUrls) Add(o interface{}) {
 	*p = append(*p, o.(*PerformerUrl))
+}
+
+func (p *PerformerUrls) Remove(id string) {
+	for i, v := range *p {
+		if (*v).ID() == id {
+			(*p)[i] = (*p)[len(*p)-1]
+			*p = (*p)[:len(*p)-1]
+			break
+		}
+	}
 }
 
 func CreatePerformerUrls(performerId uuid.UUID, urls []*URL) PerformerUrls {
@@ -235,6 +261,10 @@ func (m PerformerBodyMod) ToBodyModification() BodyModification {
 	return ret
 }
 
+func (m PerformerBodyMod) ID() string {
+	return m.Location + "-" + m.Description.String
+}
+
 type PerformerBodyMods []*PerformerBodyMod
 
 func (p PerformerBodyMods) Each(fn func(interface{})) {
@@ -243,8 +273,24 @@ func (p PerformerBodyMods) Each(fn func(interface{})) {
 	}
 }
 
+func (p PerformerBodyMods) EachPtr(fn func(interface{})) {
+	for _, v := range p {
+		fn(v)
+	}
+}
+
 func (p *PerformerBodyMods) Add(o interface{}) {
 	*p = append(*p, o.(*PerformerBodyMod))
+}
+
+func (p *PerformerBodyMods) Remove(id string) {
+	for i, v := range *p {
+		if (*v).ID() == id {
+			(*p)[i] = (*p)[len(*p)-1]
+			*p = (*p)[:len(*p)-1]
+			break
+		}
+	}
 }
 
 func (p PerformerBodyMods) ToBodyModifications() []*BodyModification {
