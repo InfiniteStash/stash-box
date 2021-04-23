@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { TargetTypeEnum, OperationEnum, VoteStatusEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
+import { TargetTypeEnum, OperationEnum, VoteStatusEnum, VoteTypeEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL fragment: EditFragment
@@ -20,6 +20,19 @@ export interface EditFragment_comments {
   user: EditFragment_comments_user;
   date: any;
   comment: string;
+}
+
+export interface EditFragment_votes_user {
+  __typename: "User";
+  id: string;
+  name: string;
+}
+
+export interface EditFragment_votes {
+  __typename: "EditVote";
+  user: EditFragment_votes_user;
+  date: any;
+  vote: VoteTypeEnum;
 }
 
 export interface EditFragment_user {
@@ -364,7 +377,12 @@ export interface EditFragment {
   status: VoteStatusEnum;
   applied: boolean;
   created: any;
+  /**
+   *  = Accepted - Rejected
+   */
+  vote_count: number;
   comments: EditFragment_comments[];
+  votes: EditFragment_votes[];
   user: EditFragment_user;
   /**
    * Object being edited - null if creating a new object

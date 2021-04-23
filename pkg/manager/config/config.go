@@ -37,6 +37,9 @@ const requireActivationDefault = true
 
 const DefaultUserRoles = "default_user_roles"
 
+// Number of approved edits before user automatically gets VOTE role
+const VotePromotionThreshold = "vote_promotion_threshold"
+
 var defaultUserRolesDefault = []string{"READ", "VOTE", "EDIT"}
 
 // 2 hours
@@ -332,4 +335,12 @@ func GetMissingEmailSettings() []string {
 	}
 
 	return missing
+}
+
+func GetVotePromotionThreshold() *int {
+	if viper.IsSet(VotePromotionThreshold) {
+		threshold := viper.GetInt(VotePromotionThreshold)
+		return &threshold
+	}
+	return nil
 }

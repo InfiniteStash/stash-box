@@ -147,3 +147,21 @@ func (qb *UserQueryBuilder) GetRoles(id uuid.UUID) (UserRoles, error) {
 
 	return joins, err
 }
+
+func (qb *UserQueryBuilder) CountSuccessfulEdits(id uuid.UUID) (int, error) {
+	var args []interface{}
+	args = append(args, id)
+	return runCountQuery(buildCountQuery("SELECT edits.id FROM edits WHERE applied = true AND user_id = ?"), args)
+}
+
+func (qb *UserQueryBuilder) CountFailedEdits(id uuid.UUID) (int, error) {
+	var args []interface{}
+	args = append(args, VoteStatusEnumRejected, VoteStatusEnumImmediateRejected, id)
+	return runCountQuery(buildCountQuery("SELECT edits.id FROM edits WHERE (status = ? OR status = ?) AND user_id = ?"), args)
+}
+
+func (qb *UserQueryBuilder) CountVotesByType(id uuid.UUID, vote VoteTypeEnum) (int, error) {
+	var args []interface{}
+	args = append(args, vote.String(), id)
+	return runCountQuery(buildCountQuery("SELECT edit_id FROM edit_votes WHERE vote = ? AND user_id = ?"), args)
+}

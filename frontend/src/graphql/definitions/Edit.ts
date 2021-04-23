@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { TargetTypeEnum, OperationEnum, VoteStatusEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
+import { TargetTypeEnum, OperationEnum, VoteStatusEnum, VoteTypeEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Edit
@@ -20,6 +20,19 @@ export interface Edit_findEdit_comments {
   user: Edit_findEdit_comments_user;
   date: any;
   comment: string;
+}
+
+export interface Edit_findEdit_votes_user {
+  __typename: "User";
+  id: string;
+  name: string;
+}
+
+export interface Edit_findEdit_votes {
+  __typename: "EditVote";
+  user: Edit_findEdit_votes_user;
+  date: any;
+  vote: VoteTypeEnum;
 }
 
 export interface Edit_findEdit_user {
@@ -364,7 +377,12 @@ export interface Edit_findEdit {
   status: VoteStatusEnum;
   applied: boolean;
   created: any;
+  /**
+   *  = Accepted - Rejected
+   */
+  vote_count: number;
   comments: Edit_findEdit_comments[];
+  votes: Edit_findEdit_votes[];
   user: Edit_findEdit_user;
   /**
    * Object being edited - null if creating a new object

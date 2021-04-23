@@ -47,11 +47,11 @@ func (qb *EditQueryBuilder) Find(id uuid.UUID) (*Edit, error) {
 }
 
 func (qb *EditQueryBuilder) CreateEditTag(newJoin EditTag) error {
-	return qb.dbi.InsertJoin(editTagTable, newJoin, false)
+	return qb.dbi.InsertJoin(editTagTable, newJoin, nil)
 }
 
 func (qb *EditQueryBuilder) CreateEditPerformer(newJoin EditPerformer) error {
-	return qb.dbi.InsertJoin(editPerformerTable, newJoin, false)
+	return qb.dbi.InsertJoin(editPerformerTable, newJoin, nil)
 }
 
 func (qb *EditQueryBuilder) FindTagID(id uuid.UUID) (*uuid.UUID, error) {
@@ -199,12 +199,27 @@ func (qb *EditQueryBuilder) queryEdits(query string, args []interface{}) (Edits,
 }
 
 func (qb *EditQueryBuilder) CreateComment(newJoin EditComment) error {
-	return qb.dbi.InsertJoin(editCommentTable, newJoin, false)
+	return qb.dbi.InsertJoin(editCommentTable, newJoin, nil)
 }
 
 func (qb *EditQueryBuilder) GetComments(id uuid.UUID) (EditComments, error) {
 	joins := EditComments{}
 	err := qb.dbi.FindJoins(editCommentTable, id, &joins)
+
+	return joins, err
+}
+
+func (qb *EditQueryBuilder) CreateVote(newJoin EditVote) error {
+	conflictHandling := `
+		ON CONFLICT(edit_id, user_id)
+		DO UPDATE SET (vote, created_at) = (:vote, NOW())
+	`
+	return qb.dbi.InsertJoin(editVoteTable, newJoin, &conflictHandling)
+}
+
+func (qb *EditQueryBuilder) GetVotes(id uuid.UUID) (EditVotes, error) {
+	joins := EditVotes{}
+	err := qb.dbi.FindJoins(editVoteTable, id, &joins)
 
 	return joins, err
 }

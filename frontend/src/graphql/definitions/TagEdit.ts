@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { TagEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
+import { TagEditInput, TargetTypeEnum, OperationEnum, VoteStatusEnum, VoteTypeEnum, GenderEnum, DateAccuracyEnum, HairColorEnum, EyeColorEnum, EthnicityEnum, BreastTypeEnum } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: TagEdit
@@ -20,6 +20,19 @@ export interface TagEdit_tagEdit_comments {
   user: TagEdit_tagEdit_comments_user;
   date: any;
   comment: string;
+}
+
+export interface TagEdit_tagEdit_votes_user {
+  __typename: "User";
+  id: string;
+  name: string;
+}
+
+export interface TagEdit_tagEdit_votes {
+  __typename: "EditVote";
+  user: TagEdit_tagEdit_votes_user;
+  date: any;
+  vote: VoteTypeEnum;
 }
 
 export interface TagEdit_tagEdit_user {
@@ -364,7 +377,12 @@ export interface TagEdit_tagEdit {
   status: VoteStatusEnum;
   applied: boolean;
   created: any;
+  /**
+   *  = Accepted - Rejected
+   */
+  vote_count: number;
   comments: TagEdit_tagEdit_comments[];
+  votes: TagEdit_tagEdit_votes[];
   user: TagEdit_tagEdit_user;
   /**
    * Object being edited - null if creating a new object

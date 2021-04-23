@@ -66,3 +66,7 @@ func validateManageInvites(ctx context.Context) error {
 func validateAdmin(ctx context.Context) error {
 	return validateRole(ctx, models.RoleEnumAdmin)
 }
+
+func validateVote(ctx context.Context) error {
+	return validateRole(ctx, models.RoleEnumVote)
+}

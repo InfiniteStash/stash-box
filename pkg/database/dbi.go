@@ -17,7 +17,7 @@ type DBI interface {
 	Insert(model Model) (interface{}, error)
 
 	// InsertJoin inserts a join object into the provided join table.
-	InsertJoin(tableJoin TableJoin, object interface{}, ignoreConflicts bool) error
+	InsertJoin(tableJoin TableJoin, object interface{}, conflictHandling *string) error
 
 	// InsertJoins inserts multiple join objects into the provided join table.
 	InsertJoins(tableJoin TableJoin, joins Joins) error
@@ -92,7 +92,7 @@ func DBINoTxn() DBI {
 // It returns the new object.
 func (q dbi) Insert(model Model) (interface{}, error) {
 	tableName := model.GetTable().Name()
-	err := insertObject(q.tx, tableName, model, false)
+	err := insertObject(q.tx, tableName, model, nil)
 
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("Error creating %s", reflect.TypeOf(model).Name()))
@@ -210,8 +210,8 @@ func (q dbi) Find(id uuid.UUID, table Table) (interface{}, error) {
 }
 
 // InsertJoin inserts a join object into the provided join table.
-func (q dbi) InsertJoin(tableJoin TableJoin, object interface{}, ignoreConflicts bool) error {
-	err := insertObject(q.tx, tableJoin.Name(), object, ignoreConflicts)
+func (q dbi) InsertJoin(tableJoin TableJoin, object interface{}, conflictHandling *string) error {
+	err := insertObject(q.tx, tableJoin.Name(), object, conflictHandling)
 
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("Error creating %s", reflect.TypeOf(object).Name()))
@@ -228,7 +228,7 @@ func (q dbi) InsertJoins(tableJoin TableJoin, joins Joins) error {
 			return
 		}
 
-		err = q.InsertJoin(tableJoin, ro, false)
+		err = q.InsertJoin(tableJoin, ro, nil)
 	})
 
 	return err
@@ -236,13 +236,14 @@ func (q dbi) InsertJoins(tableJoin TableJoin, joins Joins) error {
 
 // InsertJoinsWithoutConflict inserts multiple join objects and doesn't fail on id conflicts
 func (q dbi) InsertJoinsWithoutConflict(tableJoin TableJoin, joins Joins) error {
+	conflictHandling := "ON CONFLICT DO NOTHING"
 	var err error
 	joins.Each(func(ro interface{}) {
 		if err != nil {
 			return
 		}
 
-		err = q.InsertJoin(tableJoin, ro, true)
+		err = q.InsertJoin(tableJoin, ro, &conflictHandling)
 	})
 
 	return err

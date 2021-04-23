@@ -25,23 +25,23 @@ func (r *userResolver) Roles(ctx context.Context, obj *models.User) ([]models.Ro
 }
 
 func (r *userResolver) SuccessfulEdits(ctx context.Context, obj *models.User) (int, error) {
-	// TODO
-	return 0, nil
+	qb := models.NewUserQueryBuilder(nil)
+	return qb.CountSuccessfulEdits(obj.ID)
 }
 
 func (r *userResolver) UnsuccessfulEdits(ctx context.Context, obj *models.User) (int, error) {
-	// TODO
-	return 0, nil
+	qb := models.NewUserQueryBuilder(nil)
+	return qb.CountFailedEdits(obj.ID)
 }
 
 func (r *userResolver) SuccessfulVotes(ctx context.Context, obj *models.User) (int, error) {
-	// TODO
-	return 0, nil
+	qb := models.NewUserQueryBuilder(nil)
+	return qb.CountVotesByType(obj.ID, models.VoteTypeEnumAccept)
 }
 
 func (r *userResolver) UnsuccessfulVotes(ctx context.Context, obj *models.User) (int, error) {
-	// TODO
-	return 0, nil
+	qb := models.NewUserQueryBuilder(nil)
+	return qb.CountVotesByType(obj.ID, models.VoteTypeEnumReject)
 }
 
 func (r *userResolver) InvitedBy(ctx context.Context, obj *models.User) (*models.User, error) {
