@@ -14,14 +14,14 @@ jobs:
 
     steps:
 
-		- uses: harmon758/postgresql-action@v1
-			with:
-				postgresql version: '13.2'
+    - uses: harmon758/postgresql-action@v1
+      with:
+        postgresql version: '13.2'
 
-		- uses: akanieski/setup-postgres-cli@v1
-			with:
-				password: postgres
-				command: pqsl -U postgres -h 127.0.0.1 -p 5432 -c 'CREATE EXTENSION pg_trgm;'
+    - uses: akanieski/setup-postgres-cli@v1
+      with:
+        password: postgres
+        command: pqsl -U postgres -h 127.0.0.1 -p 5432 -c 'CREATE EXTENSION pg_trgm;'
 
     - uses: actions/checkout@v2
 
