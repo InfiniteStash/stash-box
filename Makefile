@@ -124,3 +124,11 @@ packr:
 .PHONY: ui-validate
 ui-validate:
 	cd frontend && yarn run validate
+
+.PHONY: cross-compile
+cross-compile:
+	docker run --rm --privileged \
+				-v $(PWD):/go/src/github.com/stashapp/stash-box \
+				-v /var/run/docker.sock:/var/run/docker.sock \
+				-w /go/src/github.com/stashapp/stash-box \
+				goreng/golang-cross:latest --snapshot --rm-dist

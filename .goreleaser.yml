@@ -4,26 +4,37 @@ env:
   - CGO_ENABLED=1
 builds:
 - id: stash-box-win
+  binary: stash-box-win.exe
   ldflags: -extldflags='-static' -s -w
+  goos:
+    - windows
+  goarch:
+    - amd64
   env:
-    - GOOS=windows 
-    - GOARCH=amd64 
     - CC=x86_64-w64-mingw32-gcc 
     - CXX=x86_64-w64-mingw32-g++ 
 - id: stash-box-linux
+  binary: stash-box-linux
   ldflags: -extldflags='-static' -s -w
-  env:
-    - GOOS=linux
-    - GOARCH=amd64 
+  goos:
+    - linux
+  goarch:
+    - amd64
 - id: stash-box-osx
+  binary: stash-box-osx
+  goos:
+    - darwin
+  goarch:
+    - amd64
   env:
-    - GOOS=darwin
-    - GOARCH=amd64 
     - CC=o64-clang
     - CXX=o64-clang++
 
 checksum:
   name_template: "{{ .ProjectName }}_checksums.txt"
+
+archives:
+- format: binary
 
 release:
   github:
