@@ -35,13 +35,7 @@ jobs:
       run: |
         sudo apt update
         sudo apt install --yes --no-install-recommends postgresql-client
-        psql -h postgres -U postgres -c 'CREATE EXTENSION pg_trgm'
-
-    - run: |
-        apt-get update
-        apt-get install --yes --no-install-recommends postgresql-client
-    - run: |
-        psql -h postgres -U postgres -c 'CREATE EXTENSION pg_trgm'
+        psql -h localhost -U postgres -c 'CREATE EXTENSION pg_trgm'
 
     - name: Install Go
       uses: actions/setup-go@v2
