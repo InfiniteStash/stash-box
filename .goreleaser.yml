@@ -1,0 +1,33 @@
+project_name: stash-box
+env:
+  - GO111MODULE=on
+  - CGO_ENABLED=1
+builds:
+- id: stash-box-win
+  ldflags: -extldflags='-static' -s -w
+  env:
+    - GOOS=windows 
+    - GOARCH=amd64 
+    - CC=x86_64-w64-mingw32-gcc 
+    - CXX=x86_64-w64-mingw32-g++ 
+- id: stash-box-linux
+  ldflags: -extldflags='-static' -s -w
+  env:
+    - GOOS=linux
+    - GOARCH=amd64 
+- id: stash-box-osx
+  env:
+    - GOOS=darwin
+    - GOARCH=amd64 
+    - CC=o64-clang
+    - CXX=o64-clang++
+
+checksum:
+  name_template: "{{ .ProjectName }}_checksums.txt"
+
+release:
+  github:
+    owner: stashapp
+    name: stash-box
+
+  prerelease: auto
