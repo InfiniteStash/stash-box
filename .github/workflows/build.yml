@@ -33,6 +33,8 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+
+    steps:
     - name: Install Go
       uses: actions/setup-go@v2
       with:
