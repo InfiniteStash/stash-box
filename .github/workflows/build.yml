@@ -11,6 +11,25 @@ on:
 jobs:
   build:
     runs-on: ubuntu-20.04
+
+    services:
+      postgres:
+        image: postgres:13.2
+        env:
+          POSTGRES_DB: postgres        
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        volumes:
+          - ./scripts/initdb:/docker-entrypoint-initdb.d
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
     - uses: actions/checkout@v2
 
@@ -60,13 +79,11 @@ jobs:
       if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
       run: make ui-validate
 
-    - uses: m4nu56/postgresql-action@v1
-      with:
-        postgresql version: '13.2'
-        postgresql init scripts: 'scripts/dbinit'
-
     - name: Run tests
       run: POSTGRES_DB=postgres:postgres@localhost/postgres?sslmode=disable make vet it
+
+    - name: Generate
+      run: make generate
 
     - name: Build UI
       # skip UI build for pull requests if UI is unchanged (UI was cached)
