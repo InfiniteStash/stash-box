@@ -55,15 +55,12 @@ jobs:
     - name: Pre-install
       run: make pre-ui
 
-    - name: Generate
-      run: make generate
-    
     - name: Validate UI
       # skip UI validation for pull requests if UI is unchanged
       if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
       run: make ui-validate
 
-    - uses: harmon758/postgresql-action@v1
+    - uses: m4nu56/postgresql-action@v1
       with:
         postgresql version: '13.2'
         postgresql init scripts: 'scripts/dbinit'
@@ -76,4 +73,4 @@ jobs:
       # this means that the build version/time may be incorrect if the UI is
       # not changed in a pull request
       if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
-      run: docker exec -t build /bin/bash -c "make ui-only"
+      run: make ui-only
