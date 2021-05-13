@@ -12,9 +12,6 @@ jobs:
   build:
     runs-on: ubuntu-20.04
 
-    steps:
-    - uses: actions/checkout@v2
-
     services:
       postgres:
         image: postgres:13.2
@@ -32,6 +29,9 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v2
 
     - name: Install Go
       uses: actions/setup-go@v2
