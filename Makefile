@@ -119,3 +119,8 @@ ui: ui-only
 .PHONY: packr
 packr:
 	packr2
+
+# runs tests and checks on the UI and builds it
+.PHONY: ui-validate
+ui-validate:
+	cd frontend && yarn run validate

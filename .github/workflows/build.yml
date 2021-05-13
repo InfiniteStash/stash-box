@@ -1,0 +1,79 @@
+name: Build
+
+on:
+  push:
+    branches: [ develop, master ]
+  pull_request:
+    branches: [ develop ]
+  release:
+    types: [ published ]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.16.x
+
+    - name: Install Node
+		  uses: actions/setup-node@v2
+			with:
+				node-version: '14'
+
+    - name: Checkout
+      run: git fetch --prune --unshallow --tags
+
+    - name: Cache node modules
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-node_modules
+      with:
+        path: frontend/node_modules
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('frontend/yarn.lock') }}
+
+    - name: Cache UI build
+      uses: actions/cache@v2
+      id: cache-ui
+      env:
+        cache-name: cache-ui
+      with:
+        path: ui/v2.5/build
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('frontend/yarn.lock', 'frontend/public/**', 'frontend/src/**', 'graphql/**/*.graphql') }}
+
+    - name: Cache go build
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-go-cache
+      with:
+        path: .go-cache
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/go.sum') }}
+
+    - name: Pre-install
+      run: make pre-ui
+
+    - name: Generate
+      run: make generate
+    
+    - name: Validate UI
+      # skip UI validation for pull requests if UI is unchanged
+      if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
+      run: make ui-validate
+
+    - uses: harmon758/postgresql-action@v1
+      with:
+        postgresql version: '13.2'
+        postgresql init scripts: 'scripts/dbinit'
+
+    - name: Run tests
+      run: POSTGRES_DB=postgres:postgres@localhost/postgres?sslmode=disable make vet it
+
+    - name: Build UI
+      # skip UI build for pull requests if UI is unchanged (UI was cached)
+      # this means that the build version/time may be incorrect if the UI is
+      # not changed in a pull request
+      if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
+      run: docker exec -t build /bin/bash -c "make ui-only"
