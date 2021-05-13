@@ -28,14 +28,14 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-			- name: Initialize test database
-        run: |
-          sudo apt update
-          sudo apt install --yes --no-install-recommends postgresql-client
-          psql -h postgres -U postgres -c 'CREATE EXTENSION pg_trgm'
-
     steps:
     - uses: actions/checkout@v2
+
+    - name: Initialize test database
+      run: |
+        sudo apt update
+        sudo apt install --yes --no-install-recommends postgresql-client
+        psql -h postgres -U postgres -c 'CREATE EXTENSION pg_trgm'
 
     - run: |
         apt-get update
