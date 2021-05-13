@@ -22,7 +22,7 @@ jobs:
         ports:
           - 5432:5432
         volumes:
-          - "./scripts/initdb/pg_trgm.sql:/docker-entrypoint-initdb.d/init.sql"
+          - postgres:./scripts/initdb/pg_trgm.sql:/docker-entrypoint-initdb.d/init.sql
         # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
