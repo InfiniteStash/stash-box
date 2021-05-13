@@ -97,8 +97,4 @@ jobs:
       run: make ui-only
 
     - name: Crosscompile binaries
-      run: docker run --rm --privileged \
-            -v $PWD:/go/src/github.com/stashapp/stash-box \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            -w /go/src/github.com/stashapp/stash-box \
-            goreng/golang-cross:latest --snapshot --rm-dist
+      run: make cross-compile
