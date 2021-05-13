@@ -31,12 +31,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Initialize test database
-      run: |
-        sudo apt update
-        sudo apt install --yes --no-install-recommends postgresql-client
-        psql "postgresql://postgres:postgres@localhost/postgres" -c 'CREATE EXTENSION pg_trgm'
-
     - name: Install Go
       uses: actions/setup-go@v2
       with:
@@ -83,6 +77,12 @@ jobs:
       if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
       run: make ui-validate
 
+    - name: Initialize test database
+      run: |
+        sudo apt update
+        sudo apt install --yes --no-install-recommends postgresql-client
+        psql "postgresql://postgres:postgres@localhost/postgres" -c 'CREATE EXTENSION pg_trgm'
+
     - name: Generate
       run: make generate
 
@@ -95,3 +95,10 @@ jobs:
       # not changed in a pull request
       if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
       run: make ui-only
+
+    - name: Crosscompile binaries
+      run: docker run --rm --privileged \
+            -v $PWD:/go/src/github.com/stashapp/stash-box \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -w /go/src/github.com/stashapp/stash-box \
+            goreng/golang-cross:latest --snapshot --rm-dist
