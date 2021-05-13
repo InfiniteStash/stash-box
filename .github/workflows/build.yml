@@ -83,11 +83,11 @@ jobs:
       if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
       run: make ui-validate
 
-    - name: Run tests
-      run: POSTGRES_DB=postgres:postgres@localhost/postgres?sslmode=disable make vet it
-
     - name: Generate
       run: make generate
+
+    - name: Run tests
+      run: POSTGRES_DB=postgres:postgres@localhost/postgres?sslmode=disable make vet it
 
     - name: Build UI
       # skip UI build for pull requests if UI is unchanged (UI was cached)
