@@ -35,10 +35,3 @@ checksum:
 
 archives:
 - format: binary
-
-release:
-  github:
-    owner: stashapp
-    name: stash-box
-
-  prerelease: auto
