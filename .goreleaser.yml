@@ -35,3 +35,10 @@ checksum:
 
 archives:
 - format: binary
+
+dockers:
+  - image_templates:
+    - peroo/stash-box
+  ids:
+    - stash-box-linux
+  dockerfile: docker/ci/x86_64/Dockerfile
