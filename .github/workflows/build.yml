@@ -117,22 +117,22 @@ jobs:
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
       uses: actions/upload-artifact@v2
       with:
-        name: stash-win.exe
-        path: dist/stash-box-win/stash-box-win.exe
+        name: stash-box-win.exe
+        path: dist/stash-box_windows_amd64/stash-box-windows.exe
     - name: Upload OSX binary
       # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
       uses: actions/upload-artifact@v2
       with:
-        name: stash-box-osx
-        path: dist/stash-box-osx/stash-box-osx
+        name: stash-box-darwin
+        path: dist/stash-box_darwin_amd64/stash-box-darwin
     - name: Upload Linux binary
       # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
       uses: actions/upload-artifact@v2
       with:
         name: stash-box-linux
-        path: dist/stash-box-linux/stash-box-linux
+        path: dist/stash-box_linux_amd64/stash-box-linux
         
     - name: Update latest_develop tag
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
@@ -148,7 +148,7 @@ jobs:
         name: "${{ env.STASH_BOX_VERSION }}: Latest development build"
         body: "**${{ env.RELEASE_DATE }}**\n This is always the latest committed version on the develop branch. Use as your own risk!"
         files: |
-          dist/win_windows_amd64/stash-box-win.exe
+          dist/stash-box_windows_amd64/stash-box-windows.exe
           dist/linux_linux_amd64/stash-box-linux
           dist/osx_darwin_amd64/stash-box-osx
           CHECKSUMS_SHA1
@@ -160,7 +160,7 @@ jobs:
         token: "${{ secrets.GITHUB_TOKEN }}"
         allow_override: true
         files: |
-          dist/win_windows_amd64/stash-box-win.exe
+          dist/stash-box_windows_amd64/stash-box-windows.exe
           dist/linux_linux_amd64/stash-box-linux
           dist/osx_darwin_amd64/stash-box-osx
           CHECKSUMS_SHA1

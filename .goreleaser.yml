@@ -1,34 +1,15 @@
 project_name: stash-box
-env:
-  - GO111MODULE=on
-  - CGO_ENABLED=1
 builds:
-- id: win
-  binary: stash-box-win
-  ldflags: -extldflags='-static' -s -w
+- id: stash-box
+  binary: stash-box-{{.Os}}
   goos:
     - windows
-  goarch:
-    - amd64
-  env:
-    - CC=x86_64-w64-mingw32-gcc 
-    - CXX=x86_64-w64-mingw32-g++ 
-- id: linux
-  binary: stash-box-linux
-  ldflags: -extldflags='-static' -s -w
-  goos:
     - linux
-  goarch:
-    - amd64
-- id: osx
-  binary: stash-box-osx
-  goos:
     - darwin
   goarch:
     - amd64
-  env:
-    - CC=o64-clang
-    - CXX=o64-clang++
+  ldflags:
+    - -X github.com/stashapp/stash-box/pkg/api.version={{.Version}} -X github.com/stashapp/stash-box/pkg/api.buildstamp={{.Date}} -X github.com/stashapp/stash-box/pkg/api.githash={{.Commit}}
 
 archives:
 - format: binary
