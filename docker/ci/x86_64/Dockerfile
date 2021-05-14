@@ -6,7 +6,7 @@ LABEL MAINTAINER="https://discord.gg/Uz29ny"
 
 RUN ls -la
 RUN ls -la ./dist
-COPY ./dist/stash-box-linux_linux_amd64/stash-box-linux /usr/bin/stash-box
+COPY ./stash-box/dist/stash-box-linux_linux_amd64/stash-box-linux /usr/bin/stash-box
 
 EXPOSE 9998
 CMD ["stash-box", "--config_file", "/root/.stash-box/stash-box-config.yml"]
