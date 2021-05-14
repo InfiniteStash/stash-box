@@ -3,7 +3,7 @@ env:
   - GO111MODULE=on
   - CGO_ENABLED=1
 builds:
-- id: stash-box-win
+- id: win
   binary: stash-box-win
   ldflags: -extldflags='-static' -s -w
   goos:
@@ -13,14 +13,14 @@ builds:
   env:
     - CC=x86_64-w64-mingw32-gcc 
     - CXX=x86_64-w64-mingw32-g++ 
-- id: stash-box-linux
+- id: linux
   binary: stash-box-linux
   ldflags: -extldflags='-static' -s -w
   goos:
     - linux
   goarch:
     - amd64
-- id: stash-box-osx
+- id: osx
   binary: stash-box-osx
   goos:
     - darwin
@@ -30,15 +30,5 @@ builds:
     - CC=o64-clang
     - CXX=o64-clang++
 
-checksum:
-  name_template: "{{ .ProjectName }}_checksums.txt"
-
 archives:
 - format: binary
-
-dockers:
-  - image_templates:
-      - peroo/stash-box
-    ids:
-      - stash-box-linux
-    dockerfile: docker/ci/x86_64/Dockerfile
