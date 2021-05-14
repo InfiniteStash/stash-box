@@ -4,7 +4,7 @@ env:
   - CGO_ENABLED=1
 builds:
 - id: stash-box-win
-  binary: stash-box-win.exe
+  binary: stash-box-win
   ldflags: -extldflags='-static' -s -w
   goos:
     - windows
