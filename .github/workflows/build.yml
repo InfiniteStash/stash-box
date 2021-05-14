@@ -149,8 +149,8 @@ jobs:
         body: "**${{ env.RELEASE_DATE }}**\n This is always the latest committed version on the develop branch. Use as your own risk!"
         files: |
           dist/stash-box_windows_amd64/stash-box-windows.exe
-          dist/linux_linux_amd64/stash-box-linux
-          dist/osx_darwin_amd64/stash-box-osx
+          dist/stash-box_linux_amd64/stash-box-linux
+          dist/stash-box_darwin_amd64/stash-box-darwin
           CHECKSUMS_SHA1
         gzip: false
     - name: Master release
@@ -161,8 +161,8 @@ jobs:
         allow_override: true
         files: |
           dist/stash-box_windows_amd64/stash-box-windows.exe
-          dist/linux_linux_amd64/stash-box-linux
-          dist/osx_darwin_amd64/stash-box-osx
+          dist/stash-box_linux_amd64/stash-box-linux
+          dist/stash-box_darwin_amd64/stash-box-darwin
           CHECKSUMS_SHA1
         gzip: false
     
