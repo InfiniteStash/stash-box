@@ -91,7 +91,9 @@ jobs:
       run: make ui-only
 
     - name: Bundle static assets
-      run: make packr
+      run: |
+        go get -u github.com/gobuffalo/packr/v2/packr2
+        make packr
 
     - name: Crosscompile binaries
       run: make cross-compile
