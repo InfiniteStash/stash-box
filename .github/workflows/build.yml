@@ -164,11 +164,11 @@ jobs:
     - name: Development Docker
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
       run: |
-        docker build -t stashapp/stash-box:development -f ./docker/ci/x86_64/Dockerfile ./dist
-        docker push stashapp/stash-box:development
+        docker build -t peroo/stash-box:development -f ./docker/ci/x86_64/Dockerfile ./dist
+        docker push peroo/stash-box:development
 
     - name: Release Docker
       if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
       run: |
-        docker build -t stashapp/stash-box:latest -f ./docker/ci/x86_64/Dockerfile ./dist
-        docker push stashapp/stash-box:latest
+        docker build -t peroo/stash-box:latest -f ./docker/ci/x86_64/Dockerfile ./dist
+        docker push peroo/stash-box:latest
