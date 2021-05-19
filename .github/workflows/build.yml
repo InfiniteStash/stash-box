@@ -92,7 +92,7 @@ jobs:
 
     - name: Bundle static assets
       run: |
-        go get -u github.com/gobuffalo/packr/v2/packr2@2.0.2
+        go get -u github.com/gobuffalo/packr/v2/packr2@v2.0.2
         make packr
 
     - name: Crosscompile binaries
