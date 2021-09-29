@@ -6,11 +6,11 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 
 import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
-import { StudioEditDetailsInput } from "src/graphql";
+import { StudioEditDetailsInput, ValidSiteTypeEnum } from "src/graphql";
 import StudioSelect from "src/components/studioSelect";
 import EditImages from "src/components/editImages";
-import { getUrlByType } from "src/utils";
 import { EditNote } from "src/components/form";
+import URLInput from "src/components/urlInput";
 import { renderStudioDetails } from "src/components/editCard/ModifyEdit";
 
 import { StudioSchema, StudioFormData } from "./schema";
@@ -41,6 +41,7 @@ const StudioForm: FC<StudioProps> = ({
     defaultValues: {
       name: studio.name,
       images: studio.images,
+      urls: studio.urls ?? [],
       studio: studio.parent
         ? {
             id: studio.parent.id,
@@ -62,7 +63,10 @@ const StudioForm: FC<StudioProps> = ({
   const onSubmit = (data: StudioFormData) => {
     const callbackData: StudioEditDetailsInput = {
       name: data.name,
-      urls: data.url ? [{ url: data.url, type: "HOME" }] : [],
+      urls: data.urls.map((u) => ({
+        url: u.url,
+        site_id: u.site.id,
+      })),
       image_ids: data.images.map((i) => i.id),
       parent_id: data.studio?.id,
     };
@@ -76,7 +80,7 @@ const StudioForm: FC<StudioProps> = ({
         onSelect={(key) => key && setActiveTab(key)}
         className="d-flex"
       >
-        <Tab eventKey="details" title="Details" className="col-xl-6">
+        <Tab eventKey="details" title="Details" className="col-xl-9">
           <Form.Group controlId="name" className="mb-3">
             <Form.Label>Name</Form.Label>
             <Form.Control
@@ -87,19 +91,6 @@ const StudioForm: FC<StudioProps> = ({
             />
             <Form.Control.Feedback type="invalid">
               {errors?.name?.message}
-            </Form.Control.Feedback>
-          </Form.Group>
-
-          <Form.Group controlId="url" className="mb-3">
-            <Form.Label>URL</Form.Label>
-            <Form.Control
-              className={cx({ "is-invalid": errors.url })}
-              placeholder="URL"
-              defaultValue={getUrlByType(studio.urls, "HOME")}
-              {...register("url")}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors?.url?.message}
             </Form.Control.Feedback>
           </Form.Group>
 
@@ -116,7 +107,27 @@ const StudioForm: FC<StudioProps> = ({
             </Form.Group>
           )}
 
-          <div className="d-flex mt-1">
+          <Row className="mt-1">
+            <Button
+              variant="danger"
+              className="ms-auto me-2"
+              onClick={() => history.goBack()}
+            >
+              Cancel
+            </Button>
+            <Button className="me-1" onClick={() => setActiveTab("links")}>
+              Next
+            </Button>
+          </Row>
+        </Tab>
+
+        <Tab eventKey="links" title="Links">
+          <Form.Group className="mb-3">
+            <Form.Label>Links</Form.Label>
+            <URLInput control={control} type={ValidSiteTypeEnum.STUDIO} />
+          </Form.Group>
+
+          <Row className="mt-1">
             <Button
               variant="danger"
               className="ms-auto me-2"
@@ -127,18 +138,21 @@ const StudioForm: FC<StudioProps> = ({
             <Button className="me-1" onClick={() => setActiveTab("images")}>
               Next
             </Button>
-          </div>
+          </Row>
         </Tab>
 
-        <Tab eventKey="images" title="Images" className="col-xl-6">
-          <EditImages
-            control={control}
-            maxImages={1}
-            file={file}
-            setFile={(f) => setFile(f)}
-          />
+        <Tab eventKey="images" title="Images">
+          <Form.Group>
+            <Form.Label>Images</Form.Label>
+            <EditImages
+              control={control}
+              maxImages={1}
+              file={file}
+              setFile={(f) => setFile(f)}
+            />
+          </Form.Group>
 
-          <div className="d-flex mt-1">
+          <Row className="mt-1">
             <Button
               variant="danger"
               className="ms-auto me-2"
@@ -146,34 +160,26 @@ const StudioForm: FC<StudioProps> = ({
             >
               Cancel
             </Button>
-            <Button
-              className="me-1"
-              disabled={!!file}
-              onClick={() => setActiveTab("confirm")}
-            >
+            <Button className="me-1" onClick={() => setActiveTab("confirm")}>
               Next
             </Button>
-          </div>
-          <div className="d-flex">
+          </Row>
+          <Row>
             {/* dummy element for feedback */}
-            <div className="ms-auto">
-              <span className={file ? "is-invalid" : ""} />
-              <Form.Control.Feedback type="invalid">
-                Upload or remove image to continue.
-              </Form.Control.Feedback>
-            </div>
-          </div>
+            <span className={file ? "is-invalid" : ""} />
+            <Form.Control.Feedback type="invalid">
+              Upload or remove image to continue.
+            </Form.Control.Feedback>
+          </Row>
         </Tab>
 
-        <Tab eventKey="confirm" title="Confirm" className="mt-3 col-xl-9">
+        <Tab eventKey="confirm" title="Confirm" className="mt-2 col-xl-9">
           {renderStudioDetails(newStudioChanges, oldStudioChanges, true)}
-          <Row className="my-4">
-            <Col md={{ span: 8, offset: 4 }}>
-              <EditNote register={register} error={errors.note} />
-            </Col>
-          </Row>
+          <Col md={{ span: 8, offset: 4 }}>
+            <EditNote register={register} error={errors.note} />
+          </Col>
 
-          <div className="d-flex mt-2">
+          <Row className="mt-2">
             <Button
               variant="danger"
               className="ms-auto me-2"
@@ -190,7 +196,7 @@ const StudioForm: FC<StudioProps> = ({
             <Button type="submit" disabled={!!file || saving}>
               Submit Edit
             </Button>
-          </div>
+          </Row>
         </Tab>
       </Tabs>
     </Form>
