@@ -66,6 +66,8 @@ type Query {
   ### Full text search ###
   searchPerformer(term: String!, limit: Int): [Performer!]!
   searchScene(term: String!, limit: Int): [Scene!]!
+  searchPerformerV2(term: String!, limit: Int): [Performer!]!
+  searchSceneV2(term: String!, limit: Int): [Scene!]!
 
   #### Version ####
   version: Version!

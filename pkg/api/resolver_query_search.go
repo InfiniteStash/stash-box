@@ -61,3 +61,11 @@ func (r *queryResolver) SearchScene(ctx context.Context, term string, limit *int
 
 	return qb.SearchScenes(trimmedQuery, searchLimit)
 }
+
+func (r *queryResolver) SearchPerformerV2(ctx context.Context, term string, limit *int) ([]*models.Performer, error) {
+	return nil, nil
+}
+
+func (r *queryResolver) SearchSceneV2(ctx context.Context, term string, limit *int) ([]*models.Scene, error) {
+	return nil, nil
+}

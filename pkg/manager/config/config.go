@@ -75,6 +75,8 @@ type config struct {
 	PHashDistance int `mapstructure:"phash_distance"`
 
 	Title string `mapstructure:"title"`
+
+	Elasticsearch string `mapstructure:"elasticsearch"`
 }
 
 var JWTSignKey = "jwt_secret_key"
@@ -336,4 +338,8 @@ func GetTitle() string {
 		return "Stash-Box"
 	}
 	return C.Title
+}
+
+func GetElasticsearchURL() string {
+	return C.Elasticsearch
 }

@@ -1,0 +1,11 @@
+[
+  {
+    "database": "postgres",
+    "index": "product",
+    "nodes": {
+      "table": "product",
+      "schema": "public",
+      "columns": []
+    }
+  }
+]

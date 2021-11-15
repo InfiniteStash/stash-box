@@ -257,7 +257,9 @@ type ComplexityRoot struct {
 		QueryTags                    func(childComplexity int, tagFilter *TagFilterType, filter *QuerySpec) int
 		QueryUsers                   func(childComplexity int, userFilter *UserFilterType, filter *QuerySpec) int
 		SearchPerformer              func(childComplexity int, term string, limit *int) int
+		SearchPerformerV2            func(childComplexity int, term string, limit *int) int
 		SearchScene                  func(childComplexity int, term string, limit *int) int
+		SearchSceneV2                func(childComplexity int, term string, limit *int) int
 		Version                      func(childComplexity int) int
 	}
 
@@ -562,6 +564,8 @@ type QueryResolver interface {
 	Me(ctx context.Context) (*User, error)
 	SearchPerformer(ctx context.Context, term string, limit *int) ([]*Performer, error)
 	SearchScene(ctx context.Context, term string, limit *int) ([]*Scene, error)
+	SearchPerformerV2(ctx context.Context, term string, limit *int) ([]*Performer, error)
+	SearchSceneV2(ctx context.Context, term string, limit *int) ([]*Scene, error)
 	Version(ctx context.Context) (*Version, error)
 	GetConfig(ctx context.Context) (*StashBoxConfig, error)
 }
@@ -2020,6 +2024,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.SearchPerformer(childComplexity, args["term"].(string), args["limit"].(*int)), true
 
+	case "Query.searchPerformerV2":
+		if e.complexity.Query.SearchPerformerV2 == nil {
+			break
+		}
+
+		args, err := ec.field_Query_searchPerformerV2_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.SearchPerformerV2(childComplexity, args["term"].(string), args["limit"].(*int)), true
+
 	case "Query.searchScene":
 		if e.complexity.Query.SearchScene == nil {
 			break
@@ -2031,6 +2047,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.SearchScene(childComplexity, args["term"].(string), args["limit"].(*int)), true
+
+	case "Query.searchSceneV2":
+		if e.complexity.Query.SearchSceneV2 == nil {
+			break
+		}
+
+		args, err := ec.field_Query_searchSceneV2_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.SearchSceneV2(childComplexity, args["term"].(string), args["limit"].(*int)), true
 
 	case "Query.version":
 		if e.complexity.Query.Version == nil {
@@ -3968,6 +3996,8 @@ type Query {
   ### Full text search ###
   searchPerformer(term: String!, limit: Int): [Performer!]!
   searchScene(term: String!, limit: Int): [Scene!]!
+  searchPerformerV2(term: String!, limit: Int): [Performer!]!
+  searchSceneV2(term: String!, limit: Int): [Scene!]!
 
   #### Version ####
   version: Version!
@@ -4968,7 +4998,55 @@ func (ec *executionContext) field_Query_queryUsers_args(ctx context.Context, raw
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_searchPerformerV2_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["term"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["term"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_searchPerformer_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["term"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["term"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_searchSceneV2_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -10697,6 +10775,90 @@ func (ec *executionContext) _Query_searchScene(ctx context.Context, field graphq
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Query().SearchScene(rctx, args["term"].(string), args["limit"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Scene)
+	fc.Result = res
+	return ec.marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_searchPerformerV2(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_searchPerformerV2_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().SearchPerformerV2(rctx, args["term"].(string), args["limit"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Performer)
+	fc.Result = res
+	return ec.marshalNPerformer2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_searchSceneV2(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_searchSceneV2_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().SearchSceneV2(rctx, args["term"].(string), args["limit"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -20533,6 +20695,34 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_searchScene(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "searchPerformerV2":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_searchPerformerV2(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "searchSceneV2":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_searchSceneV2(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
