@@ -154,3 +154,24 @@ func (p *Tag) ValidateModifyEdit(edit TagEditData) error {
 
 	return v.err
 }
+
+type TagCount struct {
+	Tag
+	QueryCount
+}
+
+type TagsCount []*TagCount
+
+func (p TagsCount) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *TagsCount) Add(o interface{}) {
+	*p = append(*p, o.(*TagCount))
+}
+
+func (p *TagsCount) New() interface{} {
+	return &TagCount{}
+}

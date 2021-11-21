@@ -93,13 +93,22 @@ func (qb *tagCategoryQueryBuilder) Query(findFilter *models.QuerySpec) ([]*model
 	query.Sort = qb.getTagCategorySort(findFilter)
 	query.Pagination = getPagination(findFilter)
 
-	var categories models.TagCategories
-	countResult, err := qb.dbi.Query(*query, &categories)
+	var categoriesCount models.TagCategoriesCount
+	err := qb.dbi.Query(*query, &categoriesCount)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	return categories, countResult, nil
+	var tagCategories []*models.TagCategory
+	categoriesCount.Each(func(p interface{}) {
+		tagCategories = append(tagCategories, &p.(*models.TagCategoryCount).TagCategory)
+	})
+	count := 0
+	if len(categoriesCount) > 0 {
+		count = categoriesCount[0].Count
+	}
+
+	return tagCategories, count, err
 }
 
 func (qb *tagCategoryQueryBuilder) getTagCategorySort(findFilter *models.QuerySpec) string {

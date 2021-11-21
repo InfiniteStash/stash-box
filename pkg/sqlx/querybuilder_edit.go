@@ -250,10 +250,19 @@ func (qb *editQueryBuilder) Query(editFilter *models.EditFilterType, findFilter 
 	query.Sort = qb.getEditSort(findFilter)
 	query.Pagination = getPagination(findFilter)
 
-	var edits models.Edits
-	countResult, err := qb.dbi.Query(*query, &edits)
+	var editsCount models.EditsCount
+	err := qb.dbi.Query(*query, &editsCount)
 
-	return edits, countResult, err
+	var edits []*models.Edit
+	editsCount.Each(func(p interface{}) {
+		edits = append(edits, &p.(*models.EditCount).Edit)
+	})
+	count := 0
+	if len(editsCount) > 0 {
+		count = editsCount[0].Count
+	}
+
+	return edits, count, err
 }
 
 func (qb *editQueryBuilder) getEditSort(findFilter *models.QuerySpec) string {

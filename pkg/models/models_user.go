@@ -127,3 +127,24 @@ func (p *User) CopyFromUpdateInput(input UserUpdateInput) error {
 
 	return nil
 }
+
+type UserCount struct {
+	User
+	QueryCount
+}
+
+type UsersCount []*UserCount
+
+func (p UsersCount) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *UsersCount) Add(o interface{}) {
+	*p = append(*p, o.(*UserCount))
+}
+
+func (p *UsersCount) New() interface{} {
+	return UserCount{}
+}

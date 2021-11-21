@@ -430,3 +430,24 @@ func (p *Performer) ValidateModifyEdit(edit PerformerEditData) error {
 
 	return v.err
 }
+
+type PerformerCount struct {
+	Performer
+	QueryCount
+}
+
+type PerformersCount []*PerformerCount
+
+func (p PerformersCount) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *PerformersCount) Add(o interface{}) {
+	*p = append(*p, o.(*PerformerCount))
+}
+
+func (p *PerformersCount) New() interface{} {
+	return &PerformerCount{}
+}

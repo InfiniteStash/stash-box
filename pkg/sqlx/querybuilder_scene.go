@@ -362,10 +362,23 @@ func (qb *sceneQueryBuilder) Query(sceneFilterInput *models.SceneFilterType, fin
 
 	query.Pagination = getPagination(findFilter)
 
-	var scenes models.Scenes
-	countResult, err := qb.dbi.Query(*query, &scenes)
+	var scenesCount models.ScenesCount
+	err := qb.dbi.Query(*query, &scenesCount)
+	fmt.Println(1)
+	fmt.Println(err)
+	fmt.Println(2)
 
-	return scenes, countResult, err
+	var scenes []*models.Scene
+	scenesCount.Each(func(p interface{}) {
+		scene := p.(models.SceneCount).Scene
+		scenes = append(scenes, &scene)
+	})
+	count := 0
+	if len(scenesCount) > 0 {
+		count = scenesCount[0].Count
+	}
+
+	return scenes, count, err
 }
 
 func getMultiCriterionClause(joinTable tableJoin, joinTableField string, criterion *models.MultiIDCriterionInput) (string, string) {

@@ -231,8 +231,24 @@ func (q dbi) FindAllJoins(tj tableJoin, ids []uuid.UUID, output Joins) error {
 // RawQuery performs a query on the provided table using the query string
 // and argument slice. It outputs the results to the output slice.
 func (q dbi) RawQuery(t table, query string, args []interface{}, output Models) error {
+	fmt.Println(query)
 	return q.queryFunc(query, args, func(rows *sqlx.Rows) error {
 		o := t.NewObject()
+		if err := rows.StructScan(o); err != nil {
+			return err
+		}
+
+		output.Add(o)
+		return nil
+	})
+}
+
+// RawQuery performs a query on the provided table using the query string
+// and argument slice. It outputs the results to the output slice.
+func (q dbi) RawQueryTwo(t table, query string, args []interface{}, output ModelsTwo) error {
+	fmt.Println(query)
+	return q.queryFunc(query, args, func(rows *sqlx.Rows) error {
+		o := output.New()
 		if err := rows.StructScan(o); err != nil {
 			return err
 		}
@@ -286,17 +302,8 @@ func (q dbi) Count(query queryBuilder) (int, error) {
 
 // RawQuery performs a query on the provided table using the query string
 // and argument slice. It outputs the results to the output slice.
-func (q dbi) Query(query queryBuilder, output Models) (int, error) {
-
-	count, err := q.Count(query)
-
-	if err != nil {
-		return 0, err
-	}
-
-	err = q.RawQuery(query.Table, query.buildQuery(), query.args, output)
-
-	return count, err
+func (q dbi) Query(query queryBuilder, output ModelsTwo) error {
+	return q.RawQueryTwo(query.Table, query.buildQuery(), query.args, output)
 }
 
 // DeleteQuery deletes table rows that match the query provided.

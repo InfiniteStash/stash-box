@@ -149,3 +149,24 @@ func CreateStudioImages(studioID uuid.UUID, imageIds []string) StudiosImages {
 
 	return imageJoins
 }
+
+type StudioCount struct {
+	Studio
+	QueryCount
+}
+
+type StudiosCount []*StudioCount
+
+func (p StudiosCount) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *StudiosCount) Add(o interface{}) {
+	*p = append(*p, o.(*StudioCount))
+}
+
+func (p *StudiosCount) New() interface{} {
+	return &StudioCount{}
+}

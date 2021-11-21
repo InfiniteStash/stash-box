@@ -389,3 +389,24 @@ func (p EditVotes) Each(fn func(interface{})) {
 func (p *EditVotes) Add(o interface{}) {
 	*p = append(*p, o.(*EditVote))
 }
+
+type EditCount struct {
+	Edit
+	QueryCount
+}
+
+type EditsCount []*EditCount
+
+func (p EditsCount) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *EditsCount) Add(o interface{}) {
+	*p = append(*p, o.(*EditCount))
+}
+
+func (p *EditsCount) New() interface{} {
+	return &EditCount{}
+}

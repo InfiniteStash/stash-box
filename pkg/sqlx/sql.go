@@ -28,8 +28,9 @@ func newQueryBuilder(t table) *queryBuilder {
 		Distinct: false,
 	}
 
-	tableName := t.Name()
-	ret.Body = "SELECT " + tableName + ".* FROM " + tableName + " "
+	//tableName := t.Name()
+	//ret.Body = "SELECT " + tableName + ".* FROM " + tableName + " "
+	ret.Body = ""
 
 	return ret
 }
@@ -98,8 +99,11 @@ func (qb queryBuilder) buildBody() string {
 
 	body = body + qb.Sort
 
+	tableName := qb.Table.Name()
 	if qb.Distinct {
-		body = "SELECT DISTINCT ON (query.id) query.* FROM (" + body + ") query"
+		body = "SELECT DISTINCT ON (query.id) query.*, COUNT(*) OVER() AS count FROM (SELECT " + tableName + ".* FROM " + tableName + " " + body + ") query"
+	} else {
+		body = "SELECT " + tableName + ".*, COUNT(*) OVER() AS count FROM " + tableName + " " + body
 	}
 
 	return body

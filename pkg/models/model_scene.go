@@ -260,3 +260,28 @@ func (p *Scene) ValidateModifyEdit(edit SceneEditData) error {
 
 	return nil
 }
+
+type QueryCount struct {
+	Count int `db:"count"`
+}
+
+type SceneCount struct {
+	Scene
+	QueryCount
+}
+
+type ScenesCount []*SceneCount
+
+func (p ScenesCount) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *ScenesCount) Add(o interface{}) {
+	*p = append(*p, o.(*SceneCount))
+}
+
+func (p *ScenesCount) New() interface{} {
+	return &SceneCount{}
+}

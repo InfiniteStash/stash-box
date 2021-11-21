@@ -38,3 +38,24 @@ func (p *TagCategory) CopyFromCreateInput(input TagCategoryCreateInput) {
 func (p *TagCategory) CopyFromUpdateInput(input TagCategoryUpdateInput) {
 	CopyFull(p, input)
 }
+
+type TagCategoryCount struct {
+	TagCategory
+	QueryCount
+}
+
+type TagCategoriesCount []*TagCategoryCount
+
+func (p TagCategoriesCount) Each(fn func(interface{})) {
+	for _, v := range p {
+		fn(*v)
+	}
+}
+
+func (p *TagCategoriesCount) Add(o interface{}) {
+	*p = append(*p, o.(*TagCategoryCount))
+}
+
+func (p *TagCategoriesCount) New() interface{} {
+	return &TagCategoryCount{}
+}

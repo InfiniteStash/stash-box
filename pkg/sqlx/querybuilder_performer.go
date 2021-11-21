@@ -277,10 +277,20 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 
 	query.Pagination = getPagination(findFilter)
 
-	var performers models.Performers
-	countResult, err := qb.dbi.Query(*query, &performers)
+	var performersCount models.PerformersCount
+	err := qb.dbi.Query(*query, &performersCount)
 
-	return performers, countResult, err
+	var performers []*models.Performer
+	performersCount.Each(func(p interface{}) {
+		p2 := p.(models.PerformerCount).Performer
+		performers = append(performers, &p2)
+	})
+	count := 0
+	if len(performersCount) > 0 {
+		count = performersCount[0].Count
+	}
+
+	return performers, count, err
 }
 
 func getBirthYearFilterClause(criterionModifier models.CriterionModifier, value int) ([]string, []interface{}) {

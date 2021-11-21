@@ -85,6 +85,13 @@ type Models interface {
 	Add(interface{})
 }
 
+type ModelsTwo interface {
+	// Add adds a new object to the slice. It is assumed that the passed
+	// object can be type asserted to the correct type.
+	Add(interface{})
+	New() interface{}
+}
+
 // Joins is the interface implemented by slices of join objects.
 type Joins interface {
 	// Each calls the provided function on each of the concrete (not pointer)

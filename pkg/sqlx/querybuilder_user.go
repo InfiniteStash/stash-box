@@ -96,7 +96,7 @@ func (qb *userQueryBuilder) Count() (int, error) {
 	return runCountQuery(qb.dbi.db(), buildCountQuery("SELECT users.id FROM users"), nil)
 }
 
-func (qb *userQueryBuilder) Query(userFilter *models.UserFilterType, findFilter *models.QuerySpec) (models.Users, int) {
+func (qb *userQueryBuilder) Query(userFilter *models.UserFilterType, findFilter *models.QuerySpec) ([]*models.User, int) {
 	if userFilter == nil {
 		userFilter = &models.UserFilterType{}
 	}
@@ -116,14 +116,23 @@ func (qb *userQueryBuilder) Query(userFilter *models.UserFilterType, findFilter 
 	query.Sort = qb.getUserSort(findFilter)
 	query.Pagination = getPagination(findFilter)
 
-	var studios models.Users
-	countResult, err := qb.dbi.Query(*query, &studios)
+	var usersCount models.UsersCount
+	err := qb.dbi.Query(*query, &usersCount)
 	if err != nil {
 		// TODO
 		panic(err)
 	}
 
-	return studios, countResult
+	var users []*models.User
+	usersCount.Each(func(p interface{}) {
+		users = append(users, &p.(*models.UserCount).User)
+	})
+	count := 0
+	if len(usersCount) > 0 {
+		count = usersCount[0].Count
+	}
+
+	return users, count
 }
 
 func (qb *userQueryBuilder) getUserSort(findFilter *models.QuerySpec) string {
