@@ -54,7 +54,7 @@
     "vite-tsconfig-paths": "^3.3.17"
   },
   "dependencies": {
-    "@apollo/client": "^3.4.17",
+    "@apollo/client": "^3.5.5",
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
     "@fortawesome/react-fontawesome": "^0.1.15",
