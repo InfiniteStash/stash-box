@@ -1,0 +1,52 @@
+#import "../fragments/FingerprintFragment.gql"
+#import "../fragments/URLFragment.gql"
+#import "../fragments/ImageFragment.gql"
+#import "../fragments/StudioFragment.gql"
+#import "../fragments/PerformerFragment.gql"
+#import "../fragments/TagFragment.gql";
+fragment OldSceneEditDetails on SceneEdit {
+  title
+  details
+  added_urls {
+    ...URLFragment
+  }
+  removed_urls {
+    ...URLFragment
+  }
+  date
+  studio {
+    ...StudioFragment
+  }
+  added_performers {
+    performer {
+      ...PerformerFragment
+    }
+    as
+  }
+  removed_performers {
+    performer {
+      ...PerformerFragment
+    }
+    as
+  }
+  added_tags {
+    ...TagFragment
+  }
+  removed_tags {
+    ...TagFragment
+  }
+  added_images {
+    ...ImageFragment
+  }
+  removed_images {
+    ...ImageFragment
+  }
+  added_fingerprints {
+    ...FingerprintFragment
+  }
+  removed_fingerprints {
+    ...FingerprintFragment
+  }
+  duration
+  director
+}

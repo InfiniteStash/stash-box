@@ -8,8 +8,7 @@ import { Button, Form } from "react-bootstrap";
 import Select from "react-select";
 import { capitalize } from "lodash-es";
 
-import { Site_findSite as Site } from "src/graphql/definitions/Site";
-import { ValidSiteTypeEnum, SiteCreateInput } from "src/graphql";
+import { ValidSiteTypeEnum, SiteCreateInput, SiteFragment } from "src/graphql";
 
 const validSites = Object.keys(ValidSiteTypeEnum);
 
@@ -27,7 +26,7 @@ const schema = yup.object({
 type SiteFormData = yup.Asserts<typeof schema>;
 
 interface SiteProps {
-  site?: Site;
+  site?: SiteFragment;
   callback: (data: SiteCreateInput) => void;
 }
 

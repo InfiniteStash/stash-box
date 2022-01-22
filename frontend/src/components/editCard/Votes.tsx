@@ -1,15 +1,14 @@
 import { FC } from "react";
 import { Link } from "react-router-dom";
 
-import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
-import { VoteTypeEnum } from "src/graphql";
+import { VoteTypeEnum, EditFragment } from "src/graphql";
 import { userHref } from "src/utils/route";
 import { VoteTypes } from "src/constants/enums";
 
 const CLASSNAME = "EditVotes";
 
 interface VotesProps {
-  edit: Edit;
+  edit: EditFragment;
 }
 
 const Votes: FC<VotesProps> = ({ edit }) => (

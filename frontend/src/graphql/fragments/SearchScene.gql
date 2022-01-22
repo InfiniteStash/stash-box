@@ -1,0 +1,27 @@
+fragment SearchScene on Scene {
+  id
+  date
+  title
+  duration
+  urls {
+    ...URLFragment
+  }
+  images {
+    ...ImageFragment
+  }
+  studio {
+      id
+      name
+  }
+  performers {
+      as
+      performer {
+          id
+          name
+          disambiguation
+          gender
+          aliases
+          deleted
+      }
+  }
+}

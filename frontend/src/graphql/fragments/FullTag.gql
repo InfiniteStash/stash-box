@@ -1,0 +1,13 @@
+fragment FullTag on Tag {
+  id
+  name
+  description
+  aliases
+  deleted
+  category {
+    id
+    name
+    group
+    description
+  }
+}

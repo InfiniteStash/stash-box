@@ -2,7 +2,7 @@ import { FC } from "react";
 import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
-import { Edit_findEdit_comments_user as User } from "src/graphql/definitions/Edit";
+import { User } from "src/graphql";
 import { formatDateTime, userHref, Markdown } from "src/utils";
 
 const CLASSNAME = "EditComment";

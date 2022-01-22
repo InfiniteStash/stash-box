@@ -16,6 +16,7 @@ import {
   EthnicityEnum,
   PerformerEditDetailsInput,
   ValidSiteTypeEnum,
+  PerformerFragment as Performer,
 } from "src/graphql";
 import {
   getBraSize,
@@ -23,7 +24,6 @@ import {
   formatFuzzyDate,
   parseFuzzyDate,
 } from "src/utils";
-import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
 import { Image } from "src/utils/transforms";
 
 import { renderPerformerDetails } from "src/components/editCard/ModifyEdit";

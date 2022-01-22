@@ -1,6 +1,5 @@
 import { User } from "../AuthContext";
-import { User_findUser as PrivateUser } from "src/graphql/definitions/User";
-import { PublicUser_findUser as PublicUser } from "src/graphql/definitions/PublicUser";
+import { PrivateUserFragment, PublicUserFragment } from "src/graphql";
 
 const USER_STORAGE = "stash_box_user";
 const cache = localStorage.getItem(USER_STORAGE);
@@ -13,5 +12,5 @@ export const setCachedUser = (user?: User | undefined | null) => {
 };
 
 export const isPrivateUser = (
-  user: PublicUser | PrivateUser
-): user is PrivateUser => !!(user as PrivateUser).email;
+  user: PublicUserFragment | PrivateUserFragment
+): user is PrivateUserFragment => !!(user as PrivateUserFragment).email;

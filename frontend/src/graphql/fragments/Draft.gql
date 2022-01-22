@@ -1,0 +1,16 @@
+#import "../fragments/PerformerDraft.gql"
+#import "../fragments/SceneDraft.gql"
+fragment Draft on Draft {
+  id
+  created
+  expires
+  data {
+    ... on PerformerDraft {
+      ...PerformerDraft
+    }
+    ... on SceneDraft {
+      ...SceneDraft
+    }
+    __typename
+  }
+}

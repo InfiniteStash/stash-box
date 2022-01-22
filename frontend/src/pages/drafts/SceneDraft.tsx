@@ -4,16 +4,14 @@ import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 import { sceneHref } from "src/utils/route";
 import {
-  Draft_findDraft as Draft,
-  Draft_findDraft_data_SceneDraft as SceneDraft,
-} from "src/graphql/definitions/Draft";
-import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
-import {
   useSceneEdit,
   OperationEnum,
   SceneEditDetailsInput,
   useScenesWithoutCount,
   CriterionModifier,
+  DraftFragment,
+  SceneFragment,
+  SceneDraftFragment,
 } from "src/graphql";
 import { Icon } from "src/components/fragments";
 import { editHref } from "src/utils";
@@ -22,7 +20,7 @@ import { parseSceneDraft } from "./parse";
 import SceneForm from "src/pages/scenes/sceneForm";
 
 interface Props {
-  draft: Omit<Draft, "data"> & { data: SceneDraft };
+  draft: Omit<DraftFragment, "data"> & { data: SceneDraftFragment };
 }
 
 const SceneDraftAdd: FC<Props> = ({ draft }) => {
@@ -76,7 +74,7 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
       </li>
     ));
 
-  const emptyScene: Scene = {
+  const emptyScene: SceneFragment = {
     id: "",
     date: null,
     title: null,

@@ -1,5 +1,4 @@
-import { URLFragment } from "src/graphql/definitions/URLFragment";
-import { Performer_findPerformer_measurements as Measurements } from "src/graphql/definitions/Performer";
+import { UrlFragment, Measurements } from "src/graphql";
 
 export const formatCareer = (
   start?: number | null,
@@ -59,7 +58,7 @@ export const getImage = (
   return images?.[0]?.url ?? "";
 };
 
-export const getUrlBySite = (urls: URLFragment[], name: string) =>
+export const getUrlBySite = (urls: UrlFragment[], name: string) =>
   (urls && (urls.find((url) => url.site.name === name) || {}).url) || "";
 
 export const formatBodyModification = (

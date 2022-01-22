@@ -6,8 +6,11 @@ import * as yup from "yup";
 import cx from "classnames";
 import { Button, Form } from "react-bootstrap";
 
-import { Category_findTagCategory as Category } from "src/graphql/definitions/Category";
-import { TagGroupEnum, TagCategoryCreateInput } from "src/graphql";
+import {
+  TagGroupEnum,
+  TagCategoryCreateInput,
+  CategoryFragment as Category,
+} from "src/graphql";
 import { createHref } from "src/utils";
 import { ROUTE_CATEGORIES, ROUTE_CATEGORY } from "src/constants/route";
 

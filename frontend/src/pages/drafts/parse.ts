@@ -1,19 +1,14 @@
 import {
-  Draft_findDraft_data_SceneDraft as SceneDraft,
-  Draft_findDraft_data_PerformerDraft as PerformerDraft,
-} from "src/graphql/definitions/Draft";
-import {
-  Scene_findScene as Scene,
-  Scene_findScene_tags as Tag,
-  Scene_findScene_performers as ScenePerformer,
-} from "src/graphql/definitions/Scene";
-import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
-import {
   GenderEnum,
   HairColorEnum,
   EyeColorEnum,
   EthnicityEnum,
   DateAccuracyEnum,
+  SceneFragment as Scene,
+  TagFragment as Tag,
+  PerformerFragment as Performer,
+  SceneDraft,
+  PerformerDraft,
 } from "src/graphql";
 
 export const parseSceneDraft = (
@@ -34,7 +29,9 @@ export const parseSceneDraft = (
       []
     ),
     fingerprints: [],
-    performers: (draft.performers ?? []).reduce<ScenePerformer[]>(
+    performers: (draft.performers ?? []).reduce<
+      { as: string; performer: Performer }[]
+    >(
       (res, p) =>
         p.__typename === "Performer"
           ? [
@@ -68,7 +65,10 @@ export const parseSceneDraft = (
   return [scene, remainder];
 };
 
-const parseEnum = (value: string | null, enumObj: Record<string, string>) =>
+const parseEnum = (
+  value: string | null | undefined,
+  enumObj: Record<string, string>
+) =>
   Object.entries(enumObj).find(
     ([, objVal]) => value?.toLowerCase() === objVal.toLowerCase()
   )?.[0] ?? null;
@@ -121,13 +121,13 @@ export const parsePerformerDraft = (
   };
 
   const remainder = {
-    Aliases: draft?.aliases,
+    Aliases: draft?.aliases ?? null,
     Height: draft.height && !performer.height ? draft.height : null,
-    Country: draft?.country?.length !== 2 ? draft?.country : null,
+    Country: draft?.country?.length !== 2 ? draft?.country ?? null : null,
     URLs: (draft?.urls ?? []).join(", "),
-    Measurements: draft?.measurements,
-    Piercings: draft?.piercings,
-    Tattoos: draft?.tattoos,
+    Measurements: draft?.measurements ?? null,
+    Piercings: draft?.piercings ?? null,
+    Tattoos: draft?.tattoos ?? null,
   };
 
   return [performer, remainder];

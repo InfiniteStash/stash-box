@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Card } from "react-bootstrap";
 import { faVideo } from "@fortawesome/free-solid-svg-icons";
 
-import { Scenes_queryScenes_scenes as Performance } from "src/graphql/definitions/Scenes";
+import { QuerySceneFragment as Performance } from "src/graphql";
 import { getImage, sceneHref, studioHref, formatDuration } from "src/utils";
 import { Icon } from "src/components/fragments";
 

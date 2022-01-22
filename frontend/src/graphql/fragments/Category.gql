@@ -1,0 +1,6 @@
+fragment Category on TagCategory {
+  id
+  name
+  description
+  group
+}

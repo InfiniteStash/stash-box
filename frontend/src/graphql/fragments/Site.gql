@@ -1,0 +1,11 @@
+fragment Site on Site {
+  id
+  name
+  description
+  url
+  regex
+  valid_types
+  icon
+  created
+  updated
+}

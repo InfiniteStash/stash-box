@@ -2,8 +2,7 @@ import { FC, useRef, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import { Control, useFieldArray } from "react-hook-form";
 
-import { useSites, ValidSiteTypeEnum } from "src/graphql";
-import { Site_findSite as Site } from "src/graphql/definitions/Site";
+import { useSites, ValidSiteTypeEnum, SiteFragment } from "src/graphql";
 
 const CLASSNAME = "URLInput";
 
@@ -28,7 +27,7 @@ const URLInput: FC<URLInputProps> = ({ control, type }) => {
     keyName: "key",
   });
   const [newURL, setNewURL] = useState("");
-  const [selectedSite, setSelectedSite] = useState<Site>();
+  const [selectedSite, setSelectedSite] = useState<SiteFragment>();
   const selectRef = useRef<HTMLSelectElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { data, loading } = useSites();

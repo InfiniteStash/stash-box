@@ -8,8 +8,11 @@ import { Button, Form } from "react-bootstrap";
 import Select from "react-select";
 import { groupBy, sortBy } from "lodash-es";
 
-import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
-import { useCategories, TagEditDetailsInput } from "src/graphql";
+import {
+  useCategories,
+  TagEditDetailsInput,
+  FullTagFragment as Tag,
+} from "src/graphql";
 
 import { EditNote } from "src/components/form";
 import { LoadingIndicator } from "src/components/fragments";

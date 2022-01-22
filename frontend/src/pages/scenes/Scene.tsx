@@ -4,10 +4,11 @@ import { Button, Card, Tabs, Tab, Table } from "react-bootstrap";
 import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 
 import {
-  Scene_findScene as Scene,
-  Scene_findScene_fingerprints as Fingerprint,
-} from "src/graphql/definitions/Scene";
-import { usePendingEditsCount, TargetTypeEnum } from "src/graphql";
+  usePendingEditsCount,
+  TargetTypeEnum,
+  SceneFragment as Scene,
+  FingerprintFragment as Fingerprint,
+} from "src/graphql";
 import AuthContext from "src/AuthContext";
 import {
   canEdit,
@@ -99,8 +100,8 @@ const SceneComponent: FC<Props> = ({ scene }) => {
         {fingerprint.submissions}
         {maybeRenderSubmitted(fingerprint)}
       </td>
-      <td>{formatDateTime(fingerprint.created as string)}</td>
-      <td>{formatDateTime(fingerprint.updated as string)}</td>
+      <td>{formatDateTime(fingerprint.created)}</td>
+      <td>{formatDateTime(fingerprint.updated)}</td>
     </tr>
   ));
   const tags = [...scene.tags]

@@ -3,8 +3,7 @@ import { Card, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 
-import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
-import { OperationEnum } from "src/graphql";
+import { OperationEnum, EditFragment } from "src/graphql";
 
 import { formatDateTime, editHref, userHref } from "src/utils";
 import ModifyEdit from "./ModifyEdit";
@@ -19,14 +18,14 @@ import Votes from "./Votes";
 const CLASSNAME = "EditCard";
 
 interface Props {
-  edit: Edit;
+  edit: EditFragment;
   showVotes?: boolean;
 }
 
 const EditCardComponent: FC<Props> = ({ edit, showVotes = false }) => {
   const title = `${edit.operation.toLowerCase()} ${edit.target_type.toLowerCase()}`;
-  const created = new Date(edit.created as string);
-  const updated = new Date(edit.updated as string);
+  const created = new Date(edit.created);
+  const updated = new Date(edit.updated);
 
   const creation = edit.operation === OperationEnum.CREATE && (
     <ModifyEdit details={edit.details} />

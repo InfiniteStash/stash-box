@@ -1,0 +1,10 @@
+fragment NewTagEditDetails on TagEdit {
+  name
+  description
+  added_aliases
+  removed_aliases
+  category {
+    id
+    name
+  }
+}

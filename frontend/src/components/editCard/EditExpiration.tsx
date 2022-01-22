@@ -2,11 +2,10 @@ import { FC } from "react";
 import { addSeconds, formatDistance } from "date-fns";
 
 import { Tooltip } from "src/components/fragments";
-import { useConfig, VoteStatusEnum } from "src/graphql";
-import { Edits_queryEdits_edits as Edit } from "src/graphql/definitions/Edits";
+import { useConfig, VoteStatusEnum, EditFragment } from "src/graphql";
 
 interface Props {
-  edit: Edit;
+  edit: EditFragment;
 }
 
 const TooltipMessage: FC<{ pass: boolean; time: Date }> = ({ pass, time }) => (
@@ -32,7 +31,7 @@ const ExpirationNotification: FC<Props> = ({ edit }) => {
     edit.vote_count >= config.vote_application_threshold;
 
   const expirationTime = addSeconds(
-    new Date(edit.created as string),
+    new Date(edit.created),
     shortVotingPeriod
       ? config.min_destructive_voting_period
       : config.voting_period

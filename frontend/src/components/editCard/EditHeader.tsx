@@ -4,10 +4,13 @@ import { Col, Row } from "react-bootstrap";
 import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import {
-  Edits_queryEdits_edits as Edit,
-  Edits_queryEdits_edits_target as Target,
-} from "src/graphql/definitions/Edits";
-import { OperationEnum } from "src/graphql";
+  OperationEnum,
+  TagFragment,
+  PerformerFragment,
+  SceneFragment,
+  StudioFragment,
+  EditFragment,
+} from "src/graphql";
 import {
   isValidEditTarget,
   getEditTargetRoute,
@@ -17,7 +20,9 @@ import {
 } from "src/utils";
 import { Icon } from "src/components/fragments";
 
-const renderTargetLink = (obj: Target | null) => {
+type Target = TagFragment | PerformerFragment | StudioFragment | SceneFragment;
+
+const renderTargetLink = (obj: Target | null | undefined) => {
   if (!obj) return null;
 
   if (isPerformer(obj)) {
@@ -36,7 +41,7 @@ const renderTargetLink = (obj: Target | null) => {
 };
 
 interface EditHeaderProps {
-  edit: Edit;
+  edit: EditFragment;
 }
 
 const EditHeader: FC<EditHeaderProps> = ({ edit }) => {

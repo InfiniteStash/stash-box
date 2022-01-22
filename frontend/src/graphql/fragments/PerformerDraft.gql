@@ -1,0 +1,21 @@
+fragment PerformerDraft on PerformerDraft {
+  name
+  aliases
+  gender
+  birthdate
+  urls
+  ethnicity
+  country
+  eye_color
+  hair_color
+  height
+  measurements
+  breast_type
+  tattoos
+  piercings
+  career_start_year
+  career_end_year
+  image {
+    ...ImageFragment
+  }
+}

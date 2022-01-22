@@ -5,8 +5,7 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import { FullPerformer_findPerformer as Performer } from "src/graphql/definitions/FullPerformer";
-import { usePerformerEdit, OperationEnum } from "src/graphql";
+import { usePerformerEdit, OperationEnum, Performer } from "src/graphql";
 import { EditNote } from "src/components/form";
 import { editHref } from "src/utils";
 
@@ -17,7 +16,7 @@ const schema = yup.object({
 export type FormData = yup.Asserts<typeof schema>;
 
 interface Props {
-  performer: Performer;
+  performer: Pick<Performer, "id" | "name">;
 }
 
 const PerformerDelete: FC<Props> = ({ performer }) => {

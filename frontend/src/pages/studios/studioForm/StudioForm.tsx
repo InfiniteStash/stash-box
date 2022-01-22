@@ -4,8 +4,11 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 
-import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
-import { StudioEditDetailsInput, ValidSiteTypeEnum } from "src/graphql";
+import {
+  StudioEditDetailsInput,
+  ValidSiteTypeEnum,
+  StudioFragment,
+} from "src/graphql";
 import StudioSelect from "src/components/studioSelect";
 import EditImages from "src/components/editImages";
 import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
@@ -16,7 +19,7 @@ import { StudioSchema, StudioFormData } from "./schema";
 import DiffStudio from "./diff";
 
 interface StudioProps {
-  studio: Studio;
+  studio: StudioFragment;
   callback: (data: StudioEditDetailsInput, editNote: string) => void;
   showNetworkSelect?: boolean;
   saving: boolean;

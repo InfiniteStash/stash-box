@@ -19,13 +19,9 @@ import {
   useGenerateInviteCode,
   useGrantInvite,
   useRevokeInvite,
+  User,
+  PublicUserFragment as PublicUser,
 } from "src/graphql";
-import {
-  User_findUser as User,
-  User_findUser_edit_count as EditCounts,
-  User_findUser_vote_count as VoteCounts,
-} from "src/graphql/definitions/User";
-import { PublicUser_findUser as PublicUser } from "src/graphql/definitions/PublicUser";
 import AuthContext from "src/AuthContext";
 import {
   ROUTE_USER_EDIT,
@@ -38,8 +34,11 @@ import { Icon, Tooltip } from "src/components/fragments";
 import { isAdmin, isPrivateUser, createHref } from "src/utils";
 import { EditStatusTypes, VoteTypes } from "src/constants";
 
+type EditCounts = User["edit_count"];
+type VoteCounts = User["vote_count"];
+
 type EditCount = [VoteStatusEnum, number];
-const filterEdits = (editCount: EditCounts): EditCount[] => {
+const filterEdits = (editCount: EditCounts) => {
   const edits = Object.entries(editCount)
     .map(([status, count]) => {
       const resolvedStatus =

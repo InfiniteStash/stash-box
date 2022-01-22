@@ -3,12 +3,12 @@ import { useHistory } from "react-router-dom";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { flatMap } from "lodash-es";
 
-import { FullPerformer_findPerformer as Performer } from "src/graphql/definitions/FullPerformer";
-import { SearchPerformers_searchPerformer as SearchPerformer } from "src/graphql/definitions/SearchPerformers";
 import {
   usePerformerEdit,
   OperationEnum,
   PerformerEditDetailsInput,
+  Performer,
+  SearchPerformerFragment,
 } from "src/graphql";
 
 import PerformerSelect from "src/components/performerSelect";
@@ -25,7 +25,9 @@ interface Props {
 const PerformerMerge: FC<Props> = ({ performer }) => {
   const history = useHistory();
   const [mergeActive, setMergeActive] = useState(false);
-  const [mergeSources, setMergeSources] = useState<SearchPerformer[]>([]);
+  const [mergeSources, setMergeSources] = useState<SearchPerformerFragment[]>(
+    []
+  );
   const [aliasUpdating, setAliasUpdating] = useState(true);
   const [insertPerformerEdit, { loading: saving }] = usePerformerEdit({
     onCompleted: (data) => {

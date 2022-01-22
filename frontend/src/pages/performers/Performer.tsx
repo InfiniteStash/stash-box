@@ -3,11 +3,11 @@ import { useHistory } from "react-router-dom";
 import { Tab, Tabs } from "react-bootstrap";
 import { groupBy, keyBy, sortBy } from "lodash-es";
 
-import { FullPerformer_findPerformer as Performer } from "src/graphql/definitions/FullPerformer";
 import {
   usePendingEditsCount,
   CriterionModifier,
   TargetTypeEnum,
+  Performer,
 } from "src/graphql";
 
 import { formatPendingEdits } from "src/utils";

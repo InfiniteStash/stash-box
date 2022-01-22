@@ -1,0 +1,21 @@
+#import "../fragments/StudioFragment.gql"
+#import "../fragments/ImageFragment.gql"
+#import "../fragments/URLFragment.gql"
+fragment NewStudioEditDetails on StudioEdit {
+  name
+  added_urls {
+    ...URLFragment
+  }
+  removed_urls {
+    ...URLFragment
+  }
+  parent {
+    ...StudioFragment
+  }
+  added_images {
+    ...ImageFragment
+  }
+  removed_images {
+    ...ImageFragment
+  }
+}

@@ -2,14 +2,12 @@ import { FC } from "react";
 import { useHistory } from "react-router-dom";
 
 import {
-  Draft_findDraft as Draft,
-  Draft_findDraft_data_PerformerDraft as PerformerDraft,
-} from "src/graphql/definitions/Draft";
-import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
-import {
   usePerformerEdit,
   OperationEnum,
   PerformerEditDetailsInput,
+  PerformerFragment,
+  PerformerDraftFragment,
+  DraftFragment,
 } from "src/graphql";
 import { editHref } from "src/utils";
 import { parsePerformerDraft } from "./parse";
@@ -17,7 +15,7 @@ import { parsePerformerDraft } from "./parse";
 import PerformerForm from "src/pages/performers/performerForm";
 
 interface Props {
-  draft: Omit<Draft, "data"> & { data: PerformerDraft };
+  draft: Omit<DraftFragment, "data"> & { data: PerformerDraftFragment };
 }
 
 const AddPerformerDraft: FC<Props> = ({ draft }) => {
@@ -32,6 +30,10 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
     updateData: PerformerEditDetailsInput,
     editNote: string
   ) => {
+    const details = {
+      ...updateData,
+      draft_id: draft.id,
+    };
     submitPerformerEdit({
       variables: {
         performerData: {
@@ -39,7 +41,7 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
             operation: OperationEnum.CREATE,
             comment: editNote,
           },
-          details: updateData,
+          details,
         },
       },
     });
@@ -85,7 +87,7 @@ const AddPerformerDraft: FC<Props> = ({ draft }) => {
     deleted: false,
     is_favorite: false,
     __typename: "Performer",
-  } as Performer;
+  } as PerformerFragment;
 
   return (
     <div>

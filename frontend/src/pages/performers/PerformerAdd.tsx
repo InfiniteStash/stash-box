@@ -1,11 +1,11 @@
 import { FC } from "react";
 import { useHistory } from "react-router-dom";
 
-import { Performer_findPerformer as Performer } from "src/graphql/definitions/Performer";
 import {
   usePerformerEdit,
   OperationEnum,
   PerformerEditDetailsInput,
+  PerformerFragment as Performer,
 } from "src/graphql";
 import { editHref } from "src/utils";
 

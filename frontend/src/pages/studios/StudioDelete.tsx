@@ -5,8 +5,7 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
-import { OperationEnum, useStudioEdit } from "src/graphql";
+import { OperationEnum, useStudioEdit, StudioFragment } from "src/graphql";
 import { EditNote } from "src/components/form";
 import { editHref } from "src/utils";
 
@@ -17,7 +16,7 @@ const schema = yup.object({
 export type FormData = yup.Asserts<typeof schema>;
 
 interface Props {
-  studio: Studio;
+  studio: StudioFragment;
 }
 
 const StudioDelete: FC<Props> = ({ studio }) => {

@@ -6,6 +6,14 @@
 #import "../fragments/CommentFragment.gql"
 #import "../fragments/URLFragment.gql"
 #import "../fragments/FingerprintFragment.gql"
+#import "../fragments/OldTagEditDetails.gql"
+#import "../fragments/OldSceneEditDetails.gql"
+#import "../fragments/OldPerformerEditDetails.gql"
+#import "../fragments/OldStudioEditDetails.gql"
+#import "../fragments/NewTagEditDetails.gql"
+#import "../fragments/NewStudioEditDetails.gql"
+#import "../fragments/NewSceneEditDetails.gql"
+#import "../fragments/NewPerformerEditDetails.gql"
 fragment EditFragment on Edit {
   id
   target_type
@@ -33,14 +41,7 @@ fragment EditFragment on Edit {
   }
   target {
     ... on Tag {
-      id
-      name
-      description
-      deleted
-      category {
-        id
-        name
-      }
+      ...TagFragment
     }
     ... on Performer {
       ...PerformerFragment
@@ -54,222 +55,35 @@ fragment EditFragment on Edit {
   }
   details {
     ... on TagEdit {
-      name
-      description
-      added_aliases
-      removed_aliases
-      category {
-        id
-        name
-      }
+      ...NewTagEditDetails
     }
     ... on PerformerEdit {
-      name
-      disambiguation
-      added_aliases
-      removed_aliases
-      gender
-      added_urls {
-        ...URLFragment
-      }
-      removed_urls {
-        ...URLFragment
-      }
-      birthdate
-      birthdate_accuracy
-      ethnicity
-      country
-      eye_color
-      hair_color
-      height
-      cup_size
-      band_size
-      waist_size
-      hip_size
-      breast_type
-      career_start_year
-      career_end_year
-      added_tattoos {
-        location
-        description
-      }
-      removed_tattoos {
-        location
-        description
-      }
-      added_piercings {
-        location
-        description
-      }
-      removed_piercings {
-        location
-        description
-      }
-      added_images {
-        ...ImageFragment
-      }
-      removed_images {
-        ...ImageFragment
-      }
-      draft_id
+      ...NewPerformerEditDetails
     }
     ... on StudioEdit {
-      name
-      added_urls {
-        ...URLFragment
-      }
-      removed_urls {
-        ...URLFragment
-      }
-      parent {
-        ...StudioFragment
-      }
-      added_images {
-        ...ImageFragment
-      }
-      removed_images {
-        ...ImageFragment
-      }
+      ...NewStudioEditDetails
     }
     ... on SceneEdit {
-      title
-      details
-      added_urls {
-        ...URLFragment
-      }
-      removed_urls {
-        ...URLFragment
-      }
-      date
-      studio {
-        ...StudioFragment
-      }
-      added_performers {
-        performer {
-          ...PerformerFragment
-        }
-        as
-      }
-      removed_performers {
-        performer {
-          ...PerformerFragment
-        }
-        as
-      }
-      added_tags {
-        ...TagFragment
-      }
-      removed_tags {
-        ...TagFragment
-      }
-      added_images {
-        ...ImageFragment
-      }
-      removed_images {
-        ...ImageFragment
-      }
-      added_fingerprints {
-        ...FingerprintFragment
-      }
-      removed_fingerprints {
-        ...FingerprintFragment
-      }
-      duration
-      director
-      draft_id
+      ...NewSceneEditDetails
     }
   }
   old_details {
     ... on TagEdit {
-      name
-      description
-      category {
-        id
-        name
-      }
+      ...OldTagEditDetails
     }
     ... on PerformerEdit {
-      name
-      disambiguation
-      gender
-      birthdate
-      birthdate_accuracy
-      ethnicity
-      country
-      eye_color
-      hair_color
-      height
-      cup_size
-      band_size
-      waist_size
-      hip_size
-      breast_type
-      career_start_year
-      career_end_year
+      ...OldPerformerEditDetails
     }
     ... on StudioEdit {
-      name
-      parent {
-        ...StudioFragment
-      }
+      ...OldStudioEditDetails
     }
     ... on SceneEdit {
-      title
-      details
-      added_urls {
-        ...URLFragment
-      }
-      removed_urls {
-        ...URLFragment
-      }
-      date
-      studio {
-        ...StudioFragment
-      }
-      added_performers {
-        performer {
-          ...PerformerFragment
-        }
-        as
-      }
-      removed_performers {
-        performer {
-          ...PerformerFragment
-        }
-        as
-      }
-      added_tags {
-        ...TagFragment
-      }
-      removed_tags {
-        ...TagFragment
-      }
-      added_images {
-        ...ImageFragment
-      }
-      removed_images {
-        ...ImageFragment
-      }
-      added_fingerprints {
-        ...FingerprintFragment
-      }
-      removed_fingerprints {
-        ...FingerprintFragment
-      }
-      duration
-      director
+      ...OldSceneEditDetails
     }
   }
   merge_sources {
     ... on Tag {
-      id
-      name
-      description
-      deleted
-      category {
-        id
-        name
-      }
+      ...TagFragment
     }
     ... on Performer {
       ...PerformerFragment

@@ -1,35 +1,12 @@
 #import "../fragments/ImageFragment.gql"
 #import "../fragments/SearchPerformerFragment.gql"
+#import "../fragments/SearchScene.gql"
 #import "../fragments/URLFragment.gql"
 query SearchAll($term: String!, $limit: Int = 5) {
     searchPerformer(term: $term, limit: $limit) {
       ...SearchPerformerFragment
     }
     searchScene(term: $term, limit: $limit) {
-        id
-        date
-        title
-        duration
-        urls {
-          ...URLFragment
-        }
-        images {
-          ...ImageFragment
-        }
-        studio {
-            id
-            name
-        }
-        performers {
-            as
-            performer {
-                id
-                name
-                disambiguation
-                gender
-                aliases
-                deleted
-            }
-        }
+      ...SearchScene
     }
 }

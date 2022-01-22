@@ -6,10 +6,13 @@ import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
-import { Scene_findScene as Scene } from "src/graphql/definitions/Scene";
-import { Tags_queryTags_tags as Tag } from "src/graphql/definitions/Tags";
 import { formatDuration, parseDuration, filterData } from "src/utils";
-import { ValidSiteTypeEnum, SceneEditDetailsInput } from "src/graphql";
+import {
+  ValidSiteTypeEnum,
+  SceneEditDetailsInput,
+  SceneFragment as Scene,
+  TagFragment as Tag,
+} from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
 import { GenderIcon, Icon } from "src/components/fragments";
@@ -51,7 +54,7 @@ const SceneForm: FC<SceneProps> = ({ scene, initial, callback, saving }) => {
     defaultValues: {
       title: initial?.title ?? scene?.title ?? undefined,
       details: initial?.details ?? scene?.details ?? undefined,
-      date: initial?.date ?? scene?.date,
+      date: initial?.date ?? scene?.date ?? undefined,
       duration: formatDuration(initial?.duration ?? scene?.duration),
       director: initial?.director ?? scene?.director,
       urls: initial?.urls ?? scene.urls ?? [],

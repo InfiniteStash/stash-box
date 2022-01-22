@@ -1,16 +1,15 @@
 import { Link } from "react-router-dom";
 
-import { Edits_queryEdits_edits_details_SceneEdit_added_performers as Appearance } from "src/graphql/definitions/Edits";
-import { FingerprintAlgorithm } from "src/graphql";
+import { FingerprintAlgorithm, Performer } from "src/graphql";
 
 import { performerHref, tagHref, createHref, formatDuration } from "src/utils";
 import { GenderIcon, PerformerName, TagLink } from "src/components/fragments";
 import { ROUTE_SCENES } from "src/constants";
 
 export const renderPerformer = (appearance: {
-  as: string | null;
+  as?: string | null | undefined;
   performer: Pick<
-    Appearance["performer"],
+    Performer,
     "name" | "id" | "gender" | "name" | "disambiguation" | "deleted"
   >;
 }) => (

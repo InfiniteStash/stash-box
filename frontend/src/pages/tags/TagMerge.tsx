@@ -2,8 +2,12 @@ import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { Col, Row } from "react-bootstrap";
 
-import { useTagEdit, OperationEnum, TagEditDetailsInput } from "src/graphql";
-import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
+import {
+  useTagEdit,
+  OperationEnum,
+  TagEditDetailsInput,
+  FullTagFragment as Tag,
+} from "src/graphql";
 
 import TagSelect from "src/components/tagSelect";
 import { editHref } from "src/utils";

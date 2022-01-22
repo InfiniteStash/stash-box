@@ -5,18 +5,17 @@ import Async from "react-select/async";
 import debounce from "p-debounce";
 import { useHistory } from "react-router-dom";
 
-import SearchAllQuery from "src/graphql/queries/SearchAll.gql";
-import SearchPerformersQuery from "src/graphql/queries/SearchPerformers.gql";
+import SearchAllGQL from "src/graphql/queries/SearchAll.gql";
+import SearchPerformersGQL from "src/graphql/queries/SearchPerformers.gql";
 
 import {
-  SearchAll,
-  SearchAll_searchScene as SceneAllResult,
-  SearchAll_searchPerformer as PerformerAllResult,
-} from "src/graphql/definitions/SearchAll";
-import {
-  SearchPerformers,
-  SearchPerformers_searchPerformer as PerformerOnlyResult,
-} from "src/graphql/definitions/SearchPerformers";
+  SearchPerformersQuery,
+  SearchPerformersQueryVariables,
+  SearchAllQuery,
+  SearchAllQueryVariables,
+  SearchPerformerFragment,
+  SearchSceneFragment,
+} from "src/graphql";
 import { formatFuzzyDate, createHref } from "src/utils";
 import { ROUTE_SEARCH } from "src/constants/route";
 
@@ -36,8 +35,8 @@ interface SearchFieldProps {
   autoFocus?: boolean;
 }
 
-export type PerformerResult = PerformerAllResult | PerformerOnlyResult;
-export type SceneResult = SceneAllResult;
+export type PerformerResult = SearchPerformerFragment;
+export type SceneResult = SearchPerformerFragment | SearchSceneFragment;
 
 interface SearchGroup {
   label: string;
@@ -63,17 +62,17 @@ const Option = (props: OptionProps<SearchResult, false>) => {
 };
 
 const resultIsSearchAll = (
-  arg: SearchAll | SearchPerformers
-): arg is SearchAll =>
-  (arg as SearchAll).searchPerformer !== undefined &&
-  (arg as SearchAll).searchScene !== undefined;
+  arg: SearchAllQuery | SearchPerformersQuery
+): arg is SearchAllQuery =>
+  (arg as SearchAllQuery).searchPerformer !== undefined &&
+  (arg as SearchAllQuery).searchScene !== undefined;
 
 const valueIsPerformer = (
   arg?: SceneResult | PerformerResult
 ): arg is PerformerResult => arg?.__typename === "Performer";
 
 function handleResult(
-  result: SearchAll | SearchPerformers,
+  result: SearchAllQuery | SearchPerformersQuery,
   excludeIDs: string[],
   showAllLink: boolean
 ): (SearchGroup | SearchResult)[] {
@@ -167,11 +166,14 @@ const SearchField: FC<SearchFieldProps> = ({
 
   const handleSearch = async (term: string) => {
     if (term) {
-      const { data } = await client.query<SearchPerformers | SearchAll>({
+      const { data } = await client.query<
+        SearchPerformersQuery | SearchAllQuery,
+        SearchAllQueryVariables | SearchPerformersQueryVariables
+      >({
         query:
           searchType === SearchType.Performer
-            ? SearchPerformersQuery
-            : SearchAllQuery,
+            ? SearchPerformersGQL
+            : SearchAllGQL,
         variables: { term },
         fetchPolicy: "network-only",
       });

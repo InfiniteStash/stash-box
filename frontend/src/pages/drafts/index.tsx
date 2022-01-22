@@ -1,14 +1,10 @@
 import React from "react";
 import { Route, Switch, useParams } from "react-router-dom";
 
-import { useDraft } from "src/graphql";
+import { useDraft, SceneDraft, PerformerDraft } from "src/graphql";
 import { ROUTE_DRAFT, ROUTE_DRAFTS } from "src/constants/route";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import Title from "src/components/title";
-import {
-  Draft_findDraft_data_SceneDraft as SceneDraft,
-  Draft_findDraft_data_PerformerDraft as PerformerDraft,
-} from "src/graphql/definitions/Draft";
 
 import Draft from "./Draft";
 import Drafts from "./Drafts";

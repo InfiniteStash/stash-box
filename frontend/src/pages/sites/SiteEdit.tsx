@@ -1,13 +1,12 @@
 import { FC } from "react";
 import { useHistory } from "react-router-dom";
 
-import { Site_findSite as Site } from "src/graphql/definitions/Site";
-import { useUpdateSite, SiteCreateInput } from "src/graphql";
+import { useUpdateSite, SiteCreateInput, SiteFragment } from "src/graphql";
 import { siteHref } from "src/utils";
 import SiteForm from "./siteForm";
 
 interface Props {
-  site: Site;
+  site: SiteFragment;
 }
 
 const UpdateSite: FC<Props> = ({ site }) => {

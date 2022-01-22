@@ -3,11 +3,11 @@ import { Link, useHistory } from "react-router-dom";
 import { Button, Tab, Tabs } from "react-bootstrap";
 import { sortBy } from "lodash-es";
 
-import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
 import {
   usePendingEditsCount,
   TargetTypeEnum,
   CriterionModifier,
+  StudioFragment,
 } from "src/graphql";
 import { EditList, SceneList, URLList } from "src/components/list";
 
@@ -26,7 +26,7 @@ import AuthContext from "src/AuthContext";
 const DEFAULT_TAB = "scenes";
 
 interface Props {
-  studio: Studio;
+  studio: StudioFragment;
 }
 
 const StudioComponent: FC<Props> = ({ studio }) => {

@@ -1,0 +1,8 @@
+fragment OldTagEditDetails on TagEdit {
+  name
+  description
+  category {
+    id
+    name
+  }
+}

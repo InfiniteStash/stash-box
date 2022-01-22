@@ -1,13 +1,16 @@
 import { FC } from "react";
 import { useHistory } from "react-router-dom";
 
-import { useUpdateCategory, TagCategoryCreateInput } from "src/graphql";
-import { Category_findTagCategory as Category } from "src/graphql/definitions/Category";
+import {
+  useUpdateCategory,
+  TagCategoryCreateInput,
+  CategoryFragment,
+} from "src/graphql";
 import { categoryHref } from "src/utils";
 import CategoryForm from "./categoryForm";
 
 interface Props {
-  category: Category;
+  category: CategoryFragment;
 }
 
 const UpdateCategory: FC<Props> = ({ category }) => {

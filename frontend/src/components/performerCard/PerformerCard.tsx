@@ -3,8 +3,7 @@ import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 
-import { Performers_queryPerformers_performers as Performer } from "src/graphql/definitions/Performers";
-import { SearchPerformers_searchPerformer as SearchPerformer } from "src/graphql/definitions/SearchPerformers";
+import { PerformerFragment, SearchPerformerFragment } from "src/graphql";
 
 import {
   GenderIcon,
@@ -14,7 +13,7 @@ import {
 import { getImage, performerHref } from "src/utils";
 
 interface PerformerCardProps {
-  performer: Performer | SearchPerformer;
+  performer: PerformerFragment | SearchPerformerFragment;
   className?: string;
 }
 

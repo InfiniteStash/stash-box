@@ -1,8 +1,6 @@
+#import "../fragments/Category.gql"
 query Category($id: ID!) {
   findTagCategory(id: $id) {
-    id
-    name
-    description
-    group
+    ...Category
   }
 }

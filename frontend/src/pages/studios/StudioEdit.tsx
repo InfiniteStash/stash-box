@@ -1,18 +1,18 @@
 import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
 import {
   useStudioEdit,
   StudioEditDetailsInput,
   OperationEnum,
+  StudioFragment,
 } from "src/graphql";
 import { createHref } from "src/utils";
 import { ROUTE_EDIT } from "src/constants";
 import StudioForm from "./studioForm";
 
 interface Props {
-  studio: Studio;
+  studio: StudioFragment;
 }
 
 const StudioEdit: FC<Props> = ({ studio }) => {

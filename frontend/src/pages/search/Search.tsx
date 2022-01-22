@@ -13,10 +13,10 @@ import {
 import cx from "classnames";
 
 import {
-  SearchAll_searchPerformer as Performer,
-  SearchAll_searchScene as Scene,
-} from "src/graphql/definitions/SearchAll";
-import { useSearchAll } from "src/graphql";
+  useSearchAll,
+  SearchPerformerFragment as Performer,
+  SearchSceneFragment as Scene,
+} from "src/graphql";
 import {
   Icon,
   FavoriteStar,

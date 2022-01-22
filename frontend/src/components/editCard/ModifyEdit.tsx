@@ -3,16 +3,19 @@ import { Col, Row } from "react-bootstrap";
 import { faCheck, faTimes, faEdit } from "@fortawesome/free-solid-svg-icons";
 
 import {
-  Edits_queryEdits_edits_details as Details,
-  Edits_queryEdits_edits_old_details as OldDetails,
-  Edits_queryEdits_edits_options as Options,
-} from "src/graphql/definitions/Edits";
-import {
   FingerprintAlgorithm,
   PerformerFragment,
   GenderEnum,
   EthnicityEnum,
   BreastTypeEnum,
+  OldTagEditDetailsFragment,
+  OldSceneEditDetailsFragment,
+  OldStudioEditDetailsFragment,
+  OldPerformerEditDetailsFragment,
+  NewTagEditDetailsFragment,
+  NewPerformerEditDetailsFragment,
+  NewStudioEditDetailsFragment,
+  NewSceneEditDetailsFragment,
 } from "src/graphql";
 import {
   formatDuration,
@@ -38,10 +41,21 @@ import LinkedChangeRow from "../linkedChangeRow";
 import ListChangeRow from "../listChangeRow";
 import { renderPerformer, renderTag, renderFingerprint } from "./renderEntity";
 
+type OldDetails =
+  | OldTagEditDetailsFragment
+  | OldSceneEditDetailsFragment
+  | OldStudioEditDetailsFragment
+  | OldPerformerEditDetailsFragment;
+type Details =
+  | NewTagEditDetailsFragment
+  | NewPerformerEditDetailsFragment
+  | NewStudioEditDetailsFragment
+  | NewSceneEditDetailsFragment;
+
 export interface TagDetails {
-  name: string | null;
+  name?: string | null;
   description?: string | null;
-  category: { id: string; name: string } | null;
+  category?: { id: string; name: string } | null | undefined;
   added_aliases?: string[] | null;
   removed_aliases?: string[] | null;
 }
@@ -93,7 +107,7 @@ const renderTagDetails = (
 
 type BodyMod = {
   location: string;
-  description: string | null;
+  description?: string | null;
 };
 
 type Image = {
@@ -102,7 +116,7 @@ type Image = {
 };
 
 export interface PerformerDetails {
-  name: string | null;
+  name?: string | null;
   gender?: GenderEnum | null;
   disambiguation?: string | null;
   birthdate?: string | null;
@@ -291,7 +305,7 @@ export const renderPerformerDetails = (
 );
 
 type ScenePerformance = {
-  as: string | null;
+  as?: string | null | undefined;
   performer: Pick<
     PerformerFragment,
     "name" | "id" | "gender" | "name" | "disambiguation" | "deleted"
@@ -299,12 +313,12 @@ type ScenePerformance = {
 };
 
 export interface SceneDetails {
-  title: string | null;
-  date: string | null;
+  title?: string | null;
+  date?: string | null;
   duration?: number | null;
   details?: string | null;
   director?: string | null;
-  studio: {
+  studio?: {
     id: string;
     name: string;
   } | null;
@@ -441,8 +455,8 @@ export const renderSceneDetails = (
 );
 
 export interface StudioDetails {
-  name: string | null;
-  parent: {
+  name?: string | null;
+  parent?: {
     id: string;
     name: string;
   } | null;
@@ -490,9 +504,9 @@ export const renderStudioDetails = (
 );
 
 interface ModifyEditProps {
-  details: Details | null;
-  oldDetails?: OldDetails | null;
-  options?: Options;
+  details: Details | null | undefined;
+  oldDetails?: OldDetails | null | undefined;
+  options?: { set_modify_aliases: boolean };
 }
 
 const ModifyEdit: FC<ModifyEditProps> = ({ details, oldDetails, options }) => {

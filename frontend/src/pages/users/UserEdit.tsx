@@ -2,15 +2,17 @@ import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { isApolloError } from "@apollo/client";
 
-import { useUpdateUser } from "src/graphql";
-import { User_findUser as User } from "src/graphql/definitions/User";
-import { PublicUser_findUser as PublicUser } from "src/graphql/definitions/PublicUser";
+import {
+  useUpdateUser,
+  PrivateUserFragment,
+  PublicUserFragment,
+} from "src/graphql";
 import { userHref, isPrivateUser } from "src/utils";
 import UserEditForm, { UserEditData } from "./UserEditForm";
 import { ErrorMessage } from "src/components/fragments";
 
 interface Props {
-  user: User | PublicUser;
+  user: PrivateUserFragment | PublicUserFragment;
 }
 
 const EditUserComponent: FC<Props> = ({ user }) => {

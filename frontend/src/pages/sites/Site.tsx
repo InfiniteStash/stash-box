@@ -2,8 +2,7 @@ import { FC, useContext } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { Button } from "react-bootstrap";
 
-import { Site_findSite as Site } from "src/graphql/definitions/Site";
-import { useDeleteSite } from "src/graphql";
+import { useDeleteSite, SiteFragment } from "src/graphql";
 import AuthContext from "src/AuthContext";
 import { isAdmin, createHref } from "src/utils";
 import { SiteLink } from "src/components/fragments";
@@ -11,7 +10,7 @@ import DeleteButton from "src/components/deleteButton";
 import { ROUTE_SITES, ROUTE_SITE_EDIT } from "src/constants/route";
 
 interface Props {
-  site: Site;
+  site: SiteFragment;
 }
 
 const SiteComponent: FC<Props> = ({ site }) => {

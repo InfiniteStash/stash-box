@@ -5,8 +5,8 @@ import {
   useStudioEdit,
   OperationEnum,
   StudioEditDetailsInput,
+  StudioFragment,
 } from "src/graphql";
-import { Studio_findStudio as Studio } from "src/graphql/definitions/Studio";
 import { editHref } from "src/utils";
 
 import StudioForm from "./studioForm";
@@ -33,7 +33,7 @@ const StudioAdd: FC = () => {
     });
   };
 
-  const emptyStudio: Studio = {
+  const emptyStudio: StudioFragment = {
     id: "",
     name: "",
     urls: [],

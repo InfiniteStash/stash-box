@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { Link } from "react-router-dom";
 
-import { User_findUser as User } from "src/graphql/definitions/User";
+import { User } from "src/graphql";
 import { ROUTE_USER } from "src/constants/route";
 import { createHref } from "src/utils";
 import { EditList } from "src/components/list";

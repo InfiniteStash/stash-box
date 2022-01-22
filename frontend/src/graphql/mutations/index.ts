@@ -1,260 +1,306 @@
 import { useMutation, MutationHookOptions } from "@apollo/client";
 
 import {
-  ActivateNewUser,
-  ActivateNewUserVariables,
-} from "../definitions/ActivateNewUser";
-import { AddUser, AddUserVariables } from "../definitions/AddUser";
-import { NewUser, NewUserVariables } from "../definitions/NewUser";
-import { UpdateUser, UpdateUserVariables } from "../definitions/UpdateUser";
-import { DeleteUser, DeleteUserVariables } from "../definitions/DeleteUser";
-import {
-  AddTagCategory,
-  AddTagCategoryVariables,
-} from "../definitions/AddTagCategory";
-import {
-  DeleteTagCategory,
-  DeleteTagCategoryVariables,
-} from "../definitions/DeleteTagCategory";
-import {
-  UpdateTagCategory,
-  UpdateTagCategoryVariables,
-} from "../definitions/UpdateTagCategory";
-import { AddImage, AddImageVariables } from "../definitions/AddImage";
-import {
-  PerformerEdit,
-  PerformerEditVariables,
-} from "../definitions/PerformerEdit";
-import { TagEdit, TagEditVariables } from "../definitions/TagEdit";
-import { AddScene, AddSceneVariables } from "../definitions/AddScene";
-import { DeleteScene, DeleteSceneVariables } from "../definitions/DeleteScene";
-import { UpdateScene, UpdateSceneVariables } from "../definitions/UpdateScene";
-import { AddStudio, AddStudioVariables } from "../definitions/AddStudio";
-import {
-  DeleteStudio,
-  DeleteStudioVariables,
-} from "../definitions/DeleteStudio";
-import {
-  UpdateStudio,
-  UpdateStudioVariables,
-} from "../definitions/UpdateStudio";
-import { ApplyEdit, ApplyEditVariables } from "../definitions/ApplyEdit";
-import { CancelEdit, CancelEditVariables } from "../definitions/CancelEdit";
-import {
-  ChangePassword,
-  ChangePasswordVariables,
-} from "../definitions/ChangePassword";
-import {
-  ResetPassword,
-  ResetPasswordVariables,
-} from "../definitions/ResetPassword";
-import {
-  RegenerateAPIKey,
-  RegenerateAPIKeyVariables,
-} from "../definitions/RegenerateAPIKey";
-import { GenerateInviteCode } from "../definitions/GenerateInviteCode";
-import { GrantInvite, GrantInviteVariables } from "../definitions/GrantInvite";
-import {
-  RescindInviteCode,
-  RescindInviteCodeVariables,
-} from "../definitions/RescindInviteCode";
-import {
-  RevokeInvite,
-  RevokeInviteVariables,
-} from "../definitions/RevokeInvite";
-import { EditComment, EditCommentVariables } from "../definitions/EditComment";
-import { StudioEdit, StudioEditVariables } from "../definitions/StudioEdit";
-import { SceneEdit, SceneEditVariables } from "../definitions/SceneEdit";
-import { Vote, VoteVariables } from "../definitions/Vote";
-import { AddSite, AddSiteVariables } from "../definitions/AddSite";
-import { DeleteSite, DeleteSiteVariables } from "../definitions/DeleteSite";
-import { UpdateSite, UpdateSiteVariables } from "../definitions/UpdateSite";
-import {
-  FavoriteStudio,
-  FavoriteStudioVariables,
-} from "../definitions/FavoriteStudio";
-import {
-  FavoritePerformer,
-  FavoritePerformerVariables,
-} from "../definitions/FavoritePerformer";
-import { DeleteDraft, DeleteDraftVariables } from "../definitions/DeleteDraft";
+  ActivateNewUserMutation,
+  ActivateNewUserMutationVariables,
+  AddUserMutation,
+  AddUserMutationVariables,
+  NewUserMutation,
+  NewUserMutationVariables,
+  UpdateUserMutation,
+  UpdateUserMutationVariables,
+  DeleteUserMutation,
+  DeleteUserMutationVariables,
+  AddTagCategoryMutation,
+  AddTagCategoryMutationVariables,
+  DeleteTagCategoryMutation,
+  DeleteTagCategoryMutationVariables,
+  UpdateTagCategoryMutation,
+  UpdateTagCategoryMutationVariables,
+  AddImageMutation,
+  AddImageMutationVariables,
+  PerformerEditMutation,
+  PerformerEditMutationVariables,
+  TagEditMutation,
+  TagEditMutationVariables,
+  AddSceneMutation,
+  AddSceneMutationVariables,
+  DeleteSceneMutation,
+  DeleteSceneMutationVariables,
+  UpdateSceneMutation,
+  UpdateSceneMutationVariables,
+  AddStudioMutation,
+  AddStudioMutationVariables,
+  DeleteStudioMutation,
+  DeleteStudioMutationVariables,
+  UpdateStudioMutation,
+  UpdateStudioMutationVariables,
+  ApplyEditMutation,
+  ApplyEditMutationVariables,
+  CancelEditMutation,
+  CancelEditMutationVariables,
+  ChangePasswordMutation,
+  ChangePasswordMutationVariables,
+  ResetPasswordMutation,
+  ResetPasswordMutationVariables,
+  RegenerateApiKeyMutation,
+  RegenerateApiKeyMutationVariables,
+  GenerateInviteCodeMutation,
+  GrantInviteMutation,
+  GrantInviteMutationVariables,
+  RescindInviteCodeMutation,
+  RescindInviteCodeMutationVariables,
+  RevokeInviteMutation,
+  RevokeInviteMutationVariables,
+  EditCommentMutation,
+  EditCommentMutationVariables,
+  StudioEditMutation,
+  StudioEditMutationVariables,
+  SceneEditMutation,
+  SceneEditMutationVariables,
+  VoteMutation,
+  VoteMutationVariables,
+  AddSiteMutation,
+  AddSiteMutationVariables,
+  DeleteSiteMutation,
+  DeleteSiteMutationVariables,
+  UpdateSiteMutation,
+  UpdateSiteMutationVariables,
+  FavoriteStudioMutation,
+  FavoriteStudioMutationVariables,
+  FavoritePerformerMutation,
+  FavoritePerformerMutationVariables,
+  DeleteDraftMutation,
+  DeleteDraftMutationVariables,
+} from "../generated";
 
-import ActivateUserMutation from "./ActivateNewUser.gql";
-import AddUserMutation from "./AddUser.gql";
-import NewUserMutation from "./NewUser.gql";
-import UpdateUserMutation from "./UpdateUser.gql";
-import DeleteUserMutation from "./DeleteUser.gql";
-import AddTagCategoryMutation from "./AddTagCategory.gql";
-import DeleteTagCategoryMutation from "./DeleteTagCategory.gql";
-import UpdateTagCategoryMutation from "./UpdateTagCategory.gql";
-import AddImageMutation from "./AddImage.gql";
-import PerformerEditMutation from "./PerformerEdit.gql";
-import TagEditMutation from "./TagEdit.gql";
-import StudioEditMutation from "./StudioEdit.gql";
-import SceneEditMutation from "./SceneEdit.gql";
-import AddSceneMutation from "./AddScene.gql";
-import DeleteSceneMutation from "./DeleteScene.gql";
-import UpdateSceneMutation from "./UpdateScene.gql";
-import AddStudioMutation from "./AddStudio.gql";
-import DeleteStudioMutation from "./DeleteStudio.gql";
-import UpdateStudioMutation from "./UpdateStudio.gql";
-import ApplyEditMutation from "./ApplyEdit.gql";
-import CancelEditMutation from "./CancelEdit.gql";
-import ChangePasswordMutation from "./ChangePassword.gql";
-import ResetPasswordMutation from "./ResetPassword.gql";
-import RegenerateAPIKeyMutation from "./RegenerateAPIKey.gql";
-import GenerateInviteCodeMutation from "./GenerateInviteCode.gql";
-import GrantInviteMutation from "./GrantInvite.gql";
-import RescindInviteCodeMutation from "./RescindInviteCode.gql";
-import RevokeInviteMutation from "./RevokeInvite.gql";
-import EditCommentMutation from "./EditComment.gql";
-import VoteMutation from "./Vote.gql";
-import AddSiteMutation from "./AddSite.gql";
-import DeleteSiteMutation from "./DeleteSite.gql";
-import UpdateSiteMutation from "./UpdateSite.gql";
-import FavoriteStudioMutation from "./FavoriteStudio.gql";
-import FavoritePerformerMutation from "./FavoritePerformer.gql";
-import DeleteDraftMutation from "./DeleteDraft.gql";
+import ActivateUser from "./ActivateNewUser.gql";
+import AddUser from "./AddUser.gql";
+import NewUser from "./NewUser.gql";
+import UpdateUser from "./UpdateUser.gql";
+import DeleteUser from "./DeleteUser.gql";
+import AddTagCategory from "./AddTagCategory.gql";
+import DeleteTagCategory from "./DeleteTagCategory.gql";
+import UpdateTagCategory from "./UpdateTagCategory.gql";
+import AddImage from "./AddImage.gql";
+import PerformerEdit from "./PerformerEdit.gql";
+import TagEdit from "./TagEdit.gql";
+import StudioEdit from "./StudioEdit.gql";
+import SceneEdit from "./SceneEdit.gql";
+import AddScene from "./AddScene.gql";
+import DeleteScene from "./DeleteScene.gql";
+import UpdateScene from "./UpdateScene.gql";
+import AddStudio from "./AddStudio.gql";
+import DeleteStudio from "./DeleteStudio.gql";
+import UpdateStudio from "./UpdateStudio.gql";
+import ApplyEdit from "./ApplyEdit.gql";
+import CancelEdit from "./CancelEdit.gql";
+import ChangePassword from "./ChangePassword.gql";
+import ResetPassword from "./ResetPassword.gql";
+import RegenerateAPIKey from "./RegenerateAPIKey.gql";
+import GenerateInviteCode from "./GenerateInviteCode.gql";
+import GrantInvite from "./GrantInvite.gql";
+import RescindInviteCode from "./RescindInviteCode.gql";
+import RevokeInvite from "./RevokeInvite.gql";
+import EditComment from "./EditComment.gql";
+import Vote from "./Vote.gql";
+import AddSite from "./AddSite.gql";
+import DeleteSite from "./DeleteSite.gql";
+import UpdateSite from "./UpdateSite.gql";
+import FavoriteStudio from "./FavoriteStudio.gql";
+import FavoritePerformer from "./FavoritePerformer.gql";
+import DeleteDraft from "./DeleteDraft.gql";
 
 export const useActivateUser = (
-  options?: MutationHookOptions<ActivateNewUser, ActivateNewUserVariables>
-) => useMutation(ActivateUserMutation, options);
+  options?: MutationHookOptions<
+    ActivateNewUserMutation,
+    ActivateNewUserMutationVariables
+  >
+) => useMutation(ActivateUser, options);
 
 export const useAddUser = (
-  options?: MutationHookOptions<AddUser, AddUserVariables>
-) => useMutation(AddUserMutation, options);
+  options?: MutationHookOptions<AddUserMutation, AddUserMutationVariables>
+) => useMutation(AddUser, options);
 
 export const useNewUser = (
-  options?: MutationHookOptions<NewUser, NewUserVariables>
-) => useMutation(NewUserMutation, options);
+  options?: MutationHookOptions<NewUserMutation, NewUserMutationVariables>
+) => useMutation(NewUser, options);
 
 export const useUpdateUser = (
-  options?: MutationHookOptions<UpdateUser, UpdateUserVariables>
-) => useMutation(UpdateUserMutation, options);
+  options?: MutationHookOptions<UpdateUserMutation, UpdateUserMutationVariables>
+) => useMutation(UpdateUser, options);
 
 export const useDeleteUser = (
-  options?: MutationHookOptions<DeleteUser, DeleteUserVariables>
-) => useMutation(DeleteUserMutation, options);
+  options?: MutationHookOptions<DeleteUserMutation, DeleteUserMutationVariables>
+) => useMutation(DeleteUser, options);
 
 export const useAddCategory = (
-  options?: MutationHookOptions<AddTagCategory, AddTagCategoryVariables>
-) => useMutation(AddTagCategoryMutation, options);
+  options?: MutationHookOptions<
+    AddTagCategoryMutation,
+    AddTagCategoryMutationVariables
+  >
+) => useMutation(AddTagCategory, options);
 
 export const useDeleteCategory = (
-  options?: MutationHookOptions<DeleteTagCategory, DeleteTagCategoryVariables>
-) => useMutation(DeleteTagCategoryMutation, options);
+  options?: MutationHookOptions<
+    DeleteTagCategoryMutation,
+    DeleteTagCategoryMutationVariables
+  >
+) => useMutation(DeleteTagCategory, options);
 
 export const useUpdateCategory = (
-  options?: MutationHookOptions<UpdateTagCategory, UpdateTagCategoryVariables>
-) => useMutation(UpdateTagCategoryMutation, options);
+  options?: MutationHookOptions<
+    UpdateTagCategoryMutation,
+    UpdateTagCategoryMutationVariables
+  >
+) => useMutation(UpdateTagCategory, options);
 
 export const useAddImage = (
-  options?: MutationHookOptions<AddImage, AddImageVariables>
-) => useMutation(AddImageMutation, options);
+  options?: MutationHookOptions<AddImageMutation, AddImageMutationVariables>
+) => useMutation(AddImage, options);
 
 export const usePerformerEdit = (
-  options?: MutationHookOptions<PerformerEdit, PerformerEditVariables>
-) => useMutation(PerformerEditMutation, options);
+  options?: MutationHookOptions<
+    PerformerEditMutation,
+    PerformerEditMutationVariables
+  >
+) => useMutation(PerformerEdit, options);
 
 export const useAddScene = (
-  options?: MutationHookOptions<AddScene, AddSceneVariables>
-) => useMutation(AddSceneMutation, options);
+  options?: MutationHookOptions<AddSceneMutation, AddSceneMutationVariables>
+) => useMutation(AddScene, options);
 
 export const useDeleteScene = (
-  options?: MutationHookOptions<DeleteScene, DeleteSceneVariables>
-) => useMutation(DeleteSceneMutation, options);
+  options?: MutationHookOptions<
+    DeleteSceneMutation,
+    DeleteSceneMutationVariables
+  >
+) => useMutation(DeleteScene, options);
 
 export const useUpdateScene = (
-  options?: MutationHookOptions<UpdateScene, UpdateSceneVariables>
-) => useMutation(UpdateSceneMutation, options);
+  options?: MutationHookOptions<
+    UpdateSceneMutation,
+    UpdateSceneMutationVariables
+  >
+) => useMutation(UpdateScene, options);
 
 export const useAddStudio = (
-  options?: MutationHookOptions<AddStudio, AddStudioVariables>
-) => useMutation(AddStudioMutation, options);
+  options?: MutationHookOptions<AddStudioMutation, AddStudioMutationVariables>
+) => useMutation(AddStudio, options);
 
 export const useDeleteStudio = (
-  options?: MutationHookOptions<DeleteStudio, DeleteStudioVariables>
-) => useMutation(DeleteStudioMutation, options);
+  options?: MutationHookOptions<
+    DeleteStudioMutation,
+    DeleteStudioMutationVariables
+  >
+) => useMutation(DeleteStudio, options);
 
 export const useUpdateStudio = (
-  options?: MutationHookOptions<UpdateStudio, UpdateStudioVariables>
-) => useMutation(UpdateStudioMutation, options);
+  options?: MutationHookOptions<
+    UpdateStudioMutation,
+    UpdateStudioMutationVariables
+  >
+) => useMutation(UpdateStudio, options);
 
 export const useTagEdit = (
-  options?: MutationHookOptions<TagEdit, TagEditVariables>
-) => useMutation(TagEditMutation, options);
+  options?: MutationHookOptions<TagEditMutation, TagEditMutationVariables>
+) => useMutation(TagEdit, options);
 
 export const useStudioEdit = (
-  options?: MutationHookOptions<StudioEdit, StudioEditVariables>
-) => useMutation(StudioEditMutation, options);
+  options?: MutationHookOptions<StudioEditMutation, StudioEditMutationVariables>
+) => useMutation(StudioEdit, options);
 
 export const useSceneEdit = (
-  options?: MutationHookOptions<SceneEdit, SceneEditVariables>
-) => useMutation(SceneEditMutation, options);
+  options?: MutationHookOptions<SceneEditMutation, SceneEditMutationVariables>
+) => useMutation(SceneEdit, options);
 
 export const useApplyEdit = (
-  options?: MutationHookOptions<ApplyEdit, ApplyEditVariables>
-) => useMutation(ApplyEditMutation, options);
+  options?: MutationHookOptions<ApplyEditMutation, ApplyEditMutationVariables>
+) => useMutation(ApplyEdit, options);
 
 export const useCancelEdit = (
-  options?: MutationHookOptions<CancelEdit, CancelEditVariables>
-) => useMutation(CancelEditMutation, options);
+  options?: MutationHookOptions<CancelEditMutation, CancelEditMutationVariables>
+) => useMutation(CancelEdit, options);
 
 export const useChangePassword = (
-  options?: MutationHookOptions<ChangePassword, ChangePasswordVariables>
-) => useMutation(ChangePasswordMutation, options);
+  options?: MutationHookOptions<
+    ChangePasswordMutation,
+    ChangePasswordMutationVariables
+  >
+) => useMutation(ChangePassword, options);
 
 export const useResetPassword = (
-  options?: MutationHookOptions<ResetPassword, ResetPasswordVariables>
-) => useMutation(ResetPasswordMutation, options);
+  options?: MutationHookOptions<
+    ResetPasswordMutation,
+    ResetPasswordMutationVariables
+  >
+) => useMutation(ResetPassword, options);
 
 export const useRegenerateAPIKey = (
-  options?: MutationHookOptions<RegenerateAPIKey, RegenerateAPIKeyVariables>
-) => useMutation(RegenerateAPIKeyMutation, options);
+  options?: MutationHookOptions<
+    RegenerateApiKeyMutation,
+    RegenerateApiKeyMutationVariables
+  >
+) => useMutation(RegenerateAPIKey, options);
 
 export const useGenerateInviteCode = (
-  options?: MutationHookOptions<GenerateInviteCode>
-) => useMutation(GenerateInviteCodeMutation, options);
+  options?: MutationHookOptions<GenerateInviteCodeMutation>
+) => useMutation(GenerateInviteCode, options);
 
 export const useGrantInvite = (
-  options?: MutationHookOptions<GrantInvite, GrantInviteVariables>
-) => useMutation(GrantInviteMutation, options);
+  options?: MutationHookOptions<
+    GrantInviteMutation,
+    GrantInviteMutationVariables
+  >
+) => useMutation(GrantInvite, options);
 
 export const useRescindInviteCode = (
-  options?: MutationHookOptions<RescindInviteCode, RescindInviteCodeVariables>
-) => useMutation(RescindInviteCodeMutation, options);
+  options?: MutationHookOptions<
+    RescindInviteCodeMutation,
+    RescindInviteCodeMutationVariables
+  >
+) => useMutation(RescindInviteCode, options);
 
 export const useRevokeInvite = (
-  options?: MutationHookOptions<RevokeInvite, RevokeInviteVariables>
-) => useMutation(RevokeInviteMutation, options);
+  options?: MutationHookOptions<
+    RevokeInviteMutation,
+    RevokeInviteMutationVariables
+  >
+) => useMutation(RevokeInvite, options);
 
 export const useEditComment = (
-  options?: MutationHookOptions<EditComment, EditCommentVariables>
-) => useMutation(EditCommentMutation, options);
+  options?: MutationHookOptions<
+    EditCommentMutation,
+    EditCommentMutationVariables
+  >
+) => useMutation(EditComment, options);
 
-export const useVote = (options?: MutationHookOptions<Vote, VoteVariables>) =>
-  useMutation(VoteMutation, options);
+export const useVote = (
+  options?: MutationHookOptions<VoteMutation, VoteMutationVariables>
+) => useMutation(Vote, options);
 
 export const useAddSite = (
-  options?: MutationHookOptions<AddSite, AddSiteVariables>
-) => useMutation(AddSiteMutation, options);
+  options?: MutationHookOptions<AddSiteMutation, AddSiteMutationVariables>
+) => useMutation(AddSite, options);
 
 export const useDeleteSite = (
-  options?: MutationHookOptions<DeleteSite, DeleteSiteVariables>
-) => useMutation(DeleteSiteMutation, options);
+  options?: MutationHookOptions<DeleteSiteMutation, DeleteSiteMutationVariables>
+) => useMutation(DeleteSite, options);
 
 export const useUpdateSite = (
-  options?: MutationHookOptions<UpdateSite, UpdateSiteVariables>
-) => useMutation(UpdateSiteMutation, options);
+  options?: MutationHookOptions<UpdateSiteMutation, UpdateSiteMutationVariables>
+) => useMutation(UpdateSite, options);
 
 export const useSetFavorite = <T extends "performer" | "studio">(
   type: T,
   id: string
 ) =>
   useMutation<
-    T extends "performer" ? FavoritePerformer : FavoriteStudio,
-    T extends "performer" ? FavoritePerformerVariables : FavoriteStudioVariables
-  >(type === "performer" ? FavoritePerformerMutation : FavoriteStudioMutation, {
+    T extends "performer" ? FavoritePerformerMutation : FavoriteStudioMutation,
+    T extends "performer"
+      ? FavoritePerformerMutationVariables
+      : FavoriteStudioMutationVariables
+  >(type === "performer" ? FavoritePerformer : FavoriteStudio, {
     update: (cache, { errors }) => {
       if (errors === undefined) {
         const identity = cache.identify({
@@ -272,5 +318,8 @@ export const useSetFavorite = <T extends "performer" | "studio">(
   });
 
 export const useDeleteDraft = (
-  options?: MutationHookOptions<DeleteDraft, DeleteDraftVariables>
-) => useMutation(DeleteDraftMutation, options);
+  options?: MutationHookOptions<
+    DeleteDraftMutation,
+    DeleteDraftMutationVariables
+  >
+) => useMutation(DeleteDraft, options);

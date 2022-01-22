@@ -1,15 +1,8 @@
+#import "../fragments/Site.gql"
 query Sites {
   querySites {
     sites {
-      id
-      name
-      description
-      url
-      regex
-      valid_types
-      icon
-      created
-      updated
+      ...Site
     }
   }
 }

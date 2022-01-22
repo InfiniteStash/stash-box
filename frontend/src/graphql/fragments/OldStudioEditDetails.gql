@@ -1,0 +1,7 @@
+#import "../fragments/StudioFragment.gql"
+fragment OldStudioEditDetails on StudioEdit {
+  name
+  parent {
+    ...StudioFragment
+  }
+}

@@ -1,8 +1,8 @@
-import { Draft_findDraft as Draft } from "src/graphql/definitions/Draft";
 import SceneDraft from "./SceneDraft";
 import PerformerDraft from "./PerformerDraft";
+import { DraftFragment } from "src/graphql";
 
-const DraftComponent: React.FC<{ draft: Draft }> = ({ draft }) => {
+const DraftComponent: React.FC<{ draft: DraftFragment }> = ({ draft }) => {
   if (draft.data.__typename === "SceneDraft")
     return <SceneDraft draft={{ ...draft, data: draft.data }} />;
   else return <PerformerDraft draft={{ ...draft, data: draft.data }} />;
