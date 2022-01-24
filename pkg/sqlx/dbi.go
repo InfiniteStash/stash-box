@@ -229,6 +229,7 @@ func (q dbi) FindAllJoins(tj tableJoin, ids []uuid.UUID, output Joins) error {
 // RawQuery performs a query on the provided table using the query string
 // and argument slice. It outputs the results to the output slice.
 func (q dbi) RawQuery(t table, query string, args []interface{}, output Models) error {
+	fmt.Println(query)
 	return q.queryFunc(query, args, func(rows *sqlx.Rows) error {
 		o := t.NewObject()
 		if err := rows.StructScan(o); err != nil {

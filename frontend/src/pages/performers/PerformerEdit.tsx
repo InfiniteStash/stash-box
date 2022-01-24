@@ -6,7 +6,9 @@ import {
   usePerformerEdit,
   OperationEnum,
   PerformerEditDetailsInput,
+  TargetTypeEnum,
 } from "src/graphql";
+import { PendingEditStatus } from "src/components/pendingEditStatus";
 
 import { editHref } from "src/utils";
 import PerformerForm from "./performerForm";
@@ -57,6 +59,7 @@ const PerformerModify: FC<Props> = ({ performer }) => {
           <b>{performer.name}</b>
         </i>
       </h3>
+      <PendingEditStatus id={performer.id} type={TargetTypeEnum.SCENE} />
       <hr />
       <PerformerForm
         performer={performer}

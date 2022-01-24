@@ -6,7 +6,9 @@ import {
   useSceneEdit,
   SceneEditDetailsInput,
   OperationEnum,
+  TargetTypeEnum,
 } from "src/graphql";
+import { PendingEditStatus } from "src/components/pendingEditStatus";
 import { createHref } from "src/utils";
 import { ROUTE_EDIT } from "src/constants";
 import SceneForm from "./sceneForm";
@@ -50,6 +52,7 @@ const SceneEdit: FC<Props> = ({ scene }) => {
           <b>{scene.title}</b>
         </i>
       </h3>
+      <PendingEditStatus id={scene.id} type={TargetTypeEnum.SCENE} />
       <hr />
       <SceneForm scene={scene} callback={doUpdate} saving={saving} />
       {submissionError && (

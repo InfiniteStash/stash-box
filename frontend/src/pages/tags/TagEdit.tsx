@@ -1,9 +1,15 @@
 import { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { useTagEdit, OperationEnum, TagEditDetailsInput } from "src/graphql";
+import {
+  useTagEdit,
+  OperationEnum,
+  TargetTypeEnum,
+  TagEditDetailsInput,
+} from "src/graphql";
 import { Tag_findTag as Tag } from "src/graphql/definitions/Tag";
 
+import { PendingEditStatus } from "src/components/pendingEditStatus";
 import { ROUTE_EDIT } from "src/constants/route";
 import { createHref } from "src/utils/route";
 import TagForm from "./tagForm";
@@ -41,6 +47,7 @@ const TagEdit: FC<Props> = ({ tag }) => {
   return (
     <div>
       <h3>Edit tag</h3>
+      <PendingEditStatus id={tag.id} type={TargetTypeEnum.TAG} />
       <hr />
       <TagForm tag={tag} callback={doUpdate} saving={saving} />
       {submissionError && (

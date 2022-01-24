@@ -6,7 +6,10 @@ import {
   useStudioEdit,
   StudioEditDetailsInput,
   OperationEnum,
+  TargetTypeEnum,
 } from "src/graphql";
+
+import { PendingEditStatus } from "src/components/pendingEditStatus";
 import { createHref } from "src/utils";
 import { ROUTE_EDIT } from "src/constants";
 import StudioForm from "./studioForm";
@@ -48,6 +51,7 @@ const StudioEdit: FC<Props> = ({ studio }) => {
         Edit
         <strong className="ms-2">{studio.name}</strong>
       </h3>
+      <PendingEditStatus id={studio.id} type={TargetTypeEnum.STUDIO} />
       <hr />
       <StudioForm
         studio={studio}
