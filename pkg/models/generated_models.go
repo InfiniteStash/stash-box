@@ -153,14 +153,6 @@ type FingerprintEditInput struct {
 	Updated *time.Time `json:"updated"`
 }
 
-type FingerprintInput struct {
-	// assumes current user if omitted. Ignored for non-modify Users
-	UserIds   []uuid.UUID          `json:"user_ids"`
-	Hash      string               `json:"hash"`
-	Algorithm FingerprintAlgorithm `json:"algorithm"`
-	Duration  int                  `json:"duration"`
-}
-
 type FingerprintQueryInput struct {
 	Hash      string               `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
@@ -403,6 +395,12 @@ type PerformerUpdateInput struct {
 	Tattoos         []*BodyModification `json:"tattoos"`
 	Piercings       []*BodyModification `json:"piercings"`
 	ImageIds        []uuid.UUID         `json:"image_ids"`
+}
+
+type QueryExistingSceneInput struct {
+	Title        *string             `json:"title"`
+	StudioID     *uuid.UUID          `json:"studio_id"`
+	Fingerprints []*FingerprintInput `json:"fingerprints"`
 }
 
 type QuerySitesResultType struct {

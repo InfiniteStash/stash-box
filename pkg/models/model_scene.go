@@ -262,3 +262,7 @@ func (p *Scene) ValidateModifyEdit(edit SceneEditData) error {
 type SceneQuery struct {
 	Filter SceneQueryInput
 }
+
+type QueryExistingSceneResult struct {
+	Input QueryExistingSceneInput
+}
