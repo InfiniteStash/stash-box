@@ -2,10 +2,12 @@ package api
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/stashapp/stash-box/pkg/dataloader"
 	"github.com/stashapp/stash-box/pkg/models"
+	"github.com/stashapp/stash-box/pkg/utils"
 )
 
 type sceneResolver struct{ *Resolver }
@@ -27,7 +29,33 @@ func (r *sceneResolver) Duration(ctx context.Context, obj *models.Scene) (*int, 
 }
 
 func (r *sceneResolver) Director(ctx context.Context, obj *models.Scene) (*string, error) {
-	return resolveNullString(obj.Director), nil
+	appearances, err := dataloader.For(ctx).SceneAppearancesByID.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	var directors []string
+	for _, appearance := range appearances {
+		performer, err := dataloader.For(ctx).PerformerByID.Load(appearance.PerformerID)
+		if err != nil {
+			return nil, err
+		}
+
+		if appearance.Type == models.AppearanceTypeDirector.String() {
+			name := performer.Name
+			if appearance.As.Valid {
+				name = appearance.As.String
+			}
+			directors = append(directors, name)
+		}
+	}
+
+	if len(directors) == 0 {
+		return nil, nil
+	}
+
+	ret := strings.Join(directors[:], ",")
+	return &ret, nil
 }
 
 func (r *sceneResolver) Code(ctx context.Context, obj *models.Scene) (*string, error) {
@@ -99,9 +127,40 @@ func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*m
 			return nil, err
 		}
 
+		if appearance.Type == models.AppearanceTypePerformer.String() {
+			retApp := models.PerformerAppearance{
+				Performer: performer,
+				As:        resolveNullString(appearance.As),
+			}
+			ret = append(ret, &retApp)
+		}
+	}
+
+	return ret, nil
+}
+
+func (r *sceneResolver) Credits(ctx context.Context, obj *models.Scene) ([]*models.PerformerAppearance, error) {
+	appearances, err := dataloader.For(ctx).SceneAppearancesByID.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	var ret []*models.PerformerAppearance
+	for _, appearance := range appearances {
+		performer, err := dataloader.For(ctx).PerformerByID.Load(appearance.PerformerID)
+		if err != nil {
+			return nil, err
+		}
+
+		var retType models.AppearanceType
+		if !utils.ResolveEnumString(appearance.Type, &retType) {
+			return nil, nil
+		}
+
 		retApp := models.PerformerAppearance{
 			Performer: performer,
 			As:        resolveNullString(appearance.As),
+			Type:      retType,
 		}
 		ret = append(ret, &retApp)
 	}

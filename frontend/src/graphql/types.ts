@@ -30,6 +30,12 @@ export type ActivateNewUserInput = {
   password: Scalars["String"];
 };
 
+export enum AppearanceType {
+  DIRECTOR = "DIRECTOR",
+  NONSEX = "NONSEX",
+  PERFORMER = "PERFORMER",
+}
+
 export type ApplyEditInput = {
   id: Scalars["ID"];
 };
@@ -762,12 +768,14 @@ export type PerformerAppearance = {
   /** Performing as alias */
   as?: Maybe<Scalars["String"]>;
   performer: Performer;
+  type: AppearanceType;
 };
 
 export type PerformerAppearanceInput = {
   /** Performing as alias */
   as?: InputMaybe<Scalars["String"]>;
   performer_id: Scalars["ID"];
+  type: AppearanceType;
 };
 
 export type PerformerCreateInput = {

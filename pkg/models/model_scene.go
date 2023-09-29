@@ -17,7 +17,6 @@ type Scene struct {
 	CreatedAt    time.Time      `db:"created_at" json:"created_at"`
 	UpdatedAt    time.Time      `db:"updated_at" json:"updated_at"`
 	Duration     sql.NullInt64  `db:"duration" json:"duration"`
-	Director     sql.NullString `db:"director" json:"director"`
 	Code         sql.NullString `db:"code" json:"code"`
 	Deleted      bool           `db:"deleted" json:"deleted"`
 }
@@ -265,7 +264,6 @@ func (p *Scene) CopyFromSceneEdit(input SceneEdit, old *SceneEdit) {
 	fe.nullString(&p.Details, input.Details, old.Details)
 	fe.nullUUID(&p.StudioID, input.StudioID, old.StudioID)
 	fe.nullInt64(&p.Duration, input.Duration, old.Duration)
-	fe.nullString(&p.Director, input.Director, old.Director)
 	fe.nullString(&p.Code, input.Code, old.Code)
 	fe.sqlDate(&p.Date, input.Date, old.Date)
 	fe.nullString(&p.DateAccuracy, input.DateAccuracy, old.DateAccuracy)
@@ -283,7 +281,6 @@ func (p *Scene) ValidateModifyEdit(edit SceneEditData) error {
 	v.string("Date Accuracy", edit.Old.DateAccuracy, p.DateAccuracy.String)
 	v.uuid("StudioID", edit.Old.StudioID, p.StudioID)
 	v.int64("Duration", edit.Old.Duration, p.Duration.Int64)
-	v.string("Director", edit.Old.Director, p.Director.String)
 	v.string("Code", edit.Old.Code, p.Code.String)
 
 	return v.err

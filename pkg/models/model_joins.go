@@ -10,10 +10,11 @@ type PerformerScene struct {
 	PerformerID uuid.UUID      `db:"performer_id" json:"performer_id"`
 	As          sql.NullString `db:"as" json:"as"`
 	SceneID     uuid.UUID      `db:"scene_id" json:"scene_id"`
+	Type        string         `db:"type" json:"type"`
 }
 
 func (s PerformerScene) ID() string {
-	return s.PerformerID.String() + s.As.String
+	return s.PerformerID.String() + s.As.String + s.Type
 }
 
 type PerformersScenes []*PerformerScene

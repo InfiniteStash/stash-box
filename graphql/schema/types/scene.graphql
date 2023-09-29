@@ -2,12 +2,15 @@ type PerformerAppearance {
   performer: Performer!
   """Performing as alias"""
   as: String
+  type: AppearanceType!
 }
 
 input PerformerAppearanceInput {
   performer_id: ID!
   """Performing as alias"""
   as: String
+  """Defaults to `PERFORMER`"""
+  type: AppearanceType
 }
 
 enum FingerprintAlgorithm {
@@ -80,7 +83,6 @@ type Scene {
   performers: [PerformerAppearance!]!
   fingerprints(is_submitted: Boolean = False): [Fingerprint!]!
   duration: Int
-  director: String
   code: String
   deleted: Boolean!
   edits: [Edit!]!
@@ -99,7 +101,6 @@ input SceneCreateInput {
   image_ids: [ID!]
   fingerprints: [FingerprintEditInput!]!
   duration: Int
-  director: String
   code: String
 }
 
@@ -115,7 +116,6 @@ input SceneUpdateInput {
   image_ids: [ID!]
   fingerprints: [FingerprintEditInput!]
   duration: Int
-  director: String
   code: String
 }
 
@@ -133,7 +133,6 @@ input SceneEditDetailsInput {
   tag_ids: [ID!]
   image_ids: [ID!]
   duration: Int
-  director: String
   code: String
   fingerprints: [FingerprintInput!]
   draft_id: ID
@@ -162,7 +161,6 @@ type SceneEdit {
   added_fingerprints: [Fingerprint!]
   removed_fingerprints: [Fingerprint!]
   duration: Int
-  director: String
   code: String
   draft_id: ID
 
@@ -227,7 +225,6 @@ type SceneDraft {
   title: String
   code: String
   details: String
-  director: String
   url: URL
   date: String
   studio: SceneDraftStudio
@@ -242,7 +239,6 @@ input SceneDraftInput {
   title: String
   code: String
   details: String
-  director: String
   url: String
   date: String
   studio: DraftEntityInput
@@ -261,4 +257,10 @@ input QueryExistingSceneInput {
 type QueryExistingSceneResult {
   edits: [Edit!]!
   scenes: [Scene!]!
+}
+
+enum AppearanceType {
+  PERFORMER
+  DIRECTOR
+  NONSEX
 }
