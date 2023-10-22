@@ -5,7 +5,6 @@ mutation AddScene($sceneData: SceneCreateInput!) {
     title
     code
     details
-    director
     urls {
       url
       site {
@@ -24,6 +23,8 @@ mutation AddScene($sceneData: SceneCreateInput!) {
         gender
         aliases
       }
+      as
+      type
     }
     fingerprints {
       hash

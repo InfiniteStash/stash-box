@@ -1,6 +1,6 @@
 import * as yup from "yup";
 import { addYears } from "date-fns";
-import { GenderEnum } from "src/graphql";
+import { GenderEnum, SceneCreditType } from "src/graphql";
 import { isValidDate, dateWithinRange } from "src/utils";
 
 const nullCheck = (input: string | null) =>
@@ -32,7 +32,6 @@ export const SceneSchema = yup.object({
       message: "Invalid duration, format should be HH:MM:SS",
     })
     .nullable(),
-  director: yup.string().trim().transform(nullCheck).nullable(),
   code: yup.string().trim().transform(nullCheck).nullable(),
   studio: yup
     .object({
@@ -41,7 +40,7 @@ export const SceneSchema = yup.object({
     })
     .nullable()
     .required("Studio is required"),
-  performers: yup
+  credits: yup
     .array()
     .of(
       yup
@@ -56,6 +55,10 @@ export const SceneSchema = yup.object({
             .nullable()
             .oneOf([null, ...Object.keys(GenderEnum)]),
           deleted: yup.bool().required(),
+          type: yup
+            .string()
+            .required()
+            .oneOf(Object.keys(SceneCreditType)),
         })
         .transform((s: { name?: string; alias?: string }) => ({
           ...s,

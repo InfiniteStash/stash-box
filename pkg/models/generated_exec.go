@@ -404,9 +404,11 @@ type ComplexityRoot struct {
 	Scene struct {
 		Code         func(childComplexity int) int
 		Created      func(childComplexity int) int
+		Credits      func(childComplexity int) int
 		Date         func(childComplexity int) int
 		Deleted      func(childComplexity int) int
 		Details      func(childComplexity int) int
+		Director     func(childComplexity int) int
 		Duration     func(childComplexity int) int
 		Edits        func(childComplexity int) int
 		Fingerprints func(childComplexity int, isSubmitted *bool) int
@@ -425,6 +427,7 @@ type ComplexityRoot struct {
 		Code         func(childComplexity int) int
 		Date         func(childComplexity int) int
 		Details      func(childComplexity int) int
+		Director     func(childComplexity int) int
 		Fingerprints func(childComplexity int) int
 		ID           func(childComplexity int) int
 		Image        func(childComplexity int) int
@@ -787,8 +790,10 @@ type SceneResolver interface {
 	Tags(ctx context.Context, obj *Scene) ([]*Tag, error)
 	Images(ctx context.Context, obj *Scene) ([]*Image, error)
 	Performers(ctx context.Context, obj *Scene) ([]*PerformerAppearance, error)
+	Credits(ctx context.Context, obj *Scene) ([]*PerformerAppearance, error)
 	Fingerprints(ctx context.Context, obj *Scene, isSubmitted *bool) ([]*Fingerprint, error)
 	Duration(ctx context.Context, obj *Scene) (*int, error)
+	Director(ctx context.Context, obj *Scene) (*string, error)
 	Code(ctx context.Context, obj *Scene) (*string, error)
 
 	Edits(ctx context.Context, obj *Scene) ([]*Edit, error)
@@ -2982,6 +2987,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Scene.Created(childComplexity), true
 
+	case "Scene.credits":
+		if e.complexity.Scene.Credits == nil {
+			break
+		}
+
+		return e.complexity.Scene.Credits(childComplexity), true
+
 	case "Scene.date":
 		if e.complexity.Scene.Date == nil {
 			break
@@ -3002,6 +3014,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Scene.Details(childComplexity), true
+
+	case "Scene.director":
+		if e.complexity.Scene.Director == nil {
+			break
+		}
+
+		return e.complexity.Scene.Director(childComplexity), true
 
 	case "Scene.duration":
 		if e.complexity.Scene.Duration == nil {
@@ -3112,6 +3131,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SceneDraft.Details(childComplexity), true
+
+	case "SceneDraft.director":
+		if e.complexity.SceneDraft.Director == nil {
+			break
+		}
+
+		return e.complexity.SceneDraft.Director(childComplexity), true
 
 	case "SceneDraft.fingerprints":
 		if e.complexity.SceneDraft.Fingerprints == nil {
@@ -4767,7 +4793,7 @@ input PerformerDraftInput {
   performer: Performer!
   """Performing as alias"""
   as: String
-  type: AppearanceType!
+  type: SceneCreditType!
 }
 
 input PerformerAppearanceInput {
@@ -4775,7 +4801,7 @@ input PerformerAppearanceInput {
   """Performing as alias"""
   as: String
   """Defaults to ` + "`" + `PERFORMER` + "`" + `"""
-  type: AppearanceType
+  type: SceneCreditType
 }
 
 enum FingerprintAlgorithm {
@@ -4845,9 +4871,11 @@ type Scene {
   studio: Studio
   tags: [Tag!]!
   images: [Image!]!
-  performers: [PerformerAppearance!]!
+  performers: [PerformerAppearance!]! @deprecated(reason: "Please use ` + "`" + `credits` + "`" + ` field")
+  credits: [PerformerAppearance!]!
   fingerprints(is_submitted: Boolean = False): [Fingerprint!]!
   duration: Int
+  director: String @deprecated(reason: "Please use ` + "`" + `credits` + "`" + ` field")
   code: String
   deleted: Boolean!
   edits: [Edit!]!
@@ -4894,7 +4922,7 @@ input SceneEditDetailsInput {
   urls: [URLInput!]
   date: String
   studio_id: ID
-  performers: [PerformerAppearanceInput!]
+  credits: [PerformerAppearanceInput!]
   tag_ids: [ID!]
   image_ids: [ID!]
   duration: Int
@@ -4990,6 +5018,7 @@ type SceneDraft {
   title: String
   code: String
   details: String
+  director: String
   url: URL
   date: String
   studio: SceneDraftStudio
@@ -5004,6 +5033,7 @@ input SceneDraftInput {
   title: String
   code: String
   details: String
+  director: String
   url: String
   date: String
   studio: DraftEntityInput
@@ -5024,7 +5054,7 @@ type QueryExistingSceneResult {
   scenes: [Scene!]!
 }
 
-enum AppearanceType {
+enum SceneCreditType {
   PERFORMER
   DIRECTOR
   NONSEX
@@ -9510,10 +9540,14 @@ func (ec *executionContext) fieldContext_Mutation_sceneCreate(ctx context.Contex
 				return ec.fieldContext_Scene_images(ctx, field)
 			case "performers":
 				return ec.fieldContext_Scene_performers(ctx, field)
+			case "credits":
+				return ec.fieldContext_Scene_credits(ctx, field)
 			case "fingerprints":
 				return ec.fieldContext_Scene_fingerprints(ctx, field)
 			case "duration":
 				return ec.fieldContext_Scene_duration(ctx, field)
+			case "director":
+				return ec.fieldContext_Scene_director(ctx, field)
 			case "code":
 				return ec.fieldContext_Scene_code(ctx, field)
 			case "deleted":
@@ -9621,10 +9655,14 @@ func (ec *executionContext) fieldContext_Mutation_sceneUpdate(ctx context.Contex
 				return ec.fieldContext_Scene_images(ctx, field)
 			case "performers":
 				return ec.fieldContext_Scene_performers(ctx, field)
+			case "credits":
+				return ec.fieldContext_Scene_credits(ctx, field)
 			case "fingerprints":
 				return ec.fieldContext_Scene_fingerprints(ctx, field)
 			case "duration":
 				return ec.fieldContext_Scene_duration(ctx, field)
+			case "director":
+				return ec.fieldContext_Scene_director(ctx, field)
 			case "code":
 				return ec.fieldContext_Scene_code(ctx, field)
 			case "deleted":
@@ -15326,10 +15364,14 @@ func (ec *executionContext) fieldContext_Performer_scenes(ctx context.Context, f
 				return ec.fieldContext_Scene_images(ctx, field)
 			case "performers":
 				return ec.fieldContext_Scene_performers(ctx, field)
+			case "credits":
+				return ec.fieldContext_Scene_credits(ctx, field)
 			case "fingerprints":
 				return ec.fieldContext_Scene_fingerprints(ctx, field)
 			case "duration":
 				return ec.fieldContext_Scene_duration(ctx, field)
+			case "director":
+				return ec.fieldContext_Scene_director(ctx, field)
 			case "code":
 				return ec.fieldContext_Scene_code(ctx, field)
 			case "deleted":
@@ -15765,9 +15807,9 @@ func (ec *executionContext) _PerformerAppearance_type(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.(AppearanceType)
+	res := resTmp.(SceneCreditType)
 	fc.Result = res
-	return ec.marshalNAppearanceType2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐAppearanceType(ctx, field.Selections, res)
+	return ec.marshalNSceneCreditType2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneCreditType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PerformerAppearance_type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -15777,7 +15819,7 @@ func (ec *executionContext) fieldContext_PerformerAppearance_type(ctx context.Co
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type AppearanceType does not have child fields")
+			return nil, errors.New("field of type SceneCreditType does not have child fields")
 		},
 	}
 	return fc, nil
@@ -18979,10 +19021,14 @@ func (ec *executionContext) fieldContext_Query_findScene(ctx context.Context, fi
 				return ec.fieldContext_Scene_images(ctx, field)
 			case "performers":
 				return ec.fieldContext_Scene_performers(ctx, field)
+			case "credits":
+				return ec.fieldContext_Scene_credits(ctx, field)
 			case "fingerprints":
 				return ec.fieldContext_Scene_fingerprints(ctx, field)
 			case "duration":
 				return ec.fieldContext_Scene_duration(ctx, field)
+			case "director":
+				return ec.fieldContext_Scene_director(ctx, field)
 			case "code":
 				return ec.fieldContext_Scene_code(ctx, field)
 			case "deleted":
@@ -19093,10 +19139,14 @@ func (ec *executionContext) fieldContext_Query_findSceneByFingerprint(ctx contex
 				return ec.fieldContext_Scene_images(ctx, field)
 			case "performers":
 				return ec.fieldContext_Scene_performers(ctx, field)
+			case "credits":
+				return ec.fieldContext_Scene_credits(ctx, field)
 			case "fingerprints":
 				return ec.fieldContext_Scene_fingerprints(ctx, field)
 			case "duration":
 				return ec.fieldContext_Scene_duration(ctx, field)
+			case "director":
+				return ec.fieldContext_Scene_director(ctx, field)
 			case "code":
 				return ec.fieldContext_Scene_code(ctx, field)
 			case "deleted":
@@ -19207,10 +19257,14 @@ func (ec *executionContext) fieldContext_Query_findScenesByFingerprints(ctx cont
 				return ec.fieldContext_Scene_images(ctx, field)
 			case "performers":
 				return ec.fieldContext_Scene_performers(ctx, field)
+			case "credits":
+				return ec.fieldContext_Scene_credits(ctx, field)
 			case "fingerprints":
 				return ec.fieldContext_Scene_fingerprints(ctx, field)
 			case "duration":
 				return ec.fieldContext_Scene_duration(ctx, field)
+			case "director":
+				return ec.fieldContext_Scene_director(ctx, field)
 			case "code":
 				return ec.fieldContext_Scene_code(ctx, field)
 			case "deleted":
@@ -19321,10 +19375,14 @@ func (ec *executionContext) fieldContext_Query_findScenesByFullFingerprints(ctx 
 				return ec.fieldContext_Scene_images(ctx, field)
 			case "performers":
 				return ec.fieldContext_Scene_performers(ctx, field)
+			case "credits":
+				return ec.fieldContext_Scene_credits(ctx, field)
 			case "fingerprints":
 				return ec.fieldContext_Scene_fingerprints(ctx, field)
 			case "duration":
 				return ec.fieldContext_Scene_duration(ctx, field)
+			case "director":
+				return ec.fieldContext_Scene_director(ctx, field)
 			case "code":
 				return ec.fieldContext_Scene_code(ctx, field)
 			case "deleted":
@@ -19435,10 +19493,14 @@ func (ec *executionContext) fieldContext_Query_findScenesBySceneFingerprints(ctx
 				return ec.fieldContext_Scene_images(ctx, field)
 			case "performers":
 				return ec.fieldContext_Scene_performers(ctx, field)
+			case "credits":
+				return ec.fieldContext_Scene_credits(ctx, field)
 			case "fingerprints":
 				return ec.fieldContext_Scene_fingerprints(ctx, field)
 			case "duration":
 				return ec.fieldContext_Scene_duration(ctx, field)
+			case "director":
+				return ec.fieldContext_Scene_director(ctx, field)
 			case "code":
 				return ec.fieldContext_Scene_code(ctx, field)
 			case "deleted":
@@ -20397,10 +20459,14 @@ func (ec *executionContext) fieldContext_Query_searchScene(ctx context.Context, 
 				return ec.fieldContext_Scene_images(ctx, field)
 			case "performers":
 				return ec.fieldContext_Scene_performers(ctx, field)
+			case "credits":
+				return ec.fieldContext_Scene_credits(ctx, field)
 			case "fingerprints":
 				return ec.fieldContext_Scene_fingerprints(ctx, field)
 			case "duration":
 				return ec.fieldContext_Scene_duration(ctx, field)
+			case "director":
+				return ec.fieldContext_Scene_director(ctx, field)
 			case "code":
 				return ec.fieldContext_Scene_code(ctx, field)
 			case "deleted":
@@ -21313,10 +21379,14 @@ func (ec *executionContext) fieldContext_QueryExistingSceneResult_scenes(ctx con
 				return ec.fieldContext_Scene_images(ctx, field)
 			case "performers":
 				return ec.fieldContext_Scene_performers(ctx, field)
+			case "credits":
+				return ec.fieldContext_Scene_credits(ctx, field)
 			case "fingerprints":
 				return ec.fieldContext_Scene_fingerprints(ctx, field)
 			case "duration":
 				return ec.fieldContext_Scene_duration(ctx, field)
+			case "director":
+				return ec.fieldContext_Scene_director(ctx, field)
 			case "code":
 				return ec.fieldContext_Scene_code(ctx, field)
 			case "deleted":
@@ -21595,10 +21665,14 @@ func (ec *executionContext) fieldContext_QueryScenesResultType_scenes(ctx contex
 				return ec.fieldContext_Scene_images(ctx, field)
 			case "performers":
 				return ec.fieldContext_Scene_performers(ctx, field)
+			case "credits":
+				return ec.fieldContext_Scene_credits(ctx, field)
 			case "fingerprints":
 				return ec.fieldContext_Scene_fingerprints(ctx, field)
 			case "duration":
 				return ec.fieldContext_Scene_duration(ctx, field)
+			case "director":
+				return ec.fieldContext_Scene_director(ctx, field)
 			case "code":
 				return ec.fieldContext_Scene_code(ctx, field)
 			case "deleted":
@@ -22649,6 +22723,58 @@ func (ec *executionContext) fieldContext_Scene_performers(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Scene_credits(ctx context.Context, field graphql.CollectedField, obj *Scene) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Scene_credits(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Scene().Credits(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*PerformerAppearance)
+	fc.Result = res
+	return ec.marshalNPerformerAppearance2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Scene_credits(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Scene",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "performer":
+				return ec.fieldContext_PerformerAppearance_performer(ctx, field)
+			case "as":
+				return ec.fieldContext_PerformerAppearance_as(ctx, field)
+			case "type":
+				return ec.fieldContext_PerformerAppearance_type(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PerformerAppearance", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Scene_fingerprints(ctx context.Context, field graphql.CollectedField, obj *Scene) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Scene_fingerprints(ctx, field)
 	if err != nil {
@@ -22756,6 +22882,47 @@ func (ec *executionContext) fieldContext_Scene_duration(ctx context.Context, fie
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Scene_director(ctx context.Context, field graphql.CollectedField, obj *Scene) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Scene_director(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Scene().Director(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Scene_director(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Scene",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -23172,6 +23339,47 @@ func (ec *executionContext) _SceneDraft_details(ctx context.Context, field graph
 }
 
 func (ec *executionContext) fieldContext_SceneDraft_details(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SceneDraft",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SceneDraft_director(ctx context.Context, field graphql.CollectedField, obj *SceneDraft) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SceneDraft_director(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Director, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SceneDraft_director(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "SceneDraft",
 		Field:      field,
@@ -31706,7 +31914,7 @@ func (ec *executionContext) unmarshalInputPerformerAppearanceInput(ctx context.C
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-			it.Type, err = ec.unmarshalOAppearanceType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐAppearanceType(ctx, v)
+			it.Type, err = ec.unmarshalOSceneCreditType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneCreditType(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -33187,7 +33395,7 @@ func (ec *executionContext) unmarshalInputSceneDraftInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "title", "code", "details", "url", "date", "studio", "performers", "tags", "image", "fingerprints"}
+	fieldsInOrder := [...]string{"id", "title", "code", "details", "director", "url", "date", "studio", "performers", "tags", "image", "fingerprints"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -33223,6 +33431,14 @@ func (ec *executionContext) unmarshalInputSceneDraftInput(ctx context.Context, o
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("details"))
 			it.Details, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "director":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("director"))
+			it.Director, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -33295,7 +33511,7 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "details", "urls", "date", "studio_id", "performers", "tag_ids", "image_ids", "duration", "code", "fingerprints", "draft_id"}
+	fieldsInOrder := [...]string{"title", "details", "urls", "date", "studio_id", "credits", "tag_ids", "image_ids", "duration", "code", "fingerprints", "draft_id"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -33342,11 +33558,11 @@ func (ec *executionContext) unmarshalInputSceneEditDetailsInput(ctx context.Cont
 			if err != nil {
 				return it, err
 			}
-		case "performers":
+		case "credits":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performers"))
-			it.Performers, err = ec.unmarshalOPerformerAppearanceInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceInputᚄ(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("credits"))
+			it.Credits, err = ec.unmarshalOPerformerAppearanceInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐPerformerAppearanceInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -38851,6 +39067,26 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 				return innerFunc(ctx)
 
 			})
+		case "credits":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Scene_credits(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "fingerprints":
 			field := field
 
@@ -38881,6 +39117,23 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 					}
 				}()
 				res = ec._Scene_duration(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "director":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Scene_director(ctx, field, obj)
 				return res
 			}
 
@@ -39008,6 +39261,10 @@ func (ec *executionContext) _SceneDraft(ctx context.Context, sel ast.SelectionSe
 		case "details":
 
 			out.Values[i] = ec._SceneDraft_details(ctx, field, obj)
+
+		case "director":
+
+			out.Values[i] = ec._SceneDraft_director(ctx, field, obj)
 
 		case "url":
 			field := field
@@ -41014,16 +41271,6 @@ func (ec *executionContext) unmarshalNActivateNewUserInput2githubᚗcomᚋstasha
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNAppearanceType2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐAppearanceType(ctx context.Context, v interface{}) (AppearanceType, error) {
-	var res AppearanceType
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNAppearanceType2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐAppearanceType(ctx context.Context, sel ast.SelectionSet, v AppearanceType) graphql.Marshaler {
-	return v
-}
-
 func (ec *executionContext) unmarshalNApplyEditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐApplyEditInput(ctx context.Context, v interface{}) (ApplyEditInput, error) {
 	res, err := ec.unmarshalInputApplyEditInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -42395,6 +42642,16 @@ func (ec *executionContext) unmarshalNSceneCreateInput2githubᚗcomᚋstashapp�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNSceneCreditType2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneCreditType(ctx context.Context, v interface{}) (SceneCreditType, error) {
+	var res SceneCreditType
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNSceneCreditType2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneCreditType(ctx context.Context, sel ast.SelectionSet, v SceneCreditType) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) unmarshalNSceneDestroyInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneDestroyInput(ctx context.Context, v interface{}) (SceneDestroyInput, error) {
 	res, err := ec.unmarshalInputSceneDestroyInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -43469,22 +43726,6 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
-func (ec *executionContext) unmarshalOAppearanceType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐAppearanceType(ctx context.Context, v interface{}) (*AppearanceType, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var res = new(AppearanceType)
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOAppearanceType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐAppearanceType(ctx context.Context, sel ast.SelectionSet, v *AppearanceType) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return v
-}
-
 func (ec *executionContext) marshalOBodyModification2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐBodyModificationᚄ(ctx context.Context, sel ast.SelectionSet, v []*BodyModification) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -44273,6 +44514,22 @@ func (ec *executionContext) marshalOScene2ᚖgithubᚗcomᚋstashappᚋstashᚑb
 		return graphql.Null
 	}
 	return ec._Scene(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOSceneCreditType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneCreditType(ctx context.Context, v interface{}) (*SceneCreditType, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(SceneCreditType)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOSceneCreditType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneCreditType(ctx context.Context, sel ast.SelectionSet, v *SceneCreditType) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) marshalOSceneDraftStudio2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐSceneDraftStudio(ctx context.Context, sel ast.SelectionSet, v SceneDraftStudio) graphql.Marshaler {

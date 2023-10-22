@@ -4,6 +4,7 @@ export { default as Icon } from "./Icon";
 export { default as TagLink } from "./TagLink";
 export { default as SiteLink } from "./SiteLink";
 export { default as PerformerName } from "./PerformerName";
+export { PerformersLinks } from "./PerformersLinks";
 export { default as ErrorMessage } from "./ErrorMessage";
 export { default as Help } from "./Help";
 export { default as Tooltip } from "./Tooltip";

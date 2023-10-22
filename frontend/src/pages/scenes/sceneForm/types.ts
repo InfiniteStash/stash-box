@@ -1,10 +1,9 @@
-import { GenderEnum } from "src/graphql";
+import { GenderEnum, SceneCreditType } from "src/graphql";
 
 export type InitialScene = {
   title?: string | null;
   details?: string | null;
   duration?: number | null;
-  director?: string | null;
   date?: string | null;
   code?: string | null;
   urls?: {
@@ -29,7 +28,7 @@ export type InitialScene = {
     name: string;
     aliases: string[];
   }[];
-  performers?:
+  credits?:
     | {
         as?: string | null;
         performer: {
@@ -40,6 +39,7 @@ export type InitialScene = {
           gender?: GenderEnum | null;
           deleted: boolean;
         };
+        type: SceneCreditType;
       }[]
     | null;
 };

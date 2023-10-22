@@ -17,6 +17,7 @@ import {
   GenderEnum,
   FingerprintAlgorithm,
   SceneFragment as Scene,
+  SceneCreditType,
 } from "src/graphql";
 
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
@@ -73,13 +74,12 @@ const SceneForm: FC<SceneProps> = ({
       details: initial?.details ?? scene?.details ?? undefined,
       date: initial?.date ?? scene?.release_date ?? undefined,
       duration: formatDuration(initial?.duration ?? scene?.duration),
-      director: initial?.director ?? scene?.director,
       code: initial?.code ?? scene?.code,
       urls: initial?.urls ?? scene?.urls ?? [],
       images: initial?.images ?? scene?.images ?? [],
       studio: initial?.studio ?? scene?.studio ?? undefined,
       tags: initial?.tags ?? scene?.tags ?? [],
-      performers: (initial?.performers ?? scene?.performers ?? []).map((p) => ({
+      credits: (initial?.credits ?? scene?.credits ?? []).map((p) => ({
         performerId: p.performer.id,
         name: p.performer.name,
         alias: p.as ?? "",
@@ -87,17 +87,18 @@ const SceneForm: FC<SceneProps> = ({
         gender: p.performer.gender,
         disambiguation: p.performer.disambiguation,
         deleted: p.performer.deleted,
+        type: p.type,
       })),
     },
   });
   const {
-    fields: performerFields,
-    append: appendPerformer,
-    remove: removePerformer,
-    update: updatePerformer,
+    fields: creditsFields,
+    append: appendCredits,
+    remove: removeCredits,
+    update: updateCredits,
   } = useFieldArray({
     control,
-    name: "performers",
+    name: "credits",
     keyName: "key",
   });
 
@@ -122,13 +123,13 @@ const SceneForm: FC<SceneProps> = ({
       title: data.title,
       date: data.date,
       duration: parseDuration(data.duration),
-      director: data.director,
       code: data.code,
       details: data.details,
       studio_id: data.studio?.id,
-      performers: (data.performers ?? []).map((performance) => ({
+      credits: (data.credits ?? []).map((performance) => ({
         performer_id: performance.performerId,
         as: performance.alias,
+        type: performance.type,
       })),
       image_ids: data.images.map((i) => i.id),
       tag_ids: data.tags?.map((t) => t.id),
@@ -142,7 +143,7 @@ const SceneForm: FC<SceneProps> = ({
   };
 
   const addPerformer = (result: PerformerResult) => {
-    appendPerformer({
+    appendCredits({
       name: result.name,
       performerId: result.id,
       gender: result.gender,
@@ -150,19 +151,20 @@ const SceneForm: FC<SceneProps> = ({
       aliases: result.aliases,
       disambiguation: result.disambiguation ?? undefined,
       deleted: result.deleted,
+      type: SceneCreditType.PERFORMER,
     });
   };
 
   const handleRemove = (index: number) => {
     if (isChanging && isChanging > index) setChange(isChanging - 1);
     else if (isChanging === index) setChange(undefined);
-    removePerformer(index);
+    removeCredits(index);
   };
 
   const handleChange = (result: PerformerResult, index: number) => {
     setChange(undefined);
-    const alias = performerFields[index].alias || performerFields[index].name;
-    updatePerformer(index, {
+    const alias = creditsFields[index].alias || creditsFields[index].name;
+    updateCredits(index, {
       name: result.name,
       performerId: result.id,
       gender: result.gender,
@@ -170,17 +172,18 @@ const SceneForm: FC<SceneProps> = ({
       aliases: result.aliases,
       disambiguation: result.disambiguation ?? undefined,
       deleted: result.deleted,
+      type: SceneCreditType.PERFORMER,
     });
   };
 
-  const currentPerformerIds = performerFields.map((p) => p.performerId);
+  const currentPerformerIds = creditsFields.map((p) => p.performerId);
 
-  const performerList = performerFields.map((p, index) => (
+  const performerList = creditsFields.map((p, index) => (
     <Row className="performer-item d-flex g-0" key={p.performerId}>
       <Form.Control
         type="hidden"
         defaultValue={p.performerId}
-        {...register(`performers.${index}.performerId`)}
+        {...register(`credits.${index}.performerId`)}
       />
 
       <Col xs={6}>
@@ -252,7 +255,7 @@ const SceneForm: FC<SceneProps> = ({
           <InputGroup.Text>Scene Alias</InputGroup.Text>
 
           <Controller
-            name={`performers.${index}.alias`}
+            name={`credits.${index}.alias`}
             control={control}
             render={({ field: { onChange } }) => (
               <Typeahead

@@ -41,7 +41,7 @@ func (r *sceneResolver) Director(ctx context.Context, obj *models.Scene) (*strin
 			return nil, err
 		}
 
-		if appearance.Type == models.AppearanceTypeDirector.String() {
+		if appearance.Type == models.SceneCreditTypeDirector.String() {
 			name := performer.Name
 			if appearance.As.Valid {
 				name = appearance.As.String
@@ -127,7 +127,7 @@ func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*m
 			return nil, err
 		}
 
-		if appearance.Type == models.AppearanceTypePerformer.String() {
+		if appearance.Type == models.SceneCreditTypePerformer.String() {
 			retApp := models.PerformerAppearance{
 				Performer: performer,
 				As:        resolveNullString(appearance.As),
@@ -152,7 +152,7 @@ func (r *sceneResolver) Credits(ctx context.Context, obj *models.Scene) ([]*mode
 			return nil, err
 		}
 
-		var retType models.AppearanceType
+		var retType models.SceneCreditType
 		if !utils.ResolveEnumString(appearance.Type, &retType) {
 			return nil, nil
 		}

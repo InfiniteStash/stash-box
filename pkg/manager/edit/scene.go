@@ -94,8 +94,8 @@ func (m *SceneEditProcessor) diffRelationships(sceneEdit *models.SceneEditData, 
 		}
 	}
 
-	if input.Details.Performers != nil || inputArgs.Field("performers").IsNull() {
-		if err := m.diffPerformers(sceneEdit, sceneID, input.Details.Performers); err != nil {
+	if input.Details.Credits != nil || inputArgs.Field("credits").IsNull() {
+		if err := m.diffPerformers(sceneEdit, sceneID, input.Details.Credits); err != nil {
 			return err
 		}
 	}
@@ -293,7 +293,7 @@ func (m *SceneEditProcessor) createEdit(input models.SceneEditInput, inputArgs u
 	sceneEdit.New.AddedUrls = models.ParseURLInput(input.Details.Urls)
 	sceneEdit.New.AddedTags = input.Details.TagIds
 	sceneEdit.New.AddedImages = input.Details.ImageIds
-	sceneEdit.New.AddedPerformers = input.Details.Performers
+	sceneEdit.New.AddedPerformers = input.Details.Credits
 	sceneEdit.New.AddedFingerprints = input.Details.Fingerprints
 	sceneEdit.New.DraftID = input.Details.DraftID
 

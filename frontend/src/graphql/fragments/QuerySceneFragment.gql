@@ -16,7 +16,7 @@ fragment QuerySceneFragment on Scene {
     id
     name
   }
-  performers {
+  credits {
     as
     performer {
       ...ScenePerformerFragment

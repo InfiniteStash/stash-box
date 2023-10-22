@@ -48,6 +48,7 @@ const selectSceneDetails = (
                 deleted: p.deleted ?? false,
               },
               as: p.alias ?? null,
+              type: p.type,
             },
           ]
         : []
@@ -84,7 +85,6 @@ const selectSceneDetails = (
       details: diffValue(original?.details, data.details),
       date: diffValue(original?.release_date, data.date),
       duration: diffValue(original?.duration, parseDuration(data.duration)),
-      director: diffValue(original?.director, data.director),
       code: diffValue(original?.code, data.code),
       studio:
         original?.studio?.id !== data.studio?.id &&
@@ -101,7 +101,6 @@ const selectSceneDetails = (
       details: diffValue(data.details, original?.details),
       date: diffValue(data.date, original?.release_date),
       duration: diffValue(parseDuration(data.duration), original?.duration),
-      director: diffValue(data.director, original?.director),
       code: diffValue(data.code, original?.code),
       studio:
         data.studio?.id !== original?.studio?.id &&

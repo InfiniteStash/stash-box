@@ -18,7 +18,6 @@ import { useToast } from "src/hooks";
 import {
   canEdit,
   tagHref,
-  performerHref,
   studioHref,
   createHref,
   formatDuration,
@@ -26,6 +25,7 @@ import {
   formatPendingEdits,
   getUrlBySite,
   compareByName,
+  parseCredits,
 } from "src/utils";
 import {
   ROUTE_SCENE_EDIT,
@@ -33,10 +33,9 @@ import {
   ROUTE_SCENE_DELETE,
 } from "src/constants/route";
 import {
-  GenderIcon,
   TagLink,
-  PerformerName,
   Icon,
+  PerformersLinks,
 } from "src/components/fragments";
 import { EditList, URLList } from "src/components/list";
 import Image from "src/components/image";
@@ -67,21 +66,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
   const setTab = (tab: string | null) =>
     navigate({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
-  const performers = scene.performers
-    .map((performance) => {
-      const { performer } = performance;
-      return (
-        <Link
-          key={performer.id}
-          to={performerHref(performer)}
-          className="scene-performer"
-        >
-          <GenderIcon gender={performer.gender} />
-          <PerformerName performer={performer} as={performance.as} />
-        </Link>
-      );
-    })
-    .map((p, index) => (index % 2 === 2 ? [" • ", p] : p));
+  const credits = parseCredits(scene.credits);
 
   async function handleFingerprintUnmatch(fingerprint: Fingerprint) {
     if (unmatching) return;
@@ -199,7 +184,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
           <Image images={scene.images} emptyMessage="Scene has no image" />
         </Card.Body>
         <Card.Footer className="d-flex mx-1">
-          <div className="scene-performers me-auto">{performers}</div>
+          <div className="scene-performers me-auto"><PerformersLinks performers={credits.PERFORMER} /></div>
           {scene.code && (
             <div className="ms-3">
               Studio Code: <strong>{scene.code}</strong>
@@ -210,11 +195,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
               Duration: <b>{formatDuration(scene.duration)}</b>
             </div>
           )}
-          {scene.director && (
-            <div className="ms-3">
-              Director: <strong>{scene.director}</strong>
-            </div>
-          )}
+          <div className="ms-3">Director: <strong><PerformersLinks performers={credits.DIRECTOR} /></strong></div>
         </Card.Footer>
       </Card>
       <div className="float-end">

@@ -238,8 +238,8 @@ type NewUserInput struct {
 type PerformerAppearance struct {
 	Performer *Performer `json:"performer"`
 	// Performing as alias
-	As   *string        `json:"as"`
-	Type AppearanceType `json:"type"`
+	As   *string         `json:"as"`
+	Type SceneCreditType `json:"type"`
 }
 
 type PerformerAppearanceInput struct {
@@ -247,7 +247,7 @@ type PerformerAppearanceInput struct {
 	// Performing as alias
 	As *string `json:"as"`
 	// Defaults to `PERFORMER`
-	Type *AppearanceType `json:"type"`
+	Type *SceneCreditType `json:"type"`
 }
 
 type PerformerCreateInput struct {
@@ -489,6 +489,7 @@ type SceneDraftInput struct {
 	Title        *string             `json:"title"`
 	Code         *string             `json:"code"`
 	Details      *string             `json:"details"`
+	Director     *string             `json:"director"`
 	URL          *string             `json:"url"`
 	Date         *string             `json:"date"`
 	Studio       *DraftEntityInput   `json:"studio"`
@@ -504,7 +505,7 @@ type SceneEditDetailsInput struct {
 	Urls         []*URLInput                 `json:"urls"`
 	Date         *string                     `json:"date"`
 	StudioID     *uuid.UUID                  `json:"studio_id"`
-	Performers   []*PerformerAppearanceInput `json:"performers"`
+	Credits      []*PerformerAppearanceInput `json:"credits"`
 	TagIds       []uuid.UUID                 `json:"tag_ids"`
 	ImageIds     []uuid.UUID                 `json:"image_ids"`
 	Duration     *int                        `json:"duration"`
@@ -792,49 +793,6 @@ type Version struct {
 	BuildTime string `json:"build_time"`
 	BuildType string `json:"build_type"`
 	Version   string `json:"version"`
-}
-
-type AppearanceType string
-
-const (
-	AppearanceTypePerformer AppearanceType = "PERFORMER"
-	AppearanceTypeDirector  AppearanceType = "DIRECTOR"
-	AppearanceTypeNonsex    AppearanceType = "NONSEX"
-)
-
-var AllAppearanceType = []AppearanceType{
-	AppearanceTypePerformer,
-	AppearanceTypeDirector,
-	AppearanceTypeNonsex,
-}
-
-func (e AppearanceType) IsValid() bool {
-	switch e {
-	case AppearanceTypePerformer, AppearanceTypeDirector, AppearanceTypeNonsex:
-		return true
-	}
-	return false
-}
-
-func (e AppearanceType) String() string {
-	return string(e)
-}
-
-func (e *AppearanceType) UnmarshalGQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = AppearanceType(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid AppearanceType", str)
-	}
-	return nil
-}
-
-func (e AppearanceType) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type BreastTypeEnum string
@@ -1576,6 +1534,49 @@ func (e *RoleEnum) UnmarshalGQL(v interface{}) error {
 }
 
 func (e RoleEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type SceneCreditType string
+
+const (
+	SceneCreditTypePerformer SceneCreditType = "PERFORMER"
+	SceneCreditTypeDirector  SceneCreditType = "DIRECTOR"
+	SceneCreditTypeNonsex    SceneCreditType = "NONSEX"
+)
+
+var AllSceneCreditType = []SceneCreditType{
+	SceneCreditTypePerformer,
+	SceneCreditTypeDirector,
+	SceneCreditTypeNonsex,
+}
+
+func (e SceneCreditType) IsValid() bool {
+	switch e {
+	case SceneCreditTypePerformer, SceneCreditTypeDirector, SceneCreditTypeNonsex:
+		return true
+	}
+	return false
+}
+
+func (e SceneCreditType) String() string {
+	return string(e)
+}
+
+func (e *SceneCreditType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = SceneCreditType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid SceneCreditType", str)
+	}
+	return nil
+}
+
+func (e SceneCreditType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

@@ -121,6 +121,7 @@ query EditUpdate($id: ID!) {
             ...PerformerFragment
           }
           as
+          type
         }
         tags {
           ...TagFragment
@@ -132,7 +133,6 @@ query EditUpdate($id: ID!) {
           ...FingerprintFragment
         }
         duration
-        director
         code
         draft_id
       }

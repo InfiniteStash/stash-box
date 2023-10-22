@@ -144,12 +144,14 @@ fragment EditFragment on Edit {
           ...PerformerFragment
         }
         as
+        type
       }
       removed_performers {
         performer {
           ...PerformerFragment
         }
         as
+        type
       }
       added_tags {
         ...TagFragment
@@ -170,7 +172,6 @@ fragment EditFragment on Edit {
         ...FingerprintFragment
       }
       duration
-      director
       code
       draft_id
     }
@@ -226,12 +227,14 @@ fragment EditFragment on Edit {
           ...PerformerFragment
         }
         as
+        type
       }
       removed_performers {
         performer {
           ...PerformerFragment
         }
         as
+        type
       }
       added_tags {
         ...TagFragment
@@ -252,7 +255,6 @@ fragment EditFragment on Edit {
         ...FingerprintFragment
       }
       duration
-      director
       code
     }
   }

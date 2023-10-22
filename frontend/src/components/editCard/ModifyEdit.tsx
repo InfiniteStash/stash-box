@@ -9,6 +9,7 @@ import {
   EthnicityEnum,
   BreastTypeEnum,
   EditFragment,
+  SceneCreditType,
 } from "src/graphql";
 import {
   formatDuration,
@@ -21,6 +22,7 @@ import {
   studioHref,
   categoryHref,
   compareByName,
+  parseCredits,
 } from "src/utils";
 import { Icon } from "src/components/fragments";
 import ChangeRow from "src/components/changeRow";
@@ -301,6 +303,7 @@ type ScenePerformance = {
     PerformerFragment,
     "name" | "id" | "gender" | "name" | "disambiguation" | "deleted"
   >;
+  type: SceneCreditType; 
 };
 
 type NullableImage = Image | null;
@@ -310,7 +313,6 @@ export interface SceneDetails {
   date?: string | null;
   duration?: number | null;
   details?: string | null;
-  director?: string | null;
   code?: string | null;
   studio?: {
     id: string;
@@ -359,104 +361,118 @@ export const renderSceneDetails = (
   sceneDetails: SceneDetails,
   oldSceneDetails: OldSceneDetails | undefined,
   showDiff: boolean
-) => (
-  <>
-    {sceneDetails.title && (
+) => {
+  const addedCredits = parseCredits(sceneDetails.added_performers);
+  const removedCredits = parseCredits(sceneDetails.added_performers);
+  return (
+    <>
+      {sceneDetails.title && (
+        <ChangeRow
+          name="Title"
+          newValue={sceneDetails.title}
+          oldValue={oldSceneDetails?.title}
+          showDiff={showDiff}
+        />
+      )}
       <ChangeRow
-        name="Title"
-        newValue={sceneDetails.title}
-        oldValue={oldSceneDetails?.title}
+        name="Date"
+        newValue={sceneDetails.date}
+        oldValue={oldSceneDetails?.date}
         showDiff={showDiff}
       />
-    )}
-    <ChangeRow
-      name="Date"
-      newValue={sceneDetails.date}
-      oldValue={oldSceneDetails?.date}
-      showDiff={showDiff}
-    />
-    <ChangeRow
-      name="Duration"
-      newValue={formatDuration(sceneDetails.duration)}
-      oldValue={formatDuration(oldSceneDetails?.duration)}
-      showDiff={showDiff}
-    />
-    <ListChangeRow
-      name="Performers"
-      added={sceneDetails.added_performers}
-      removed={sceneDetails.removed_performers}
-      renderItem={renderPerformer}
-      getKey={(o) => o.performer.id}
-      showDiff={showDiff}
-    />
-    <LinkedChangeRow
-      name="Studio"
-      newEntity={{
-        name: sceneDetails.studio?.name,
-        link: sceneDetails.studio && studioHref(sceneDetails.studio),
-      }}
-      oldEntity={{
-        name: oldSceneDetails?.studio?.name,
-        link: oldSceneDetails?.studio && studioHref(oldSceneDetails.studio),
-      }}
-      showDiff={showDiff}
-    />
-    <URLChangeRow
-      newURLs={sceneDetails.added_urls}
-      oldURLs={sceneDetails.removed_urls}
-      showDiff={showDiff}
-    />
-    <ChangeRow
-      name="Details"
-      newValue={sceneDetails.details}
-      oldValue={oldSceneDetails?.details}
-      showDiff={showDiff}
-    />
-    <ChangeRow
-      name="Director"
-      newValue={sceneDetails.director}
-      oldValue={oldSceneDetails?.director}
-      showDiff={showDiff}
-    />
-    <ChangeRow
-      name="Studio Code"
-      newValue={sceneDetails.code}
-      oldValue={oldSceneDetails?.code}
-      showDiff={showDiff}
-    />
-    <ListChangeRow
-      name="Tags"
-      added={sceneDetails.added_tags?.slice().sort(compareByName)}
-      removed={sceneDetails.removed_tags?.slice().sort(compareByName)}
-      renderItem={renderTag}
-      getKey={(o) => o.id}
-      showDiff={showDiff}
-    />
-    <ImageChangeRow
-      newImages={sceneDetails?.added_images}
-      oldImages={sceneDetails?.removed_images}
-      showDiff={showDiff}
-    />
-    <ListChangeRow
-      name="Fingerprints"
-      added={sceneDetails.added_fingerprints}
-      removed={sceneDetails.removed_fingerprints}
-      renderItem={renderFingerprint}
-      getKey={(o) => `${o.hash}${o.algorithm}`}
-      showDiff={showDiff}
-    />
-    {sceneDetails.draft_id && (
-      <Row className="mb-2">
-        <Col xs={{ offset: 2 }}>
-          <h6>
-            <Icon icon={faEdit} color="green" />
-            <span className="ms-1">Submitted by draft</span>
-          </h6>
-        </Col>
-      </Row>
-    )}
-  </>
-);
+      <ChangeRow
+        name="Duration"
+        newValue={formatDuration(sceneDetails.duration)}
+        oldValue={formatDuration(oldSceneDetails?.duration)}
+        showDiff={showDiff}
+      />
+      <ListChangeRow
+        name="Performers"
+        added={addedCredits.PERFORMER}
+        removed={removedCredits.PERFORMER}
+        renderItem={renderPerformer}
+        getKey={(o) => o.performer.id}
+        showDiff={showDiff}
+      />
+      <ListChangeRow
+        name="Directors"
+        added={addedCredits.DIRECTOR}
+        removed={removedCredits.DIRECTOR}
+        renderItem={renderPerformer}
+        getKey={(o) => o.performer.id}
+        showDiff={showDiff}
+      />
+      <ListChangeRow
+        name="Non-Sex performers"
+        added={addedCredits.NONSEX}
+        removed={removedCredits.NONSEX}
+        renderItem={renderPerformer}
+        getKey={(o) => o.performer.id}
+        showDiff={showDiff}
+      />
+      <LinkedChangeRow
+        name="Studio"
+        newEntity={{
+          name: sceneDetails.studio?.name,
+          link: sceneDetails.studio && studioHref(sceneDetails.studio),
+        }}
+        oldEntity={{
+          name: oldSceneDetails?.studio?.name,
+          link: oldSceneDetails?.studio && studioHref(oldSceneDetails.studio),
+        }}
+        showDiff={showDiff}
+      />
+      <URLChangeRow
+        newURLs={sceneDetails.added_urls}
+        oldURLs={sceneDetails.removed_urls}
+        showDiff={showDiff}
+      />
+      <ChangeRow
+        name="Details"
+        newValue={sceneDetails.details}
+        oldValue={oldSceneDetails?.details}
+        showDiff={showDiff}
+      />
+      <ChangeRow
+        name="Studio Code"
+        newValue={sceneDetails.code}
+        oldValue={oldSceneDetails?.code}
+        showDiff={showDiff}
+      />
+      <ListChangeRow
+        name="Tags"
+        added={sceneDetails.added_tags?.slice().sort(compareByName)}
+        removed={sceneDetails.removed_tags?.slice().sort(compareByName)}
+        renderItem={renderTag}
+        getKey={(o) => o.id}
+        showDiff={showDiff}
+      />
+      <ImageChangeRow
+        newImages={sceneDetails?.added_images}
+        oldImages={sceneDetails?.removed_images}
+        showDiff={showDiff}
+      />
+      <ListChangeRow
+        name="Fingerprints"
+        added={sceneDetails.added_fingerprints}
+        removed={sceneDetails.removed_fingerprints}
+        renderItem={renderFingerprint}
+        getKey={(o) => `${o.hash}${o.algorithm}`}
+        showDiff={showDiff}
+      />
+      {sceneDetails.draft_id && (
+        <Row className="mb-2">
+          <Col xs={{ offset: 2 }}>
+            <h6>
+              <Icon icon={faEdit} color="green" />
+              <span className="ms-1">Submitted by draft</span>
+            </h6>
+          </Col>
+        </Row>
+      )}
+    </>
+    );
+  }
 
 export interface StudioDetails {
   name?: string | null;

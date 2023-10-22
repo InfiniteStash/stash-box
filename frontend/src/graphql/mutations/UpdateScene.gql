@@ -3,7 +3,6 @@ mutation UpdateScene($updateData: SceneUpdateInput!) {
     id
     release_date
     details
-    director
     code
     duration
     title
@@ -25,6 +24,8 @@ mutation UpdateScene($updateData: SceneUpdateInput!) {
         gender
         aliases
       }
+      as
+      type
     }
     fingerprints {
       hash

@@ -7,7 +7,6 @@ fragment SceneFragment on Scene {
   title
   deleted
   details
-  director
   code
   duration
   urls {
@@ -24,11 +23,12 @@ fragment SceneFragment on Scene {
       name
     }
   }
-  performers {
+  credits {
     as
     performer {
       ...ScenePerformerFragment
     }
+    type
   }
   fingerprints {
     hash

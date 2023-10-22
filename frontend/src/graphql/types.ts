@@ -30,12 +30,6 @@ export type ActivateNewUserInput = {
   password: Scalars["String"];
 };
 
-export enum AppearanceType {
-  DIRECTOR = "DIRECTOR",
-  NONSEX = "NONSEX",
-  PERFORMER = "PERFORMER",
-}
-
 export type ApplyEditInput = {
   id: Scalars["ID"];
 };
@@ -768,14 +762,15 @@ export type PerformerAppearance = {
   /** Performing as alias */
   as?: Maybe<Scalars["String"]>;
   performer: Performer;
-  type: AppearanceType;
+  type: SceneCreditType;
 };
 
 export type PerformerAppearanceInput = {
   /** Performing as alias */
   as?: InputMaybe<Scalars["String"]>;
   performer_id: Scalars["ID"];
-  type: AppearanceType;
+  /** Defaults to `PERFORMER` */
+  type?: InputMaybe<SceneCreditType>;
 };
 
 export type PerformerCreateInput = {
@@ -1286,16 +1281,19 @@ export type Scene = {
   __typename: "Scene";
   code?: Maybe<Scalars["String"]>;
   created: Scalars["Time"];
+  credits: Array<PerformerAppearance>;
   /** @deprecated Please use `release_date` instead */
   date?: Maybe<Scalars["String"]>;
   deleted: Scalars["Boolean"];
   details?: Maybe<Scalars["String"]>;
+  /** @deprecated Please use `credits` field */
   director?: Maybe<Scalars["String"]>;
   duration?: Maybe<Scalars["Int"]>;
   edits: Array<Edit>;
   fingerprints: Array<Fingerprint>;
   id: Scalars["ID"];
   images: Array<Image>;
+  /** @deprecated Please use `credits` field */
   performers: Array<PerformerAppearance>;
   release_date?: Maybe<Scalars["String"]>;
   studio?: Maybe<Studio>;
@@ -1313,7 +1311,6 @@ export type SceneCreateInput = {
   code?: InputMaybe<Scalars["String"]>;
   date: Scalars["String"];
   details?: InputMaybe<Scalars["String"]>;
-  director?: InputMaybe<Scalars["String"]>;
   duration?: InputMaybe<Scalars["Int"]>;
   fingerprints: Array<FingerprintEditInput>;
   image_ids?: InputMaybe<Array<Scalars["ID"]>>;
@@ -1323,6 +1320,12 @@ export type SceneCreateInput = {
   title?: InputMaybe<Scalars["String"]>;
   urls?: InputMaybe<Array<UrlInput>>;
 };
+
+export enum SceneCreditType {
+  DIRECTOR = "DIRECTOR",
+  NONSEX = "NONSEX",
+  PERFORMER = "PERFORMER",
+}
 
 export type SceneDestroyInput = {
   id: Scalars["ID"];
@@ -1376,7 +1379,6 @@ export type SceneEdit = {
   code?: Maybe<Scalars["String"]>;
   date?: Maybe<Scalars["String"]>;
   details?: Maybe<Scalars["String"]>;
-  director?: Maybe<Scalars["String"]>;
   draft_id?: Maybe<Scalars["ID"]>;
   duration?: Maybe<Scalars["Int"]>;
   fingerprints: Array<Fingerprint>;
@@ -1395,14 +1397,13 @@ export type SceneEdit = {
 
 export type SceneEditDetailsInput = {
   code?: InputMaybe<Scalars["String"]>;
+  credits?: InputMaybe<Array<PerformerAppearanceInput>>;
   date?: InputMaybe<Scalars["String"]>;
   details?: InputMaybe<Scalars["String"]>;
-  director?: InputMaybe<Scalars["String"]>;
   draft_id?: InputMaybe<Scalars["ID"]>;
   duration?: InputMaybe<Scalars["Int"]>;
   fingerprints?: InputMaybe<Array<FingerprintInput>>;
   image_ids?: InputMaybe<Array<Scalars["ID"]>>;
-  performers?: InputMaybe<Array<PerformerAppearanceInput>>;
   studio_id?: InputMaybe<Scalars["ID"]>;
   tag_ids?: InputMaybe<Array<Scalars["ID"]>>;
   title?: InputMaybe<Scalars["String"]>;
@@ -1458,7 +1459,6 @@ export type SceneUpdateInput = {
   code?: InputMaybe<Scalars["String"]>;
   date?: InputMaybe<Scalars["String"]>;
   details?: InputMaybe<Scalars["String"]>;
-  director?: InputMaybe<Scalars["String"]>;
   duration?: InputMaybe<Scalars["Int"]>;
   fingerprints?: InputMaybe<Array<FingerprintEditInput>>;
   id: Scalars["ID"];
@@ -1966,7 +1966,6 @@ export type EditFragment = {
         title?: string | null;
         deleted: boolean;
         details?: string | null;
-        director?: string | null;
         code?: string | null;
         duration?: number | null;
         urls: Array<{
@@ -1987,9 +1986,10 @@ export type EditFragment = {
           name: string;
           parent?: { __typename: "Studio"; id: string; name: string } | null;
         } | null;
-        performers: Array<{
+        credits: Array<{
           __typename: "PerformerAppearance";
           as?: string | null;
+          type: SceneCreditType;
           performer: {
             __typename: "Performer";
             id: string;
@@ -2130,7 +2130,6 @@ export type EditFragment = {
         details?: string | null;
         date?: string | null;
         duration?: number | null;
-        director?: string | null;
         code?: string | null;
         draft_id?: string | null;
         added_urls?: Array<{
@@ -2176,6 +2175,7 @@ export type EditFragment = {
         added_performers?: Array<{
           __typename: "PerformerAppearance";
           as?: string | null;
+          type: SceneCreditType;
           performer: {
             __typename: "Performer";
             id: string;
@@ -2231,6 +2231,7 @@ export type EditFragment = {
         removed_performers?: Array<{
           __typename: "PerformerAppearance";
           as?: string | null;
+          type: SceneCreditType;
           performer: {
             __typename: "Performer";
             id: string;
@@ -2433,7 +2434,6 @@ export type EditFragment = {
         details?: string | null;
         date?: string | null;
         duration?: number | null;
-        director?: string | null;
         code?: string | null;
         added_urls?: Array<{
           __typename: "URL";
@@ -2478,6 +2478,7 @@ export type EditFragment = {
         added_performers?: Array<{
           __typename: "PerformerAppearance";
           as?: string | null;
+          type: SceneCreditType;
           performer: {
             __typename: "Performer";
             id: string;
@@ -2533,6 +2534,7 @@ export type EditFragment = {
         removed_performers?: Array<{
           __typename: "PerformerAppearance";
           as?: string | null;
+          type: SceneCreditType;
           performer: {
             __typename: "Performer";
             id: string;
@@ -2737,7 +2739,6 @@ export type EditFragment = {
         title?: string | null;
         deleted: boolean;
         details?: string | null;
-        director?: string | null;
         code?: string | null;
         duration?: number | null;
         urls: Array<{
@@ -2758,9 +2759,10 @@ export type EditFragment = {
           name: string;
           parent?: { __typename: "Studio"; id: string; name: string } | null;
         } | null;
-        performers: Array<{
+        credits: Array<{
           __typename: "PerformerAppearance";
           as?: string | null;
+          type: SceneCreditType;
           performer: {
             __typename: "Performer";
             id: string;
@@ -2916,7 +2918,7 @@ export type QuerySceneFragment = {
     height: number;
   }>;
   studio?: { __typename: "Studio"; id: string; name: string } | null;
-  performers: Array<{
+  credits: Array<{
     __typename: "PerformerAppearance";
     as?: string | null;
     performer: {
@@ -2938,7 +2940,6 @@ export type SceneFragment = {
   title?: string | null;
   deleted: boolean;
   details?: string | null;
-  director?: string | null;
   code?: string | null;
   duration?: number | null;
   urls: Array<{
@@ -2959,9 +2960,10 @@ export type SceneFragment = {
     name: string;
     parent?: { __typename: "Studio"; id: string; name: string } | null;
   } | null;
-  performers: Array<{
+  credits: Array<{
     __typename: "PerformerAppearance";
     as?: string | null;
+    type: SceneCreditType;
     performer: {
       __typename: "Performer";
       id: string;
@@ -3104,7 +3106,6 @@ export type AddSceneMutation = {
     title?: string | null;
     code?: string | null;
     details?: string | null;
-    director?: string | null;
     urls: Array<{
       __typename: "URL";
       url: string;
@@ -3113,6 +3114,8 @@ export type AddSceneMutation = {
     studio?: { __typename: "Studio"; id: string; name: string } | null;
     performers: Array<{
       __typename: "PerformerAppearance";
+      as?: string | null;
+      type: SceneCreditType;
       performer: {
         __typename: "Performer";
         name: string;
@@ -3294,7 +3297,6 @@ export type ApplyEditMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -3320,9 +3322,10 @@ export type ApplyEditMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -3478,7 +3481,6 @@ export type ApplyEditMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           draft_id?: string | null;
           added_urls?: Array<{
@@ -3534,6 +3536,7 @@ export type ApplyEditMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -3589,6 +3592,7 @@ export type ApplyEditMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -3801,7 +3805,6 @@ export type ApplyEditMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           added_urls?: Array<{
             __typename: "URL";
@@ -3856,6 +3859,7 @@ export type ApplyEditMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -3911,6 +3915,7 @@ export type ApplyEditMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -4120,7 +4125,6 @@ export type ApplyEditMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -4146,9 +4150,10 @@ export type ApplyEditMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -4504,7 +4509,6 @@ export type PerformerEditMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -4530,9 +4534,10 @@ export type PerformerEditMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -4688,7 +4693,6 @@ export type PerformerEditMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           draft_id?: string | null;
           added_urls?: Array<{
@@ -4744,6 +4748,7 @@ export type PerformerEditMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -4799,6 +4804,7 @@ export type PerformerEditMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -5011,7 +5017,6 @@ export type PerformerEditMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           added_urls?: Array<{
             __typename: "URL";
@@ -5066,6 +5071,7 @@ export type PerformerEditMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -5121,6 +5127,7 @@ export type PerformerEditMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -5330,7 +5337,6 @@ export type PerformerEditMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -5356,9 +5362,10 @@ export type PerformerEditMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -5533,7 +5540,6 @@ export type PerformerEditUpdateMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -5559,9 +5565,10 @@ export type PerformerEditUpdateMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -5717,7 +5724,6 @@ export type PerformerEditUpdateMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           draft_id?: string | null;
           added_urls?: Array<{
@@ -5773,6 +5779,7 @@ export type PerformerEditUpdateMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -5828,6 +5835,7 @@ export type PerformerEditUpdateMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -6040,7 +6048,6 @@ export type PerformerEditUpdateMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           added_urls?: Array<{
             __typename: "URL";
@@ -6095,6 +6102,7 @@ export type PerformerEditUpdateMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -6150,6 +6158,7 @@ export type PerformerEditUpdateMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -6359,7 +6368,6 @@ export type PerformerEditUpdateMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -6385,9 +6393,10 @@ export type PerformerEditUpdateMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -6597,7 +6606,6 @@ export type SceneEditMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -6623,9 +6631,10 @@ export type SceneEditMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -6781,7 +6790,6 @@ export type SceneEditMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           draft_id?: string | null;
           added_urls?: Array<{
@@ -6837,6 +6845,7 @@ export type SceneEditMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -6892,6 +6901,7 @@ export type SceneEditMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -7104,7 +7114,6 @@ export type SceneEditMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           added_urls?: Array<{
             __typename: "URL";
@@ -7159,6 +7168,7 @@ export type SceneEditMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -7214,6 +7224,7 @@ export type SceneEditMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -7423,7 +7434,6 @@ export type SceneEditMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -7449,9 +7459,10 @@ export type SceneEditMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -7626,7 +7637,6 @@ export type SceneEditUpdateMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -7652,9 +7662,10 @@ export type SceneEditUpdateMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -7810,7 +7821,6 @@ export type SceneEditUpdateMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           draft_id?: string | null;
           added_urls?: Array<{
@@ -7866,6 +7876,7 @@ export type SceneEditUpdateMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -7921,6 +7932,7 @@ export type SceneEditUpdateMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -8133,7 +8145,6 @@ export type SceneEditUpdateMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           added_urls?: Array<{
             __typename: "URL";
@@ -8188,6 +8199,7 @@ export type SceneEditUpdateMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -8243,6 +8255,7 @@ export type SceneEditUpdateMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -8452,7 +8465,6 @@ export type SceneEditUpdateMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -8478,9 +8490,10 @@ export type SceneEditUpdateMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -8654,7 +8667,6 @@ export type StudioEditMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -8680,9 +8692,10 @@ export type StudioEditMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -8838,7 +8851,6 @@ export type StudioEditMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           draft_id?: string | null;
           added_urls?: Array<{
@@ -8894,6 +8906,7 @@ export type StudioEditMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -8949,6 +8962,7 @@ export type StudioEditMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -9161,7 +9175,6 @@ export type StudioEditMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           added_urls?: Array<{
             __typename: "URL";
@@ -9216,6 +9229,7 @@ export type StudioEditMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -9271,6 +9285,7 @@ export type StudioEditMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -9480,7 +9495,6 @@ export type StudioEditMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -9506,9 +9520,10 @@ export type StudioEditMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -9683,7 +9698,6 @@ export type StudioEditUpdateMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -9709,9 +9723,10 @@ export type StudioEditUpdateMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -9867,7 +9882,6 @@ export type StudioEditUpdateMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           draft_id?: string | null;
           added_urls?: Array<{
@@ -9923,6 +9937,7 @@ export type StudioEditUpdateMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -9978,6 +9993,7 @@ export type StudioEditUpdateMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -10190,7 +10206,6 @@ export type StudioEditUpdateMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           added_urls?: Array<{
             __typename: "URL";
@@ -10245,6 +10260,7 @@ export type StudioEditUpdateMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -10300,6 +10316,7 @@ export type StudioEditUpdateMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -10509,7 +10526,6 @@ export type StudioEditUpdateMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -10535,9 +10551,10 @@ export type StudioEditUpdateMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -10711,7 +10728,6 @@ export type TagEditMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -10737,9 +10753,10 @@ export type TagEditMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -10895,7 +10912,6 @@ export type TagEditMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           draft_id?: string | null;
           added_urls?: Array<{
@@ -10951,6 +10967,7 @@ export type TagEditMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -11006,6 +11023,7 @@ export type TagEditMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -11218,7 +11236,6 @@ export type TagEditMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           added_urls?: Array<{
             __typename: "URL";
@@ -11273,6 +11290,7 @@ export type TagEditMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -11328,6 +11346,7 @@ export type TagEditMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -11537,7 +11556,6 @@ export type TagEditMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -11563,9 +11581,10 @@ export type TagEditMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -11740,7 +11759,6 @@ export type TagEditUpdateMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -11766,9 +11784,10 @@ export type TagEditUpdateMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -11924,7 +11943,6 @@ export type TagEditUpdateMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           draft_id?: string | null;
           added_urls?: Array<{
@@ -11980,6 +11998,7 @@ export type TagEditUpdateMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -12035,6 +12054,7 @@ export type TagEditUpdateMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -12247,7 +12267,6 @@ export type TagEditUpdateMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           added_urls?: Array<{
             __typename: "URL";
@@ -12302,6 +12321,7 @@ export type TagEditUpdateMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -12357,6 +12377,7 @@ export type TagEditUpdateMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -12566,7 +12587,6 @@ export type TagEditUpdateMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -12592,9 +12612,10 @@ export type TagEditUpdateMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -12698,7 +12719,6 @@ export type UpdateSceneMutation = {
     id: string;
     release_date?: string | null;
     details?: string | null;
-    director?: string | null;
     code?: string | null;
     duration?: number | null;
     title?: string | null;
@@ -12710,6 +12730,8 @@ export type UpdateSceneMutation = {
     studio?: { __typename: "Studio"; id: string; name: string } | null;
     performers: Array<{
       __typename: "PerformerAppearance";
+      as?: string | null;
+      type: SceneCreditType;
       performer: {
         __typename: "Performer";
         name: string;
@@ -12902,7 +12924,6 @@ export type VoteMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -12928,9 +12949,10 @@ export type VoteMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -13086,7 +13108,6 @@ export type VoteMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           draft_id?: string | null;
           added_urls?: Array<{
@@ -13142,6 +13163,7 @@ export type VoteMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -13197,6 +13219,7 @@ export type VoteMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -13409,7 +13432,6 @@ export type VoteMutation = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           added_urls?: Array<{
             __typename: "URL";
@@ -13464,6 +13486,7 @@ export type VoteMutation = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -13519,6 +13542,7 @@ export type VoteMutation = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -13728,7 +13752,6 @@ export type VoteMutation = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -13754,9 +13777,10 @@ export type VoteMutation = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -14187,7 +14211,6 @@ export type EditQuery = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -14213,9 +14236,10 @@ export type EditQuery = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -14371,7 +14395,6 @@ export type EditQuery = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           draft_id?: string | null;
           added_urls?: Array<{
@@ -14427,6 +14450,7 @@ export type EditQuery = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -14482,6 +14506,7 @@ export type EditQuery = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -14694,7 +14719,6 @@ export type EditQuery = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           added_urls?: Array<{
             __typename: "URL";
@@ -14749,6 +14773,7 @@ export type EditQuery = {
           added_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -14804,6 +14829,7 @@ export type EditQuery = {
           removed_performers?: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -15013,7 +15039,6 @@ export type EditQuery = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -15039,9 +15064,10 @@ export type EditQuery = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -15209,7 +15235,6 @@ export type EditUpdateQuery = {
           title?: string | null;
           deleted: boolean;
           details?: string | null;
-          director?: string | null;
           code?: string | null;
           duration?: number | null;
           urls: Array<{
@@ -15235,9 +15260,10 @@ export type EditUpdateQuery = {
             name: string;
             parent?: { __typename: "Studio"; id: string; name: string } | null;
           } | null;
-          performers: Array<{
+          credits: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -15365,7 +15391,6 @@ export type EditUpdateQuery = {
           details?: string | null;
           date?: string | null;
           duration?: number | null;
-          director?: string | null;
           code?: string | null;
           draft_id?: string | null;
           studio?: {
@@ -15411,6 +15436,7 @@ export type EditUpdateQuery = {
           performers: Array<{
             __typename: "PerformerAppearance";
             as?: string | null;
+            type: SceneCreditType;
             performer: {
               __typename: "Performer";
               id: string;
@@ -15652,7 +15678,6 @@ export type EditsQuery = {
             title?: string | null;
             deleted: boolean;
             details?: string | null;
-            director?: string | null;
             code?: string | null;
             duration?: number | null;
             urls: Array<{
@@ -15682,9 +15707,10 @@ export type EditsQuery = {
                 name: string;
               } | null;
             } | null;
-            performers: Array<{
+            credits: Array<{
               __typename: "PerformerAppearance";
               as?: string | null;
+              type: SceneCreditType;
               performer: {
                 __typename: "Performer";
                 id: string;
@@ -15840,7 +15866,6 @@ export type EditsQuery = {
             details?: string | null;
             date?: string | null;
             duration?: number | null;
-            director?: string | null;
             code?: string | null;
             draft_id?: string | null;
             added_urls?: Array<{
@@ -15900,6 +15925,7 @@ export type EditsQuery = {
             added_performers?: Array<{
               __typename: "PerformerAppearance";
               as?: string | null;
+              type: SceneCreditType;
               performer: {
                 __typename: "Performer";
                 id: string;
@@ -15955,6 +15981,7 @@ export type EditsQuery = {
             removed_performers?: Array<{
               __typename: "PerformerAppearance";
               as?: string | null;
+              type: SceneCreditType;
               performer: {
                 __typename: "Performer";
                 id: string;
@@ -16171,7 +16198,6 @@ export type EditsQuery = {
             details?: string | null;
             date?: string | null;
             duration?: number | null;
-            director?: string | null;
             code?: string | null;
             added_urls?: Array<{
               __typename: "URL";
@@ -16230,6 +16256,7 @@ export type EditsQuery = {
             added_performers?: Array<{
               __typename: "PerformerAppearance";
               as?: string | null;
+              type: SceneCreditType;
               performer: {
                 __typename: "Performer";
                 id: string;
@@ -16285,6 +16312,7 @@ export type EditsQuery = {
             removed_performers?: Array<{
               __typename: "PerformerAppearance";
               as?: string | null;
+              type: SceneCreditType;
               performer: {
                 __typename: "Performer";
                 id: string;
@@ -16498,7 +16526,6 @@ export type EditsQuery = {
             title?: string | null;
             deleted: boolean;
             details?: string | null;
-            director?: string | null;
             code?: string | null;
             duration?: number | null;
             urls: Array<{
@@ -16528,9 +16555,10 @@ export type EditsQuery = {
                 name: string;
               } | null;
             } | null;
-            performers: Array<{
+            credits: Array<{
               __typename: "PerformerAppearance";
               as?: string | null;
+              type: SceneCreditType;
               performer: {
                 __typename: "Performer";
                 id: string;
@@ -16856,7 +16884,6 @@ export type QueryExistingSceneQuery = {
       title?: string | null;
       deleted: boolean;
       details?: string | null;
-      director?: string | null;
       code?: string | null;
       duration?: number | null;
       urls: Array<{
@@ -16877,9 +16904,10 @@ export type QueryExistingSceneQuery = {
         name: string;
         parent?: { __typename: "Studio"; id: string; name: string } | null;
       } | null;
-      performers: Array<{
+      credits: Array<{
         __typename: "PerformerAppearance";
         as?: string | null;
+        type: SceneCreditType;
         performer: {
           __typename: "Performer";
           id: string;
@@ -16995,7 +17023,6 @@ export type QueryExistingSceneQuery = {
             title?: string | null;
             deleted: boolean;
             details?: string | null;
-            director?: string | null;
             code?: string | null;
             duration?: number | null;
             urls: Array<{
@@ -17025,9 +17052,10 @@ export type QueryExistingSceneQuery = {
                 name: string;
               } | null;
             } | null;
-            performers: Array<{
+            credits: Array<{
               __typename: "PerformerAppearance";
               as?: string | null;
+              type: SceneCreditType;
               performer: {
                 __typename: "Performer";
                 id: string;
@@ -17183,7 +17211,6 @@ export type QueryExistingSceneQuery = {
             details?: string | null;
             date?: string | null;
             duration?: number | null;
-            director?: string | null;
             code?: string | null;
             draft_id?: string | null;
             added_urls?: Array<{
@@ -17243,6 +17270,7 @@ export type QueryExistingSceneQuery = {
             added_performers?: Array<{
               __typename: "PerformerAppearance";
               as?: string | null;
+              type: SceneCreditType;
               performer: {
                 __typename: "Performer";
                 id: string;
@@ -17298,6 +17326,7 @@ export type QueryExistingSceneQuery = {
             removed_performers?: Array<{
               __typename: "PerformerAppearance";
               as?: string | null;
+              type: SceneCreditType;
               performer: {
                 __typename: "Performer";
                 id: string;
@@ -17514,7 +17543,6 @@ export type QueryExistingSceneQuery = {
             details?: string | null;
             date?: string | null;
             duration?: number | null;
-            director?: string | null;
             code?: string | null;
             added_urls?: Array<{
               __typename: "URL";
@@ -17573,6 +17601,7 @@ export type QueryExistingSceneQuery = {
             added_performers?: Array<{
               __typename: "PerformerAppearance";
               as?: string | null;
+              type: SceneCreditType;
               performer: {
                 __typename: "Performer";
                 id: string;
@@ -17628,6 +17657,7 @@ export type QueryExistingSceneQuery = {
             removed_performers?: Array<{
               __typename: "PerformerAppearance";
               as?: string | null;
+              type: SceneCreditType;
               performer: {
                 __typename: "Performer";
                 id: string;
@@ -17841,7 +17871,6 @@ export type QueryExistingSceneQuery = {
             title?: string | null;
             deleted: boolean;
             details?: string | null;
-            director?: string | null;
             code?: string | null;
             duration?: number | null;
             urls: Array<{
@@ -17871,9 +17900,10 @@ export type QueryExistingSceneQuery = {
                 name: string;
               } | null;
             } | null;
-            performers: Array<{
+            credits: Array<{
               __typename: "PerformerAppearance";
               as?: string | null;
+              type: SceneCreditType;
               performer: {
                 __typename: "Performer";
                 id: string;
@@ -17968,7 +17998,6 @@ export type SceneQuery = {
     title?: string | null;
     deleted: boolean;
     details?: string | null;
-    director?: string | null;
     code?: string | null;
     duration?: number | null;
     urls: Array<{
@@ -17989,9 +18018,10 @@ export type SceneQuery = {
       name: string;
       parent?: { __typename: "Studio"; id: string; name: string } | null;
     } | null;
-    performers: Array<{
+    credits: Array<{
       __typename: "PerformerAppearance";
       as?: string | null;
+      type: SceneCreditType;
       performer: {
         __typename: "Performer";
         id: string;
@@ -18104,7 +18134,7 @@ export type ScenesQuery = {
         height: number;
       }>;
       studio?: { __typename: "Studio"; id: string; name: string } | null;
-      performers: Array<{
+      credits: Array<{
         __typename: "PerformerAppearance";
         as?: string | null;
         performer: {
@@ -18148,7 +18178,7 @@ export type ScenesWithoutCountQuery = {
         height: number;
       }>;
       studio?: { __typename: "Studio"; id: string; name: string } | null;
-      performers: Array<{
+      credits: Array<{
         __typename: "PerformerAppearance";
         as?: string | null;
         performer: {
@@ -18948,7 +18978,6 @@ export const SceneFragmentDoc = {
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
-          { kind: "Field", name: { kind: "Name", value: "director" } },
           { kind: "Field", name: { kind: "Name", value: "code" } },
           { kind: "Field", name: { kind: "Name", value: "duration" } },
           {
@@ -19001,7 +19030,7 @@ export const SceneFragmentDoc = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
@@ -19019,6 +19048,7 @@ export const SceneFragmentDoc = {
                     ],
                   },
                 },
+                { kind: "Field", name: { kind: "Name", value: "type" } },
               ],
             },
           },
@@ -19697,6 +19727,10 @@ export const EditFragmentDoc = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -19725,6 +19759,10 @@ export const EditFragmentDoc = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -19816,10 +19854,6 @@ export const EditFragmentDoc = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                       {
@@ -20051,6 +20085,10 @@ export const EditFragmentDoc = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -20079,6 +20117,10 @@ export const EditFragmentDoc = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -20170,10 +20212,6 @@ export const EditFragmentDoc = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                     ],
@@ -20555,7 +20593,6 @@ export const EditFragmentDoc = {
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
-          { kind: "Field", name: { kind: "Name", value: "director" } },
           { kind: "Field", name: { kind: "Name", value: "code" } },
           { kind: "Field", name: { kind: "Name", value: "duration" } },
           {
@@ -20608,7 +20645,7 @@ export const EditFragmentDoc = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
@@ -20626,6 +20663,7 @@ export const EditFragmentDoc = {
                     ],
                   },
                 },
+                { kind: "Field", name: { kind: "Name", value: "type" } },
               ],
             },
           },
@@ -20738,7 +20776,7 @@ export const QuerySceneFragmentDoc = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
@@ -21083,7 +21121,6 @@ export const AddSceneDocument = {
                 { kind: "Field", name: { kind: "Name", value: "title" } },
                 { kind: "Field", name: { kind: "Name", value: "code" } },
                 { kind: "Field", name: { kind: "Name", value: "details" } },
-                { kind: "Field", name: { kind: "Name", value: "director" } },
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "urls" },
@@ -21153,6 +21190,8 @@ export const AddSceneDocument = {
                           ],
                         },
                       },
+                      { kind: "Field", name: { kind: "Name", value: "as" } },
+                      { kind: "Field", name: { kind: "Name", value: "type" } },
                     ],
                   },
                 },
@@ -21775,7 +21814,6 @@ export const ApplyEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
-          { kind: "Field", name: { kind: "Name", value: "director" } },
           { kind: "Field", name: { kind: "Name", value: "code" } },
           { kind: "Field", name: { kind: "Name", value: "duration" } },
           {
@@ -21828,7 +21866,7 @@ export const ApplyEditDocument = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
@@ -21846,6 +21884,7 @@ export const ApplyEditDocument = {
                     ],
                   },
                 },
+                { kind: "Field", name: { kind: "Name", value: "type" } },
               ],
             },
           },
@@ -22452,6 +22491,10 @@ export const ApplyEditDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -22480,6 +22523,10 @@ export const ApplyEditDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -22571,10 +22618,6 @@ export const ApplyEditDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                       {
@@ -22806,6 +22849,10 @@ export const ApplyEditDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -22834,6 +22881,10 @@ export const ApplyEditDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -22925,10 +22976,6 @@ export const ApplyEditDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                     ],
@@ -24187,7 +24234,6 @@ export const PerformerEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
-          { kind: "Field", name: { kind: "Name", value: "director" } },
           { kind: "Field", name: { kind: "Name", value: "code" } },
           { kind: "Field", name: { kind: "Name", value: "duration" } },
           {
@@ -24240,7 +24286,7 @@ export const PerformerEditDocument = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
@@ -24258,6 +24304,7 @@ export const PerformerEditDocument = {
                     ],
                   },
                 },
+                { kind: "Field", name: { kind: "Name", value: "type" } },
               ],
             },
           },
@@ -24864,6 +24911,10 @@ export const PerformerEditDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -24892,6 +24943,10 @@ export const PerformerEditDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -24983,10 +25038,6 @@ export const PerformerEditDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                       {
@@ -25218,6 +25269,10 @@ export const PerformerEditDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -25246,6 +25301,10 @@ export const PerformerEditDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -25337,10 +25396,6 @@ export const PerformerEditDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                     ],
@@ -25795,7 +25850,6 @@ export const PerformerEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
-          { kind: "Field", name: { kind: "Name", value: "director" } },
           { kind: "Field", name: { kind: "Name", value: "code" } },
           { kind: "Field", name: { kind: "Name", value: "duration" } },
           {
@@ -25848,7 +25902,7 @@ export const PerformerEditUpdateDocument = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
@@ -25866,6 +25920,7 @@ export const PerformerEditUpdateDocument = {
                     ],
                   },
                 },
+                { kind: "Field", name: { kind: "Name", value: "type" } },
               ],
             },
           },
@@ -26472,6 +26527,10 @@ export const PerformerEditUpdateDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -26500,6 +26559,10 @@ export const PerformerEditUpdateDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -26591,10 +26654,6 @@ export const PerformerEditUpdateDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                       {
@@ -26826,6 +26885,10 @@ export const PerformerEditUpdateDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -26854,6 +26917,10 @@ export const PerformerEditUpdateDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -26945,10 +27012,6 @@ export const PerformerEditUpdateDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                     ],
@@ -27567,7 +27630,6 @@ export const SceneEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
-          { kind: "Field", name: { kind: "Name", value: "director" } },
           { kind: "Field", name: { kind: "Name", value: "code" } },
           { kind: "Field", name: { kind: "Name", value: "duration" } },
           {
@@ -27620,7 +27682,7 @@ export const SceneEditDocument = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
@@ -27638,6 +27700,7 @@ export const SceneEditDocument = {
                     ],
                   },
                 },
+                { kind: "Field", name: { kind: "Name", value: "type" } },
               ],
             },
           },
@@ -28244,6 +28307,10 @@ export const SceneEditDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -28272,6 +28339,10 @@ export const SceneEditDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -28363,10 +28434,6 @@ export const SceneEditDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                       {
@@ -28598,6 +28665,10 @@ export const SceneEditDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -28626,6 +28697,10 @@ export const SceneEditDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -28717,10 +28792,6 @@ export const SceneEditDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                     ],
@@ -29172,7 +29243,6 @@ export const SceneEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
-          { kind: "Field", name: { kind: "Name", value: "director" } },
           { kind: "Field", name: { kind: "Name", value: "code" } },
           { kind: "Field", name: { kind: "Name", value: "duration" } },
           {
@@ -29225,7 +29295,7 @@ export const SceneEditUpdateDocument = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
@@ -29243,6 +29313,7 @@ export const SceneEditUpdateDocument = {
                     ],
                   },
                 },
+                { kind: "Field", name: { kind: "Name", value: "type" } },
               ],
             },
           },
@@ -29849,6 +29920,10 @@ export const SceneEditUpdateDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -29877,6 +29952,10 @@ export const SceneEditUpdateDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -29968,10 +30047,6 @@ export const SceneEditUpdateDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                       {
@@ -30203,6 +30278,10 @@ export const SceneEditUpdateDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -30231,6 +30310,10 @@ export const SceneEditUpdateDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -30322,10 +30405,6 @@ export const SceneEditUpdateDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                     ],
@@ -30764,7 +30843,6 @@ export const StudioEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
-          { kind: "Field", name: { kind: "Name", value: "director" } },
           { kind: "Field", name: { kind: "Name", value: "code" } },
           { kind: "Field", name: { kind: "Name", value: "duration" } },
           {
@@ -30817,7 +30895,7 @@ export const StudioEditDocument = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
@@ -30835,6 +30913,7 @@ export const StudioEditDocument = {
                     ],
                   },
                 },
+                { kind: "Field", name: { kind: "Name", value: "type" } },
               ],
             },
           },
@@ -31441,6 +31520,10 @@ export const StudioEditDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -31469,6 +31552,10 @@ export const StudioEditDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -31560,10 +31647,6 @@ export const StudioEditDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                       {
@@ -31795,6 +31878,10 @@ export const StudioEditDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -31823,6 +31910,10 @@ export const StudioEditDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -31914,10 +32005,6 @@ export const StudioEditDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                     ],
@@ -32369,7 +32456,6 @@ export const StudioEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
-          { kind: "Field", name: { kind: "Name", value: "director" } },
           { kind: "Field", name: { kind: "Name", value: "code" } },
           { kind: "Field", name: { kind: "Name", value: "duration" } },
           {
@@ -32422,7 +32508,7 @@ export const StudioEditUpdateDocument = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
@@ -32440,6 +32526,7 @@ export const StudioEditUpdateDocument = {
                     ],
                   },
                 },
+                { kind: "Field", name: { kind: "Name", value: "type" } },
               ],
             },
           },
@@ -33046,6 +33133,10 @@ export const StudioEditUpdateDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -33074,6 +33165,10 @@ export const StudioEditUpdateDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -33165,10 +33260,6 @@ export const StudioEditUpdateDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                       {
@@ -33400,6 +33491,10 @@ export const StudioEditUpdateDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -33428,6 +33523,10 @@ export const StudioEditUpdateDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -33519,10 +33618,6 @@ export const StudioEditUpdateDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                     ],
@@ -33961,7 +34056,6 @@ export const TagEditDocument = {
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
-          { kind: "Field", name: { kind: "Name", value: "director" } },
           { kind: "Field", name: { kind: "Name", value: "code" } },
           { kind: "Field", name: { kind: "Name", value: "duration" } },
           {
@@ -34014,7 +34108,7 @@ export const TagEditDocument = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
@@ -34032,6 +34126,7 @@ export const TagEditDocument = {
                     ],
                   },
                 },
+                { kind: "Field", name: { kind: "Name", value: "type" } },
               ],
             },
           },
@@ -34638,6 +34733,10 @@ export const TagEditDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -34666,6 +34765,10 @@ export const TagEditDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -34757,10 +34860,6 @@ export const TagEditDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                       {
@@ -34992,6 +35091,10 @@ export const TagEditDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -35020,6 +35123,10 @@ export const TagEditDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -35111,10 +35218,6 @@ export const TagEditDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                     ],
@@ -35566,7 +35669,6 @@ export const TagEditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
-          { kind: "Field", name: { kind: "Name", value: "director" } },
           { kind: "Field", name: { kind: "Name", value: "code" } },
           { kind: "Field", name: { kind: "Name", value: "duration" } },
           {
@@ -35619,7 +35721,7 @@ export const TagEditUpdateDocument = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
@@ -35637,6 +35739,7 @@ export const TagEditUpdateDocument = {
                     ],
                   },
                 },
+                { kind: "Field", name: { kind: "Name", value: "type" } },
               ],
             },
           },
@@ -36243,6 +36346,10 @@ export const TagEditUpdateDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -36271,6 +36378,10 @@ export const TagEditUpdateDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -36362,10 +36473,6 @@ export const TagEditUpdateDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                       {
@@ -36597,6 +36704,10 @@ export const TagEditUpdateDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -36625,6 +36736,10 @@ export const TagEditUpdateDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -36716,10 +36831,6 @@ export const TagEditUpdateDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                     ],
@@ -37003,7 +37114,6 @@ export const UpdateSceneDocument = {
                   name: { kind: "Name", value: "release_date" },
                 },
                 { kind: "Field", name: { kind: "Name", value: "details" } },
-                { kind: "Field", name: { kind: "Name", value: "director" } },
                 { kind: "Field", name: { kind: "Name", value: "code" } },
                 { kind: "Field", name: { kind: "Name", value: "duration" } },
                 { kind: "Field", name: { kind: "Name", value: "title" } },
@@ -37076,6 +37186,8 @@ export const UpdateSceneDocument = {
                           ],
                         },
                       },
+                      { kind: "Field", name: { kind: "Name", value: "as" } },
+                      { kind: "Field", name: { kind: "Name", value: "type" } },
                     ],
                   },
                 },
@@ -37767,7 +37879,6 @@ export const VoteDocument = {
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
-          { kind: "Field", name: { kind: "Name", value: "director" } },
           { kind: "Field", name: { kind: "Name", value: "code" } },
           { kind: "Field", name: { kind: "Name", value: "duration" } },
           {
@@ -37820,7 +37931,7 @@ export const VoteDocument = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
@@ -37838,6 +37949,7 @@ export const VoteDocument = {
                     ],
                   },
                 },
+                { kind: "Field", name: { kind: "Name", value: "type" } },
               ],
             },
           },
@@ -38444,6 +38556,10 @@ export const VoteDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -38472,6 +38588,10 @@ export const VoteDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -38563,10 +38683,6 @@ export const VoteDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                       {
@@ -38798,6 +38914,10 @@ export const VoteDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -38826,6 +38946,10 @@ export const VoteDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -38917,10 +39041,6 @@ export const VoteDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                     ],
@@ -40202,7 +40322,6 @@ export const EditDocument = {
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
-          { kind: "Field", name: { kind: "Name", value: "director" } },
           { kind: "Field", name: { kind: "Name", value: "code" } },
           { kind: "Field", name: { kind: "Name", value: "duration" } },
           {
@@ -40255,7 +40374,7 @@ export const EditDocument = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
@@ -40273,6 +40392,7 @@ export const EditDocument = {
                     ],
                   },
                 },
+                { kind: "Field", name: { kind: "Name", value: "type" } },
               ],
             },
           },
@@ -40879,6 +40999,10 @@ export const EditDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -40907,6 +41031,10 @@ export const EditDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -40998,10 +41126,6 @@ export const EditDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                       {
@@ -41233,6 +41357,10 @@ export const EditDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -41261,6 +41389,10 @@ export const EditDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -41352,10 +41484,6 @@ export const EditDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                     ],
@@ -42033,6 +42161,10 @@ export const EditUpdateDocument = {
                                     kind: "Field",
                                     name: { kind: "Name", value: "as" },
                                   },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "type" },
+                                  },
                                 ],
                               },
                             },
@@ -42087,10 +42219,6 @@ export const EditUpdateDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "duration" },
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "director" },
                             },
                             {
                               kind: "Field",
@@ -42365,7 +42493,6 @@ export const EditUpdateDocument = {
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
-          { kind: "Field", name: { kind: "Name", value: "director" } },
           { kind: "Field", name: { kind: "Name", value: "code" } },
           { kind: "Field", name: { kind: "Name", value: "duration" } },
           {
@@ -42418,7 +42545,7 @@ export const EditUpdateDocument = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
@@ -42436,6 +42563,7 @@ export const EditUpdateDocument = {
                     ],
                   },
                 },
+                { kind: "Field", name: { kind: "Name", value: "type" } },
               ],
             },
           },
@@ -42834,7 +42962,6 @@ export const EditsDocument = {
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
-          { kind: "Field", name: { kind: "Name", value: "director" } },
           { kind: "Field", name: { kind: "Name", value: "code" } },
           { kind: "Field", name: { kind: "Name", value: "duration" } },
           {
@@ -42887,7 +43014,7 @@ export const EditsDocument = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
@@ -42905,6 +43032,7 @@ export const EditsDocument = {
                     ],
                   },
                 },
+                { kind: "Field", name: { kind: "Name", value: "type" } },
               ],
             },
           },
@@ -43511,6 +43639,10 @@ export const EditsDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -43539,6 +43671,10 @@ export const EditsDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -43630,10 +43766,6 @@ export const EditsDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                       {
@@ -43865,6 +43997,10 @@ export const EditsDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -43893,6 +44029,10 @@ export const EditsDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -43984,10 +44124,6 @@ export const EditsDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                     ],
@@ -45304,7 +45440,6 @@ export const QueryExistingSceneDocument = {
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
-          { kind: "Field", name: { kind: "Name", value: "director" } },
           { kind: "Field", name: { kind: "Name", value: "code" } },
           { kind: "Field", name: { kind: "Name", value: "duration" } },
           {
@@ -45357,7 +45492,7 @@ export const QueryExistingSceneDocument = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
@@ -45375,6 +45510,7 @@ export const QueryExistingSceneDocument = {
                     ],
                   },
                 },
+                { kind: "Field", name: { kind: "Name", value: "type" } },
               ],
             },
           },
@@ -45981,6 +46117,10 @@ export const QueryExistingSceneDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -46009,6 +46149,10 @@ export const QueryExistingSceneDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -46100,10 +46244,6 @@ export const QueryExistingSceneDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                       {
@@ -46335,6 +46475,10 @@ export const QueryExistingSceneDocument = {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
                             },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
+                            },
                           ],
                         },
                       },
@@ -46363,6 +46507,10 @@ export const QueryExistingSceneDocument = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "as" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "type" },
                             },
                           ],
                         },
@@ -46454,10 +46602,6 @@ export const QueryExistingSceneDocument = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "duration" },
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "director" },
                       },
                       { kind: "Field", name: { kind: "Name", value: "code" } },
                     ],
@@ -46687,7 +46831,6 @@ export const SceneDocument = {
           { kind: "Field", name: { kind: "Name", value: "title" } },
           { kind: "Field", name: { kind: "Name", value: "deleted" } },
           { kind: "Field", name: { kind: "Name", value: "details" } },
-          { kind: "Field", name: { kind: "Name", value: "director" } },
           { kind: "Field", name: { kind: "Name", value: "code" } },
           { kind: "Field", name: { kind: "Name", value: "duration" } },
           {
@@ -46740,7 +46883,7 @@ export const SceneDocument = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
@@ -46758,6 +46901,7 @@ export const SceneDocument = {
                     ],
                   },
                 },
+                { kind: "Field", name: { kind: "Name", value: "type" } },
               ],
             },
           },
@@ -47343,7 +47487,7 @@ export const ScenesDocument = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
@@ -47545,7 +47689,7 @@ export const ScenesWithoutCountDocument = {
           },
           {
             kind: "Field",
-            name: { kind: "Name", value: "performers" },
+            name: { kind: "Name", value: "credits" },
             selectionSet: {
               kind: "SelectionSet",
               selections: [
