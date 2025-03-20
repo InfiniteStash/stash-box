@@ -363,3 +363,79 @@ func (c *graphqlClient) createTag(input models.TagCreateInput) (*tagOutput, erro
 
 	return resp.TagCreate, nil
 }
+
+func (c *graphqlClient) findTag(id uuid.UUID) (*tagOutput, error) {
+	q := `
+	query FindTag($id: ID!) {
+		findTag(id: $id) {
+			` + makeFragment(reflect.TypeOf(tagOutput{})) + `
+		}
+	}`
+
+	var resp struct {
+		FindTag *tagOutput
+	}
+	if err := c.Post(q, &resp, client.Var("id", id)); err != nil {
+		return nil, err
+	}
+
+	return resp.FindTag, nil
+}
+
+func (c *graphqlClient) findStudio(id uuid.UUID) (*studioOutput, error) {
+	q := `
+	query FindStudio($id: ID!) {
+		findStudio(id: $id) {
+			` + makeFragment(reflect.TypeOf(studioOutput{})) + `
+		}
+	}`
+
+	var resp struct {
+		FindStudio *studioOutput
+	}
+	if err := c.Post(q, &resp, client.Var("id", id)); err != nil {
+		return nil, err
+	}
+
+	return resp.FindStudio, nil
+}
+
+func (c *graphqlClient) queryPerformers(input models.PerformerQueryInput) ([]*performerOutput, error) {
+	q := `
+	query QueryPerformers($input: PerformerQueryInput!) {
+		queryPerformers(input: $input) {
+			performers {
+				` + makeFragment(reflect.TypeOf(performerOutput{})) + `
+			}
+		}
+	}`
+
+	var resp struct {
+		QueryPerformers struct {
+			Performers []*performerOutput `json:"performers"`
+		}
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return nil, err
+	}
+
+	return resp.QueryPerformers.Performers, nil
+}
+
+func (c *graphqlClient) updatePerformer(input models.PerformerUpdateInput) (*performerOutput, error) {
+	q := `
+	mutation PerformerUpdate($input: PerformerUpdateInput!) {
+		performerUpdate(input: $input) {
+			` + makeFragment(reflect.TypeOf(performerOutput{})) + `
+		}
+	}`
+
+	var resp struct {
+		PerformerUpdate *performerOutput
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return nil, err
+	}
+
+	return resp.PerformerUpdate, nil
+}
