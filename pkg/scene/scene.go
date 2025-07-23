@@ -307,3 +307,64 @@ func SubmitFingerprint(ctx context.Context, fac models.Repo, input models.Finger
 
 	return true, nil
 }
+
+func MoveFingerprints(ctx context.Context, fac models.Repo, input models.MoveFingerprintsInput) (bool, error) {
+	qb := fac.Scene()
+
+	// Validate that both scenes exist and are not deleted
+	sourceScene, err := qb.Find(input.SourceSceneID)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to find source scene")
+	}
+	if sourceScene == nil || sourceScene.Deleted {
+		return false, errors.New("source scene not found or is deleted")
+	}
+
+	targetScene, err := qb.Find(input.TargetSceneID)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to find target scene")
+	}
+	if targetScene == nil || targetScene.Deleted {
+		return false, errors.New("target scene not found or is deleted")
+	}
+
+	// Get all fingerprints from the source scene
+	sourceFingerprints, err := qb.GetFingerprints(input.SourceSceneID)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to get source scene fingerprints")
+	}
+
+	// Filter to only the fingerprints specified in the input
+	var fingerprintsToAdd models.SceneFingerprints
+	var fingerprintsToRemove models.SceneFingerprints
+	
+	for _, inputFP := range input.Fingerprints {
+		for _, sourceFP := range sourceFingerprints {
+			if sourceFP.Hash == inputFP.Hash && sourceFP.Algorithm == string(inputFP.Algorithm) {
+				// Create a copy for the target scene (with target scene ID)
+				targetFP := *sourceFP
+				targetFP.SceneID = input.TargetSceneID
+				fingerprintsToAdd = append(fingerprintsToAdd, &targetFP)
+				
+				// Keep original for removal (with source scene ID)
+				fingerprintsToRemove = append(fingerprintsToRemove, sourceFP)
+			}
+		}
+	}
+
+	if len(fingerprintsToAdd) == 0 {
+		return false, errors.New("no matching fingerprints found in source scene")
+	}
+
+	// Add the fingerprints to the target scene
+	if err := qb.CreateOrReplaceFingerprints(fingerprintsToAdd); err != nil {
+		return false, errors.Wrap(err, "failed to add fingerprints to target scene")
+	}
+
+	// Remove the fingerprints from the source scene
+	if err := qb.DestroyFingerprints(input.SourceSceneID, fingerprintsToRemove); err != nil {
+		return false, errors.Wrap(err, "failed to remove fingerprints from source scene")
+	}
+
+	return true, nil
+}

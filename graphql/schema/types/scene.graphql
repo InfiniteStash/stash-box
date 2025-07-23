@@ -288,3 +288,12 @@ type QueryExistingSceneResult {
   edits: [Edit!]!
   scenes: [Scene!]!
 }
+
+input MoveFingerprintsInput {
+  """Source scene ID to move fingerprints from"""
+  source_scene_id: ID!
+  """Target scene ID to move fingerprints to"""
+  target_scene_id: ID!
+  """List of fingerprints to move (identified by hash and algorithm)"""
+  fingerprints: [FingerprintQueryInput!]!
+}

@@ -235,6 +235,7 @@ type ComplexityRoot struct {
 		ImageCreate                     func(childComplexity int, input ImageCreateInput) int
 		ImageDestroy                    func(childComplexity int, input ImageDestroyInput) int
 		MarkNotificationsRead           func(childComplexity int, notification *MarkNotificationReadInput) int
+		MoveFingerprints                func(childComplexity int, input MoveFingerprintsInput) int
 		NewUser                         func(childComplexity int, input NewUserInput) int
 		PerformerCreate                 func(childComplexity int, input PerformerCreateInput) int
 		PerformerDestroy                func(childComplexity int, input PerformerDestroyInput) int
@@ -779,6 +780,7 @@ type MutationResolver interface {
 	ApplyEdit(ctx context.Context, input ApplyEditInput) (*Edit, error)
 	CancelEdit(ctx context.Context, input CancelEditInput) (*Edit, error)
 	SubmitFingerprint(ctx context.Context, input FingerprintSubmission) (bool, error)
+	MoveFingerprints(ctx context.Context, input MoveFingerprintsInput) (bool, error)
 	SubmitSceneDraft(ctx context.Context, input SceneDraftInput) (*DraftSubmissionStatus, error)
 	SubmitPerformerDraft(ctx context.Context, input PerformerDraftInput) (*DraftSubmissionStatus, error)
 	DestroyDraft(ctx context.Context, id uuid.UUID) (bool, error)
@@ -1739,6 +1741,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.MarkNotificationsRead(childComplexity, args["notification"].(*MarkNotificationReadInput)), true
+
+	case "Mutation.moveFingerprints":
+		if e.complexity.Mutation.MoveFingerprints == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_moveFingerprints_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.MoveFingerprints(childComplexity, args["input"].(MoveFingerprintsInput)), true
 
 	case "Mutation.newUser":
 		if e.complexity.Mutation.NewUser == nil {
@@ -4534,6 +4548,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputImageUpdateInput,
 		ec.unmarshalInputIntCriterionInput,
 		ec.unmarshalInputMarkNotificationReadInput,
+		ec.unmarshalInputMoveFingerprintsInput,
 		ec.unmarshalInputMultiIDCriterionInput,
 		ec.unmarshalInputMultiStringCriterionInput,
 		ec.unmarshalInputNewUserInput,
@@ -5801,6 +5816,15 @@ type QueryExistingSceneResult {
   edits: [Edit!]!
   scenes: [Scene!]!
 }
+
+input MoveFingerprintsInput {
+  """Source scene ID to move fingerprints from"""
+  source_scene_id: ID!
+  """Target scene ID to move fingerprints to"""
+  target_scene_id: ID!
+  """List of fingerprints to move (identified by hash and algorithm)"""
+  fingerprints: [FingerprintQueryInput!]!
+}
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/types/site.graphql", Input: `type Site {
   id: ID!
@@ -6424,6 +6448,9 @@ type Mutation {
   """Matches/unmatches a scene to fingerprint"""
   submitFingerprint(input: FingerprintSubmission!): Boolean! @hasRole(role: READ)
 
+  """Moves a list of fingerprints from one scene to another (admin only)"""
+  moveFingerprints(input: MoveFingerprintsInput!): Boolean! @hasRole(role: ADMIN)
+
   """Draft submissions"""
   submitSceneDraft(input: SceneDraftInput!): DraftSubmissionStatus! @hasRole(role: EDIT)
   submitPerformerDraft(input: PerformerDraftInput!): DraftSubmissionStatus! @hasRole(role: EDIT)
@@ -7015,6 +7042,38 @@ func (ec *executionContext) field_Mutation_markNotificationsRead_argsNotificatio
 	}
 
 	var zeroVal *MarkNotificationReadInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_moveFingerprints_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_moveFingerprints_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_moveFingerprints_argsInput(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (MoveFingerprintsInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["input"]
+	if !ok {
+		var zeroVal MoveFingerprintsInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNMoveFingerprintsInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐMoveFingerprintsInput(ctx, tmp)
+	}
+
+	var zeroVal MoveFingerprintsInput
 	return zeroVal, nil
 }
 
@@ -18047,6 +18106,88 @@ func (ec *executionContext) fieldContext_Mutation_submitFingerprint(ctx context.
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_submitFingerprint_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_moveFingerprints(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_moveFingerprints(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().MoveFingerprints(rctx, fc.Args["input"].(MoveFingerprintsInput))
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			if ec.directives.HasRole == nil {
+				var zeroVal bool
+				return zeroVal, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_moveFingerprints(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_moveFingerprints_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -38278,6 +38419,47 @@ func (ec *executionContext) unmarshalInputMarkNotificationReadInput(ctx context.
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputMoveFingerprintsInput(ctx context.Context, obj interface{}) (MoveFingerprintsInput, error) {
+	var it MoveFingerprintsInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"source_scene_id", "target_scene_id", "fingerprints"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "source_scene_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("source_scene_id"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SourceSceneID = data
+		case "target_scene_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("target_scene_id"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TargetSceneID = data
+		case "fingerprints":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fingerprints"))
+			data, err := ec.unmarshalNFingerprintQueryInput2ᚕᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐFingerprintQueryInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Fingerprints = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputMultiIDCriterionInput(ctx context.Context, obj interface{}) (MultiIDCriterionInput, error) {
 	var it MultiIDCriterionInput
 	asMap := map[string]interface{}{}
@@ -44244,6 +44426,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "submitFingerprint":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_submitFingerprint(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "moveFingerprints":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_moveFingerprints(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -52562,6 +52751,11 @@ func (ec *executionContext) marshalNMeasurements2ᚖgithubᚗcomᚋstashappᚋst
 		return graphql.Null
 	}
 	return ec._Measurements(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNMoveFingerprintsInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐMoveFingerprintsInput(ctx context.Context, v interface{}) (MoveFingerprintsInput, error) {
+	res, err := ec.unmarshalInputMoveFingerprintsInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNNewUserInput2githubᚗcomᚋstashappᚋstashᚑboxᚋpkgᚋmodelsᚐNewUserInput(ctx context.Context, v interface{}) (NewUserInput, error) {

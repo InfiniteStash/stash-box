@@ -865,3 +865,266 @@ func TestSubmitFingerprintUnmatchModify(t *testing.T) {
 	pt := createSceneTestRunner(t)
 	pt.testSubmitFingerprintUnmatchModify()
 }
+
+func (s *sceneTestRunner) testMoveFingerprints() {
+	// Create source scene with fingerprints
+	sourceScene, err := s.createTestScene(nil)
+	assert.NilError(s.t, err)
+
+	// Create target scene  
+	targetScene, err := s.createTestScene(nil)
+	assert.NilError(s.t, err)
+
+	// Add additional fingerprints to source scene
+	fp1 := s.generateSceneFingerprint(nil)
+	fp2 := s.generateSceneFingerprint(nil)
+
+	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: sourceScene.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      fp1.Hash,
+			Algorithm: fp1.Algorithm,
+			Duration:  fp1.Duration,
+		},
+	})
+	assert.NilError(s.t, err)
+
+	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: sourceScene.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      fp2.Hash,
+			Algorithm: fp2.Algorithm,
+			Duration:  fp2.Duration,
+		},
+	})
+	assert.NilError(s.t, err)
+
+	// Get updated source scene with all fingerprints
+	sourceScene, err = s.client.findScene(sourceScene.UUID())
+	assert.NilError(s.t, err)
+	assert.Equal(s.t, len(sourceScene.Fingerprints), 3) // Original + 2 added
+
+	// Move specific fingerprints from source to target
+	fingerprintsToMove := []*models.FingerprintQueryInput{
+		{
+			Hash:      sourceScene.Fingerprints[0].Hash,
+			Algorithm: sourceScene.Fingerprints[0].Algorithm,
+		},
+		{
+			Hash:      sourceScene.Fingerprints[1].Hash,
+			Algorithm: sourceScene.Fingerprints[1].Algorithm,
+		},
+	}
+
+	input := models.MoveFingerprintsInput{
+		SourceSceneID: sourceScene.UUID(),
+		TargetSceneID: targetScene.UUID(),
+		Fingerprints:  fingerprintsToMove,
+	}
+
+	result, err := s.client.moveFingerprints(input)
+	assert.NilError(s.t, err)
+	assert.Equal(s.t, result, true)
+
+	// Verify fingerprints were moved
+	updatedSourceScene, err := s.client.findScene(sourceScene.UUID())
+	assert.NilError(s.t, err)
+	assert.Equal(s.t, len(updatedSourceScene.Fingerprints), 1) // Should have 1 remaining
+
+	updatedTargetScene, err := s.client.findScene(targetScene.UUID())
+	assert.NilError(s.t, err)
+	assert.Equal(s.t, len(updatedTargetScene.Fingerprints), 3) // Original + 2 moved
+
+	// Verify correct fingerprints were moved
+	movedHashes := []string{fingerprintsToMove[0].Hash, fingerprintsToMove[1].Hash}
+	targetHashes := []string{}
+	for _, fp := range updatedTargetScene.Fingerprints {
+		targetHashes = append(targetHashes, fp.Hash)
+	}
+
+	for _, hash := range movedHashes {
+		found := false
+		for _, targetHash := range targetHashes {
+			if hash == targetHash {
+				found = true
+				break
+			}
+		}
+		assert.Assert(s.t, found, "Moved fingerprint not found in target scene")
+	}
+}
+
+func (s *sceneTestRunner) testMoveFingerprints_SourceSceneNotFound() {
+	targetScene, err := s.createTestScene(nil)
+	assert.NilError(s.t, err)
+
+	nonExistentID := uuid.Must(uuid.NewV4())
+	input := models.MoveFingerprintsInput{
+		SourceSceneID: nonExistentID,
+		TargetSceneID: targetScene.UUID(),
+		Fingerprints: []*models.FingerprintQueryInput{
+			{Hash: "abc123", Algorithm: models.FingerprintAlgorithmMd5},
+		},
+	}
+
+	result, err := s.client.moveFingerprints(input)
+	assert.ErrorContains(s.t, err, "source scene not found or is deleted")
+	assert.Equal(s.t, result, false)
+}
+
+func (s *sceneTestRunner) testMoveFingerprints_TargetSceneNotFound() {
+	sourceScene, err := s.createTestScene(nil)
+	assert.NilError(s.t, err)
+
+	nonExistentID := uuid.Must(uuid.NewV4())
+	input := models.MoveFingerprintsInput{
+		SourceSceneID: sourceScene.UUID(),
+		TargetSceneID: nonExistentID,
+		Fingerprints: []*models.FingerprintQueryInput{
+			{Hash: "abc123", Algorithm: models.FingerprintAlgorithmMd5},
+		},
+	}
+
+	result, err := s.client.moveFingerprints(input)
+	assert.ErrorContains(s.t, err, "target scene not found or is deleted")
+	assert.Equal(s.t, result, false)
+}
+
+func (s *sceneTestRunner) testMoveFingerprints_NoMatchingFingerprints() {
+	sourceScene, err := s.createTestScene(nil)
+	assert.NilError(s.t, err)
+
+	targetScene, err := s.createTestScene(nil)
+	assert.NilError(s.t, err)
+
+	// Try to move fingerprints that don't exist on source scene
+	input := models.MoveFingerprintsInput{
+		SourceSceneID: sourceScene.UUID(),
+		TargetSceneID: targetScene.UUID(),
+		Fingerprints: []*models.FingerprintQueryInput{
+			{Hash: "nonexistent123", Algorithm: models.FingerprintAlgorithmMd5},
+		},
+	}
+
+	result, err := s.client.moveFingerprints(input)
+	assert.ErrorContains(s.t, err, "no matching fingerprints found in source scene")
+	assert.Equal(s.t, result, false)
+}
+
+func (s *sceneTestRunner) testMoveFingerprints_PartialMatching() {
+	sourceScene, err := s.createTestScene(nil)
+	assert.NilError(s.t, err)
+
+	targetScene, err := s.createTestScene(nil)
+	assert.NilError(s.t, err)
+
+	// Add additional fingerprint to source scene
+	fp := s.generateSceneFingerprint(nil)
+	_, err = s.client.submitFingerprint(models.FingerprintSubmission{
+		SceneID: sourceScene.UUID(),
+		Fingerprint: &models.FingerprintInput{
+			Hash:      fp.Hash,
+			Algorithm: fp.Algorithm,
+			Duration:  fp.Duration,
+		},
+	})
+	assert.NilError(s.t, err)
+
+	// Get updated source scene
+	sourceScene, err = s.client.findScene(sourceScene.UUID())
+	assert.NilError(s.t, err)
+	assert.Equal(s.t, len(sourceScene.Fingerprints), 2)
+
+	// Try to move one existing and one non-existing fingerprint
+	input := models.MoveFingerprintsInput{
+		SourceSceneID: sourceScene.UUID(),
+		TargetSceneID: targetScene.UUID(),
+		Fingerprints: []*models.FingerprintQueryInput{
+			{
+				Hash:      sourceScene.Fingerprints[0].Hash,
+				Algorithm: sourceScene.Fingerprints[0].Algorithm,
+			},
+			{Hash: "nonexistent456", Algorithm: models.FingerprintAlgorithmPhash},
+		},
+	}
+
+	result, err := s.client.moveFingerprints(input)
+	assert.NilError(s.t, err)
+	assert.Equal(s.t, result, true)
+
+	// Verify only the existing fingerprint was moved
+	updatedSourceScene, err := s.client.findScene(sourceScene.UUID())
+	assert.NilError(s.t, err)
+	assert.Equal(s.t, len(updatedSourceScene.Fingerprints), 1)
+
+	updatedTargetScene, err := s.client.findScene(targetScene.UUID())
+	assert.NilError(s.t, err)
+	assert.Equal(s.t, len(updatedTargetScene.Fingerprints), 2) // Original + 1 moved
+}
+
+// Test authorization - non-admin users should not be able to move fingerprints
+func (s *sceneTestRunner) testMoveFingerprints_Unauthorized() {
+	sourceScene, err := s.createTestScene(nil)
+	assert.NilError(s.t, err)
+
+	targetScene, err := s.createTestScene(nil)
+	assert.NilError(s.t, err)
+
+	input := models.MoveFingerprintsInput{
+		SourceSceneID: sourceScene.UUID(),
+		TargetSceneID: targetScene.UUID(),
+		Fingerprints: []*models.FingerprintQueryInput{
+			{
+				Hash:      sourceScene.Fingerprints[0].Hash,
+				Algorithm: sourceScene.Fingerprints[0].Algorithm,
+			},
+		},
+	}
+
+	// Test with different user roles
+	testCases := []struct {
+		name   string
+		runner *testRunner
+	}{
+		{"read user", asRead(s.t)},
+		{"edit user", asEdit(s.t)},
+		{"none user", asNone(s.t)},
+	}
+
+	for _, tc := range testCases {
+		s.t.Run(tc.name, func(t *testing.T) {
+			_, err := tc.runner.client.moveFingerprints(input)
+			assert.ErrorContains(t, err, "Not authorized")
+		})
+	}
+}
+
+func TestMoveFingerprints(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testMoveFingerprints()
+}
+
+func TestMoveFingerprints_SourceSceneNotFound(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testMoveFingerprints_SourceSceneNotFound()
+}
+
+func TestMoveFingerprints_TargetSceneNotFound(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testMoveFingerprints_TargetSceneNotFound()
+}
+
+func TestMoveFingerprints_NoMatchingFingerprints(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testMoveFingerprints_NoMatchingFingerprints()
+}
+
+func TestMoveFingerprints_PartialMatching(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testMoveFingerprints_PartialMatching()
+}
+
+func TestMoveFingerprints_Unauthorized(t *testing.T) {
+	pt := createSceneTestRunner(t)
+	pt.testMoveFingerprints_Unauthorized()
+}

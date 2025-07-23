@@ -65,3 +65,17 @@ func (r *mutationResolver) SubmitFingerprint(ctx context.Context, input models.F
 
 	return ret, nil
 }
+
+func (r *mutationResolver) MoveFingerprints(ctx context.Context, input models.MoveFingerprintsInput) (bool, error) {
+	fac := r.getRepoFactory(ctx)
+	var ret bool
+	if err := fac.WithTxn(func() error {
+		var err error
+		ret, err = scene.MoveFingerprints(ctx, fac, input)
+		return err
+	}); err != nil {
+		return false, err
+	}
+
+	return ret, nil
+}

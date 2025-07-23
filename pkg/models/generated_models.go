@@ -303,6 +303,15 @@ type Measurements struct {
 	Hip      *int    `json:"hip,omitempty"`
 }
 
+type MoveFingerprintsInput struct {
+	// Source scene ID to move fingerprints from
+	SourceSceneID uuid.UUID `json:"source_scene_id"`
+	// Target scene ID to move fingerprints to
+	TargetSceneID uuid.UUID `json:"target_scene_id"`
+	// List of fingerprints to move (identified by hash and algorithm)
+	Fingerprints []*FingerprintQueryInput `json:"fingerprints"`
+}
+
 type MultiIDCriterionInput struct {
 	Value    []uuid.UUID       `json:"value,omitempty"`
 	Modifier CriterionModifier `json:"modifier"`

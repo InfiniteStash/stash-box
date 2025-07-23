@@ -363,3 +363,19 @@ func (c *graphqlClient) createTag(input models.TagCreateInput) (*tagOutput, erro
 
 	return resp.TagCreate, nil
 }
+
+func (c *graphqlClient) moveFingerprints(input models.MoveFingerprintsInput) (bool, error) {
+	q := `
+	mutation MoveFingerprints($input: MoveFingerprintsInput!) {
+		moveFingerprints(input: $input)
+	}`
+
+	var resp struct {
+		MoveFingerprints bool
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return false, err
+	}
+
+	return resp.MoveFingerprints, nil
+}
