@@ -8,6 +8,7 @@ import SearchField, { SearchType } from "src/components/searchField";
 import {
   ROUTE_ACTIVATE,
   ROUTE_AUDITS,
+  ROUTE_CREDIT_ROLES,
   ROUTE_DRAFTS,
   ROUTE_EDITS,
   ROUTE_FORGOT_PASSWORD,
@@ -154,6 +155,11 @@ const Main: FC<Props> = ({ children }) => {
           {isAdmin(user) && (
             <NavLink to={ROUTE_AUDITS} className="nav-link">
               Audits
+            </NavLink>
+          )}
+          {isAdmin(user) && (
+            <NavLink to={ROUTE_CREDIT_ROLES} className="nav-link">
+              Credit Roles
             </NavLink>
           )}
           {guidelinesURL && (

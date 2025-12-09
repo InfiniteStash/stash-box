@@ -90,13 +90,13 @@ func validateSceneEditInput(ctx context.Context, queries *queries.Queries, input
 			return fmt.Errorf("%w: %w", ErrInvalidTag, err)
 		}
 	}
-	if len(input.Details.Performers) > 0 {
-		var ids []uuid.UUID
-		for _, appearance := range input.Details.Performers {
-			ids = append(ids, appearance.PerformerID)
+	if len(input.Details.Credits) > 0 {
+		var performerIds []uuid.UUID
+		for _, credit := range input.Details.Credits {
+			performerIds = append(performerIds, credit.PerformerID)
 		}
-		performers, err := queries.FindPerformersByIds(ctx, ids)
-		if err != nil || len(performers) < len(ids) {
+		performers, err := queries.FindPerformersByIds(ctx, performerIds)
+		if err != nil || len(performers) < len(performerIds) {
 			return fmt.Errorf("%w: %w", ErrInvalidPerformer, err)
 		}
 	}

@@ -13,6 +13,7 @@ import (
 type Querier interface {
 	CancelUserEdits(ctx context.Context, userID uuid.NullUUID) error
 	ClearScenePerformerAlias(ctx context.Context, arg ClearScenePerformerAliasParams) error
+	CountCreditsForRole(ctx context.Context, creditRoleID int) (int64, error)
 	CountNotificationsByUser(ctx context.Context, arg CountNotificationsByUserParams) (int64, error)
 	CountPerformerSearchMatches(ctx context.Context, arg CountPerformerSearchMatchesParams) (interface{}, error)
 	CountScenesByPerformer(ctx context.Context, performerID uuid.UUID) (int64, error)
@@ -20,6 +21,9 @@ type Querier interface {
 	CountUserEditsByStatus(ctx context.Context, userID uuid.NullUUID) ([]CountUserEditsByStatusRow, error)
 	CountUsers(ctx context.Context) (int64, error)
 	CountVotesByType(ctx context.Context, userID uuid.UUID) ([]CountVotesByTypeRow, error)
+	// Credit role queries
+	CreateCreditRole(ctx context.Context, arg CreateCreditRoleParams) (CreditRole, error)
+	CreateCreditRoleTag(ctx context.Context, arg CreateCreditRoleTagParams) error
 	// Draft queries
 	CreateDraft(ctx context.Context, arg CreateDraftParams) (Draft, error)
 	// Edit queries
@@ -49,11 +53,13 @@ type Querier interface {
 	CreatePerformerURLs(ctx context.Context, arg []CreatePerformerURLsParams) (int64, error)
 	// Scene queries
 	CreateScene(ctx context.Context, arg CreateSceneParams) (Scene, error)
+	// Scene credit queries
+	CreateSceneCredit(ctx context.Context, arg CreateSceneCreditParams) (SceneCredit, error)
+	CreateSceneCreditTags(ctx context.Context, arg []CreateSceneCreditTagsParams) (int64, error)
+	CreateSceneCredits(ctx context.Context, arg []CreateSceneCreditsParams) (int64, error)
 	CreateSceneEdit(ctx context.Context, arg CreateSceneEditParams) error
 	CreateSceneFingerprints(ctx context.Context, arg []CreateSceneFingerprintsParams) (int64, error)
 	CreateSceneImages(ctx context.Context, arg []CreateSceneImagesParams) (int64, error)
-	// Scene performers
-	CreateScenePerformers(ctx context.Context, arg []CreateScenePerformersParams) (int64, error)
 	// Scene redirects
 	CreateSceneRedirect(ctx context.Context, arg CreateSceneRedirectParams) error
 	// Scene tags management
@@ -94,7 +100,10 @@ type Querier interface {
 	CreateUserRoles(ctx context.Context, arg []CreateUserRolesParams) (int64, error)
 	// User token queries
 	CreateUserToken(ctx context.Context, arg CreateUserTokenParams) (UserToken, error)
+	DeleteAllCreditRoleTags(ctx context.Context, creditRoleID int) error
 	DeleteAllSceneFingerprintSubmissions(ctx context.Context, arg DeleteAllSceneFingerprintSubmissionsParams) (int64, error)
+	DeleteCreditRole(ctx context.Context, id int) error
+	DeleteCreditRoleTag(ctx context.Context, arg DeleteCreditRoleTagParams) error
 	DeleteDraft(ctx context.Context, id uuid.UUID) error
 	DeleteEdit(ctx context.Context, id uuid.UUID) error
 	DeleteExpiredDrafts(ctx context.Context, dollar_1 interface{}) error
@@ -119,11 +128,12 @@ type Querier interface {
 	// Performer URLs
 	DeletePerformerURLs(ctx context.Context, performerID uuid.UUID) error
 	DeleteScene(ctx context.Context, id uuid.UUID) error
+	DeleteSceneCreditTags(ctx context.Context, sceneCreditID int) error
+	DeleteSceneCredits(ctx context.Context, sceneID uuid.UUID) error
 	DeleteSceneFingerprint(ctx context.Context, arg DeleteSceneFingerprintParams) error
 	DeleteSceneFingerprintsByScene(ctx context.Context, sceneID uuid.UUID) error
 	// Scene images
 	DeleteSceneImages(ctx context.Context, sceneID uuid.UUID) error
-	DeleteScenePerformers(ctx context.Context, sceneID uuid.UUID) error
 	DeleteSceneStudios(ctx context.Context, studioID uuid.NullUUID) error
 	DeleteSceneTagsByScene(ctx context.Context, sceneID uuid.UUID) error
 	DeleteSceneTagsByTag(ctx context.Context, tagID uuid.UUID) error
@@ -158,6 +168,9 @@ type Querier interface {
 	// * The minimum voting period has passed, and the number of votes has crossed the voting threshold.
 	// The latter only applies for destructive edits. Non-destructive edits get auto-applied when sufficient votes are cast.
 	FindCompletedEdits(ctx context.Context, arg FindCompletedEditsParams) ([]Edit, error)
+	FindCreditRole(ctx context.Context, id int) (CreditRole, error)
+	// Get all credit tags for multiple scenes (for DataLoader)
+	FindCreditTagsBySceneIds(ctx context.Context, sceneIds []uuid.UUID) ([]FindCreditTagsBySceneIdsRow, error)
 	FindDraft(ctx context.Context, id uuid.UUID) (Draft, error)
 	FindDraftsByUser(ctx context.Context, userID uuid.UUID) ([]Draft, error)
 	FindEdit(ctx context.Context, id uuid.UUID) (Edit, error)
@@ -198,9 +211,11 @@ type Querier interface {
 	FindPerformersByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]Performer, error)
 	FindPerformersByURL(ctx context.Context, arg FindPerformersByURLParams) ([]Performer, error)
 	FindScene(ctx context.Context, id uuid.UUID) (Scene, error)
-	// Get performer appearances for multiple scenes
+	// Get performer appearances for multiple scenes (legacy - now handled by FindSceneCreditsByIds in scene_credit.sql)
 	FindSceneAppearancesByIds(ctx context.Context, sceneIds []uuid.UUID) ([]FindSceneAppearancesByIdsRow, error)
 	FindSceneByURL(ctx context.Context, arg FindSceneByURLParams) ([]Scene, error)
+	// Get credits for multiple scenes (for DataLoader)
+	FindSceneCreditsByIds(ctx context.Context, sceneIds []uuid.UUID) ([]SceneCredit, error)
 	// Get URLs for multiple scenes
 	FindSceneUrlsByIds(ctx context.Context, sceneIds []uuid.UUID) ([]SceneUrl, error)
 	FindScenesByFingerprintsExactWithHash(ctx context.Context, hashes []int64) ([]FindScenesByFingerprintsExactWithHashRow, error)
@@ -239,6 +254,7 @@ type Querier interface {
 	FindUserTokensByEmail(ctx context.Context, dollar_1 string) ([]UserToken, error)
 	FindUserTokensByInviteKey(ctx context.Context, dollar_1 uuid.UUID) ([]UserToken, error)
 	FindUserWithRoles(ctx context.Context, id uuid.UUID) (FindUserWithRolesRow, error)
+	GetAllCreditRoles(ctx context.Context) ([]CreditRole, error)
 	// Get all fingerprints for multiple scenes with aggregated vote data
 	// When onlySubmitted is true, pass the actual user ID, when false pass NULL
 	GetAllFingerprints(ctx context.Context, arg GetAllFingerprintsParams) ([]GetAllFingerprintsRow, error)
@@ -246,6 +262,8 @@ type Querier interface {
 	GetAllSiteCategories(ctx context.Context) ([]SiteCategory, error)
 	GetAllTagCategories(ctx context.Context) ([]TagCategory, error)
 	GetChildStudios(ctx context.Context, parentStudioID uuid.NullUUID) ([]Studio, error)
+	GetCreditRolesByPerformer(ctx context.Context, performerID uuid.UUID) ([]GetCreditRolesByPerformerRow, error)
+	GetCreditTagsByPerformer(ctx context.Context, performerID uuid.UUID) ([]GetCreditTagsByPerformerRow, error)
 	GetEditComments(ctx context.Context, editID uuid.UUID) ([]EditComment, error)
 	GetEditCommentsByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]EditComment, error)
 	GetEditPerformerAliases(ctx context.Context, id uuid.UUID) ([]string, error)
@@ -261,6 +279,8 @@ type Querier interface {
 	GetFingerprint(ctx context.Context, arg GetFingerprintParams) (Fingerprint, error)
 	// Gets current images for target entity and merges with edit's added_images/removed_images
 	GetImagesForEdit(ctx context.Context, id uuid.UUID) ([]Image, error)
+	// Gets current credits for target scene and merges with edit's added_credits/removed_credits
+	GetMergedCreditsForEdit(ctx context.Context, id uuid.UUID) ([]GetMergedCreditsForEditRow, error)
 	// Gets current performers for target entity and merges with edit's added_performers/removed_performers
 	GetMergedPerformersForEdit(ctx context.Context, id uuid.UUID) ([]GetMergedPerformersForEditRow, error)
 	// Gets current aliases for target studio entity and merges with edit's added_aliases/removed_aliases
@@ -282,8 +302,10 @@ type Querier interface {
 	GetPerformerTattoos(ctx context.Context, performerID uuid.UUID) ([]GetPerformerTattoosRow, error)
 	GetPerformerURLs(ctx context.Context, performerID uuid.UUID) ([]GetPerformerURLsRow, error)
 	GetPrimaryEditCommentID(ctx context.Context, editID uuid.UUID) (uuid.UUID, error)
+	GetSceneCredits(ctx context.Context, sceneID uuid.UUID) ([]SceneCredit, error)
+	// Get scene credits filtered by role
+	GetSceneCreditsByRole(ctx context.Context, arg GetSceneCreditsByRoleParams) ([]SceneCredit, error)
 	GetSceneFingerprintScenes(ctx context.Context, fingerprintIds []int) ([]GetSceneFingerprintScenesRow, error)
-	GetScenePerformers(ctx context.Context, sceneID uuid.UUID) ([]GetScenePerformersRow, error)
 	GetScenePhashSeeds(ctx context.Context, sceneID uuid.UUID) ([]GetScenePhashSeedsRow, error)
 	GetSceneTags(ctx context.Context, sceneID uuid.UUID) ([]Tag, error)
 	GetSceneURLs(ctx context.Context, sceneID uuid.UUID) ([]GetSceneURLsRow, error)
@@ -299,6 +321,8 @@ type Querier interface {
 	GetStudiosByPerformerAndNetwork(ctx context.Context, arg GetStudiosByPerformerAndNetworkParams) ([]GetStudiosByPerformerAndNetworkRow, error)
 	GetTagAliases(ctx context.Context, tagID uuid.UUID) ([]string, error)
 	GetTagCategoriesByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]TagCategory, error)
+	GetTagsForCredit(ctx context.Context, sceneCreditID int) ([]GetTagsForCreditRow, error)
+	GetTagsForCreditRole(ctx context.Context, creditRoleID int) ([]GetTagsForCreditRoleRow, error)
 	GetUserNotificationSubscriptions(ctx context.Context, userID uuid.UUID) ([]NotificationType, error)
 	GetUserRoles(ctx context.Context, userID uuid.UUID) ([]string, error)
 	GetUsers(ctx context.Context, dollar_1 []uuid.UUID) ([]User, error)
@@ -355,6 +379,7 @@ type Querier interface {
 	TriggerSceneEditNotifications(ctx context.Context, id uuid.UUID) error
 	TriggerStudioEditNotifications(ctx context.Context, id uuid.UUID) error
 	TriggerUpdatedEditNotifications(ctx context.Context, id uuid.UUID) error
+	UpdateCreditRole(ctx context.Context, arg UpdateCreditRoleParams) (CreditRole, error)
 	UpdateEdit(ctx context.Context, arg UpdateEditParams) (Edit, error)
 	UpdateEditCommentText(ctx context.Context, arg UpdateEditCommentTextParams) (EditComment, error)
 	UpdateEditData(ctx context.Context, arg UpdateEditDataParams) (Edit, error)

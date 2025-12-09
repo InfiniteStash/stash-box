@@ -937,13 +937,75 @@ func (q *Queries) GetImagesForEdit(ctx context.Context, id uuid.UUID) ([]Image, 
 	return items, nil
 }
 
+const getMergedCreditsForEdit = `-- name: GetMergedCreditsForEdit :many
+WITH edit AS (
+  SELECT id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count FROM edits WHERE edits.id = $1
+), current_credits AS (
+    SELECT sc.performer_id, sc.credit_role_id, sc."as"
+    FROM edit e
+    JOIN scene_edits se ON e.id = se.edit_id
+    JOIN scene_credits sc ON se.scene_id = sc.scene_id
+    WHERE e.target_type = 'SCENE'
+),
+removed_credits AS (
+    SELECT
+        (elem->>'performer_id')::uuid AS performer_id,
+        (elem->>'credit_role_id')::int AS credit_role_id,
+        elem->>'as' AS "as"
+    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'removed_credits', '[]'::jsonb)) AS elem
+),
+added_credits AS (
+    SELECT
+        (elem->>'performer_id')::uuid AS performer_id,
+        (elem->>'credit_role_id')::int AS credit_role_id,
+        elem->>'as' AS "as"
+    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'added_credits', '[]'::jsonb)) AS elem
+),
+final_credits AS (
+    SELECT performer_id, credit_role_id, "as" FROM current_credits
+    EXCEPT
+    SELECT performer_id, credit_role_id, "as" FROM removed_credits
+    UNION
+    SELECT performer_id, credit_role_id, "as" FROM added_credits
+)
+SELECT fc.performer_id, fc.credit_role_id, fc."as" FROM final_credits fc
+ORDER BY fc.credit_role_id, fc.performer_id
+`
+
+type GetMergedCreditsForEditRow struct {
+	PerformerID  uuid.UUID `db:"performer_id" json:"performer_id"`
+	CreditRoleID int       `db:"credit_role_id" json:"credit_role_id"`
+	As           *string   `db:"as" json:"as"`
+}
+
+// Gets current credits for target scene and merges with edit's added_credits/removed_credits
+func (q *Queries) GetMergedCreditsForEdit(ctx context.Context, id uuid.UUID) ([]GetMergedCreditsForEditRow, error) {
+	rows, err := q.db.Query(ctx, getMergedCreditsForEdit, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetMergedCreditsForEditRow{}
+	for rows.Next() {
+		var i GetMergedCreditsForEditRow
+		if err := rows.Scan(&i.PerformerID, &i.CreditRoleID, &i.As); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getMergedPerformersForEdit = `-- name: GetMergedPerformersForEdit :many
 WITH edit AS (
   SELECT id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count FROM edits WHERE edits.id = $1
 ), current_performers AS (
-    SELECT sp.performer_id, sp."as" FROM edit e
+    SELECT sc.performer_id, sc."as" FROM edit e
     JOIN scene_edits se ON e.id = se.edit_id
-    JOIN scene_performers sp ON se.scene_id = sp.scene_id
+    JOIN scene_credits sc ON se.scene_id = sc.scene_id
     WHERE e.target_type = 'SCENE'
 ),
 removed_performers AS (

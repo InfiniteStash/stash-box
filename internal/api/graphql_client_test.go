@@ -22,6 +22,17 @@ type performerAppearance struct {
 	As *string `json:"as"`
 }
 
+type creditRole struct {
+	ID int `json:"id"`
+}
+
+type sceneCredit struct {
+	Performer  *idObject   `json:"performer"`
+	CreditRole *creditRole `json:"credit_role"`
+	As         *string     `json:"as"`
+	Tags       []idObject  `json:"tags"`
+}
+
 type fingerprint struct {
 	Hash         string                      `json:"hash"`
 	Algorithm    models.FingerprintAlgorithm `json:"algorithm"`
@@ -54,6 +65,7 @@ type sceneOutput struct {
 	Studio         *idObject             `json:"studio"`
 	Tags           []idObject            `json:"tags"`
 	Images         []idObject            `json:"images"`
+	Credits        []sceneCredit         `json:"credits"`
 	Performers     []performerAppearance `json:"performers"`
 	Fingerprints   []fingerprint         `json:"fingerprints"`
 	Duration       *int                  `json:"duration"`

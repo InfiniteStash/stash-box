@@ -352,12 +352,22 @@ export const renderPerformerDetails = (
   </>
 );
 
-type ScenePerformance = {
+type SceneCredit = {
   as?: string | null;
   performer: Pick<
     PerformerFragment,
     "name" | "id" | "gender" | "disambiguation" | "deleted"
   >;
+  credit_role: {
+    id: number;
+    name: string;
+    description: string;
+  };
+  tags: Array<{
+    id: string;
+    name: string;
+    description?: string | null;
+  }>;
 };
 
 export interface SceneDetails {
@@ -366,14 +376,13 @@ export interface SceneDetails {
   production_date?: string | null;
   duration?: number | null;
   details?: string | null;
-  director?: string | null;
   code?: string | null;
   studio?: {
     id: string;
     name: string;
   } | null;
-  added_performers?: ScenePerformance[] | null;
-  removed_performers?: ScenePerformance[] | null;
+  added_credits?: SceneCredit[] | null;
+  removed_credits?: SceneCredit[] | null;
   added_images?: (Image | null)[] | null;
   removed_images?: (Image | null)[] | null;
   added_urls?: URL[] | null;
@@ -438,11 +447,16 @@ export const renderSceneDetails = (
       showDiff={showDiff}
     />
     <ListChangeRow
-      name="Performers"
-      added={sceneDetails.added_performers}
-      removed={sceneDetails.removed_performers}
+      name="Credits"
+      added={sceneDetails.added_credits}
+      removed={sceneDetails.removed_credits}
       renderItem={renderPerformer}
-      getKey={(o) => o.performer.id}
+      getKey={(o) =>
+        `${o.performer.id}|${o.credit_role?.id ?? ""}|${o.as ?? ""}|${o.tags
+          .map((t) => t.id)
+          .sort()
+          .join(",")}`
+      }
       showDiff={showDiff}
     />
     <LinkedChangeRow
@@ -466,12 +480,6 @@ export const renderSceneDetails = (
       name="Details"
       newValue={sceneDetails.details}
       oldValue={oldSceneDetails?.details}
-      showDiff={showDiff}
-    />
-    <ChangeRow
-      name="Director"
-      newValue={sceneDetails.director}
-      oldValue={oldSceneDetails?.director}
       showDiff={showDiff}
     />
     <ChangeRow

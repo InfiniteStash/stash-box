@@ -159,6 +159,10 @@ func (r *performerResolver) Studios(ctx context.Context, obj *models.Performer, 
 	return r.services.Studio().CountByPerformer(ctx, obj.ID, studioID)
 }
 
+func (r *performerResolver) CreditRoles(ctx context.Context, obj *models.Performer) ([]models.PerformerCreditRole, error) {
+	return r.services.CreditRole().CountByPerformer(ctx, obj.ID)
+}
+
 func (r *performerResolver) IsFavorite(ctx context.Context, obj *models.Performer) (bool, error) {
 	return dataloader.For(ctx).PerformerIsFavoriteByID.Load(obj.ID)
 }

@@ -27,6 +27,7 @@ import {
   tagHref,
 } from "src/utils";
 import { FingerprintTable } from "./components/fingerprints/FingerprintTable";
+import { SceneCredits } from "./components/sceneCredits";
 
 const DEFAULT_TAB = "description";
 
@@ -49,21 +50,18 @@ const SceneComponent: FC<Props> = ({ scene }) => {
   const setTab = (tab: string | null) =>
     navigate({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
-  const performers = scene.performers
-    .map((performance) => {
-      const { performer } = performance;
-      return (
-        <Link
-          key={performer.id}
-          to={performerHref(performer)}
-          className="scene-performer"
-        >
-          <GenderIcon gender={performer.gender} />
-          <PerformerName performer={performer} as={performance.as} />
-        </Link>
-      );
-    })
-    .map((p, index) => (index % 2 === 2 ? [" • ", p] : p));
+  const performers = scene.credits
+    .filter((c) => c.credit_role.name === "Performer")
+    .map(({ performer, as }) => (
+      <Link
+        key={performer.id}
+        to={performerHref(performer)}
+        className="scene-performer"
+      >
+        <GenderIcon gender={performer.gender} />
+        <PerformerName performer={performer} as={as} />
+      </Link>
+    ));
 
   const tags = [...scene.tags].sort(compareByName).map((tag) => (
     <li key={tag.name}>
@@ -182,6 +180,9 @@ const SceneComponent: FC<Props> = ({ scene }) => {
         </Tab>
         <Tab eventKey="links" title="Links">
           <URLList urls={scene.urls} />
+        </Tab>
+        <Tab eventKey="credits" title="Credits">
+          <SceneCredits scene={scene} />
         </Tab>
         <Tab
           eventKey="edits"

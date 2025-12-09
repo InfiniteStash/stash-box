@@ -1,0 +1,15 @@
+#import "./PerformerFragment.gql"
+#import "./CreditRoleFragment.gql"
+#import "./TagFragment.gql"
+fragment SceneCreditFragment on SceneCredit {
+  performer {
+    ...PerformerFragment
+  }
+  credit_role {
+    ...CreditRoleFragment
+  }
+  as
+  tags {
+    ...TagFragment
+  }
+}

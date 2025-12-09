@@ -45,7 +45,6 @@ export const SceneSchema = yup.object({
       message: "Invalid duration, format should be HH:MM:SS",
     })
     .nullable(),
-  director: yup.string().trim().transform(nullCheck).nullable(),
   code: yup.string().trim().transform(nullCheck).nullable(),
   studio: yup
     .object({
@@ -61,7 +60,7 @@ export const SceneSchema = yup.object({
     })
     .nullable()
     .required("Studio is required"),
-  performers: yup
+  credits: yup
     .array()
     .of(
       yup
@@ -76,6 +75,18 @@ export const SceneSchema = yup.object({
             .nullable()
             .oneOf([null, ...Object.keys(GenderEnum)]),
           deleted: yup.bool().required(),
+          creditRoleId: yup.number().required(),
+          creditRoleName: yup.string().required(),
+          tags: yup
+            .array()
+            .of(
+              yup.object({
+                id: yup.string().required(),
+                name: yup.string().required(),
+                description: yup.string().nullable().optional(),
+              }),
+            )
+            .ensure(),
         })
         .transform((s: { name?: string; alias?: string }) => ({
           ...s,

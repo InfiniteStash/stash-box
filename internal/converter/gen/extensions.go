@@ -23,3 +23,7 @@ func ConvertNullIntToInt(i *int) int {
 func ConvertNotificationType(t queries.NotificationType) models.NotificationEnum {
 	return models.NotificationEnum(t)
 }
+
+func ConvertIntToInt32(i int) int32 {
+	return int32(i)
+}

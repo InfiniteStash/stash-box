@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/stashapp/stash-box/internal/dataloader"
@@ -61,21 +62,24 @@ func (r *sceneResolver) Images(ctx context.Context, obj *models.Scene) ([]models
 }
 
 func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]models.PerformerAppearance, error) {
-	appearances, err := dataloader.For(ctx).SceneAppearancesByID.Load(obj.ID)
+	credits, err := dataloader.For(ctx).SceneCreditsByID.Load(obj.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	var ret []models.PerformerAppearance
-	for _, appearance := range appearances {
-		performer, err := dataloader.For(ctx).PerformerByID.Load(appearance.PerformerID)
+	for _, credit := range credits {
+		if credit.CreditRoleID != 1 {
+			continue
+		}
+		performer, err := dataloader.For(ctx).PerformerByID.Load(credit.PerformerID)
 		if err != nil {
 			return nil, err
 		}
 
 		retApp := models.PerformerAppearance{
 			Performer: performer,
-			As:        appearance.As,
+			As:        credit.As,
 		}
 		ret = append(ret, retApp)
 	}
@@ -104,4 +108,35 @@ func (r *sceneResolver) Created(ctx context.Context, obj *models.Scene) (*time.T
 
 func (r *sceneResolver) Updated(ctx context.Context, obj *models.Scene) (*time.Time, error) {
 	return &obj.UpdatedAt, nil
+}
+
+func (r *sceneResolver) Credits(ctx context.Context, obj *models.Scene) ([]models.SceneCredit, error) {
+	return dataloader.For(ctx).SceneCreditsByID.Load(obj.ID)
+}
+
+func (r *sceneResolver) Director(ctx context.Context, obj *models.Scene) (*string, error) {
+	credits, err := r.Credits(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
+
+	const directorRoleID int32 = 2 // DIRECTOR credit role
+	var directorNames []string
+	for _, credit := range credits {
+		if credit.CreditRoleID == directorRoleID {
+			// Load performer to get name
+			performer, err := dataloader.For(ctx).PerformerByID.Load(credit.PerformerID)
+			if err != nil {
+				return nil, err
+			}
+			directorNames = append(directorNames, performer.Name)
+		}
+	}
+
+	if len(directorNames) == 0 {
+		return nil, nil
+	}
+
+	result := strings.Join(directorNames, ", ")
+	return &result, nil
 }

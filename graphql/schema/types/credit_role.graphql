@@ -1,0 +1,28 @@
+type CreditRole {
+  id: Int!
+  name: String!
+  description: String!
+  valid_tags: [Tag!]!
+  created: Time!
+  updated: Time!
+}
+
+input CreditRoleCreateInput {
+  name: String!
+  description: String
+}
+
+input CreditRoleUpdateInput {
+  id: Int!
+  name: String
+  description: String
+}
+
+input CreditRoleDestroyInput {
+  id: Int!
+}
+
+input CreditRoleSetTagsInput {
+  role_id: Int!
+  tag_ids: [ID!]!
+}

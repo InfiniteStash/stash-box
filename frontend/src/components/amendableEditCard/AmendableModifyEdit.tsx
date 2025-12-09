@@ -430,12 +430,17 @@ const renderAmendableSceneDetails = (
       showDiff={showDiff}
     />
     <AmendableListChangeRow
-      name="Performers"
-      field="performers"
-      added={sceneDetails.added_performers}
-      removed={sceneDetails.removed_performers}
+      name="Credits"
+      field="credits"
+      added={sceneDetails.added_credits}
+      removed={sceneDetails.removed_credits}
       renderItem={renderPerformer}
-      getKey={(o) => o.performer.id}
+      getKey={(o) =>
+        `${o.performer.id}|${o.credit_role?.id ?? ""}|${o.as ?? ""}|${o.tags
+          .map((t) => t.id)
+          .sort()
+          .join(",")}`
+      }
       showDiff={showDiff}
     />
     <AmendableLinkedChangeRow
@@ -462,13 +467,6 @@ const renderAmendableSceneDetails = (
       field="details"
       newValue={sceneDetails.details}
       oldValue={oldSceneDetails?.details}
-      showDiff={showDiff}
-    />
-    <AmendableChangeRow
-      name="Director"
-      field="director"
-      newValue={sceneDetails.director}
-      oldValue={oldSceneDetails?.director}
       showDiff={showDiff}
     />
     <AmendableChangeRow

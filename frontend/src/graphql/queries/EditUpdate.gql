@@ -3,6 +3,7 @@
 #import "../fragments/SceneFragment.gql"
 #import "../fragments/TagFragment.gql"
 #import "../fragments/FingerprintFragment.gql"
+#import "../fragments/SceneCreditFragment.gql"
 query EditUpdate($id: ID!) {
   findEdit(id: $id) {
     id
@@ -121,11 +122,8 @@ query EditUpdate($id: ID!) {
         urls {
           ...URLFragment
         }
-        performers {
-          performer {
-            ...PerformerFragment
-          }
-          as
+        credits {
+          ...SceneCreditFragment
         }
         tags {
           ...TagFragment

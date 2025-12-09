@@ -687,12 +687,14 @@ func (s *performerTestRunner) testQueryPerformersSceneCountSort() {
 	// Create a scene with the second performer
 	sceneDate := "2020-01-15"
 	sceneTitle := s.generateSceneName()
+	creditRolePerformance := int32(1) // PERFORMANCE role ID
 	_, err = s.createTestScene(&models.SceneCreateInput{
 		Title: &sceneTitle,
 		Date:  sceneDate,
-		Performers: []models.PerformerAppearanceInput{
+		Credits: []models.CreditInput{
 			{
-				PerformerID: performerWithScenes.UUID(),
+				PerformerID:  performerWithScenes.UUID(),
+				CreditRoleID: creditRolePerformance,
 			},
 		},
 	})

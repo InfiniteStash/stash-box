@@ -796,12 +796,19 @@ func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
 	date := "2000-02-03"
 	production_date := "2000-01-09"
 	duration := 123
-	director := "Director"
 	code := "SomeCode"
 	site, err := s.createTestSite(nil)
 	if err != nil {
 		return nil
 	}
+
+	// Create a director performer for the credit
+	director, err := s.createTestPerformer(nil)
+	if err != nil {
+		return nil
+	}
+	directorAs := "Director"
+	creditRoleDirector := int32(2) // DIRECTOR role ID
 
 	return &models.SceneCreateInput{
 		Title:   &title,
@@ -818,8 +825,14 @@ func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
 			s.generateSceneFingerprint(nil),
 		},
 		Duration: &duration,
-		Director: &director,
-		Code:     &code,
+		Credits: []models.CreditInput{
+			{
+				PerformerID:  director.UUID(),
+				CreditRoleID: creditRoleDirector,
+				As:           &directorAs,
+			},
+		},
+		Code: &code,
 	}
 }
 
@@ -829,12 +842,19 @@ func (s *testRunner) createSceneEditDetailsInput() *models.SceneEditDetailsInput
 	date := "2000-02-03"
 	production_date := "2000-01-09"
 	duration := 123
-	director := "Director"
 	code := "SomeCode"
 	site, err := s.createTestSite(nil)
 	if err != nil {
 		return nil
 	}
+
+	// Create a director performer for the credit
+	director, err := s.createTestPerformer(nil)
+	if err != nil {
+		return nil
+	}
+	directorAs := "Director"
+	creditRoleDirector := int32(2) // DIRECTOR role ID
 
 	return &models.SceneEditDetailsInput{
 		Title:   &title,
@@ -848,8 +868,14 @@ func (s *testRunner) createSceneEditDetailsInput() *models.SceneEditDetailsInput
 		Date:           &date,
 		ProductionDate: &production_date,
 		Duration:       &duration,
-		Director:       &director,
-		Code:           &code,
+		Credits: []models.CreditInput{
+			{
+				PerformerID:  director.UUID(),
+				CreditRoleID: creditRoleDirector,
+				As:           &directorAs,
+			},
+		},
+		Code: &code,
 	}
 }
 
@@ -870,13 +896,22 @@ func (s *testRunner) createFullSceneEditDetailsInput() *models.SceneEditDetailsI
 	date := "2000-02-03"
 	production_date := "2000-01-09"
 	duration := 123
-	director := "Director"
 	code := "SomeCode"
 	as := "Alias"
 	site, err := s.createTestSite(nil)
 	if err != nil {
 		return nil
 	}
+
+	// Create a director performer for the credit
+	directorPerformer, err := s.createTestPerformer(nil)
+	if err != nil {
+		s.t.Errorf("Error creating director performer: %s", err.Error())
+		return nil
+	}
+	directorAs := "Director"
+	creditRolePerformance := int32(1) // PERFORMANCE role ID
+	creditRoleDirector := int32(2)    // DIRECTOR role ID
 
 	return &models.SceneEditDetailsInput{
 		Title:   &title,
@@ -889,17 +924,22 @@ func (s *testRunner) createFullSceneEditDetailsInput() *models.SceneEditDetailsI
 		},
 		Date:           &date,
 		ProductionDate: &production_date,
-		Performers: []models.PerformerAppearanceInput{
+		Credits: []models.CreditInput{
 			{
-				PerformerID: createdPerformer.UUID(),
-				As:          &as,
+				PerformerID:  createdPerformer.UUID(),
+				CreditRoleID: creditRolePerformance,
+				As:           &as,
+			},
+			{
+				PerformerID:  directorPerformer.UUID(),
+				CreditRoleID: creditRoleDirector,
+				As:           &directorAs,
 			},
 		},
 		TagIds: []uuid.UUID{
 			createdTag.UUID(),
 		},
 		Duration: &duration,
-		Director: &director,
 		Code:     &code,
 	}
 }
@@ -1022,14 +1062,18 @@ func (s *testRunner) compareSiteURLs(input []models.URL, output []siteURL) {
 	assert.Equal(s.t, input, convertedURLs)
 }
 
-func comparePerformers(input []models.PerformerAppearanceInput, performers []performerAppearance) bool {
-	if len(performers) != len(input) {
+func compareCredits(input []models.CreditInput, credits []sceneCredit) bool {
+	if len(credits) != len(input) {
 		return false
 	}
 
-	for i, v := range performers {
+	for i, v := range credits {
 		performerID := v.Performer.ID
 		if performerID != input[i].PerformerID.String() {
+			return false
+		}
+
+		if int32(v.CreditRole.ID) != input[i].CreditRoleID {
 			return false
 		}
 
@@ -1047,14 +1091,18 @@ func comparePerformers(input []models.PerformerAppearanceInput, performers []per
 	return true
 }
 
-func comparePerformersInput(input, performers []models.PerformerAppearanceInput) bool {
-	if len(performers) != len(input) {
+func compareCreditsInput(input, credits []models.CreditInput) bool {
+	if len(credits) != len(input) {
 		return false
 	}
 
-	for i, v := range performers {
+	for i, v := range credits {
 		performerID := v.PerformerID
 		if performerID != input[i].PerformerID {
+			return false
+		}
+
+		if v.CreditRoleID != input[i].CreditRoleID {
 			return false
 		}
 

@@ -29,7 +29,7 @@ const baseScene = (overrides: Partial<SceneFragment> = {}): SceneFragment =>
     studio: { id: "stu-1", name: "Studio" },
     urls: [{ url: "https://a", site: site("1") }],
     images: [image("img-1")],
-    performers: [
+    credits: [
       {
         performer: {
           id: "perf-1",
@@ -39,6 +39,8 @@ const baseScene = (overrides: Partial<SceneFragment> = {}): SceneFragment =>
           deleted: false,
         },
         as: null,
+        credit_role: { id: 1, name: "PERFORMANCE", description: "" },
+        tags: [],
       },
     ],
     tags: [{ id: "t-1", name: "tag1", description: null }],
@@ -52,12 +54,11 @@ const baseForm = (overrides: Partial<SceneFormData> = {}): SceneFormData =>
     date: "2024-01-01",
     production_date: "2023-12-01",
     duration: "1:00:00",
-    director: "Director",
     code: "CODE",
     studio: { id: "stu-1", name: "Studio" },
     urls: [{ url: "https://a", site: site("1") }],
     images: [image("img-1")],
-    performers: [
+    credits: [
       {
         performerId: "perf-1",
         name: "Jane",
@@ -66,6 +67,9 @@ const baseForm = (overrides: Partial<SceneFormData> = {}): SceneFormData =>
         alias: null,
         aliases: [],
         deleted: false,
+        creditRoleId: 1,
+        creditRoleName: "PERFORMANCE",
+        tags: [],
       },
     ],
     tags: [{ id: "t-1", name: "tag1", description: null, aliases: [] }],
@@ -82,15 +86,14 @@ describe("selectSceneDetails", () => {
       date: null,
       production_date: null,
       duration: null,
-      director: null,
       code: null,
       studio: null,
     });
     expect(neu.title).toBeNull();
     expect(neu.added_urls).toEqual([]);
     expect(neu.removed_urls).toEqual([]);
-    expect(neu.added_performers).toEqual([]);
-    expect(neu.removed_performers).toEqual([]);
+    expect(neu.added_credits).toEqual([]);
+    expect(neu.removed_credits).toEqual([]);
     expect(neu.added_tags).toEqual([]);
     expect(neu.removed_tags).toEqual([]);
     expect(neu.added_images).toEqual([]);
@@ -100,7 +103,6 @@ describe("selectSceneDetails", () => {
   it.each([
     ["title", "Title", "New Title"],
     ["details", "Details", "New Details"],
-    ["director", "Director", "New Director"],
     ["code", "CODE", "NEW"],
   ] as const)("diffs scalar field %s", (k, oldVal, newVal) => {
     const [old, neu] = selectSceneDetails(
@@ -147,10 +149,10 @@ describe("selectSceneDetails", () => {
     expect(neu.studio).toEqual({ id: "stu-2", name: "Other" });
   });
 
-  it("diffs performer add/remove", () => {
+  it("diffs credit add/remove", () => {
     const [, neu] = selectSceneDetails(
       baseForm({
-        performers: [
+        credits: [
           {
             performerId: "perf-2",
             name: "Bob",
@@ -159,12 +161,15 @@ describe("selectSceneDetails", () => {
             alias: null,
             aliases: [],
             deleted: false,
+            creditRoleId: 1,
+            creditRoleName: "PERFORMANCE",
+            tags: [],
           },
         ],
       }),
       baseScene(),
     );
-    expect(neu.added_performers).toEqual([
+    expect(neu.added_credits).toEqual([
       {
         performer: {
           id: "perf-2",
@@ -174,11 +179,13 @@ describe("selectSceneDetails", () => {
           deleted: false,
         },
         as: null,
+        credit_role: { id: 1, name: "PERFORMANCE", description: "" },
+        tags: [],
       },
     ]);
-    expect(neu.removed_performers).toHaveLength(1);
+    expect(neu.removed_credits).toHaveLength(1);
     // biome-ignore lint/style/noNonNullAssertion: known non-null in test
-    expect(neu.removed_performers![0].performer.id).toBe("perf-1");
+    expect(neu.removed_credits![0].performer.id).toBe("perf-1");
   });
 
   it("diffs tag add/remove", () => {
@@ -222,6 +229,6 @@ describe("selectSceneDetails", () => {
     const [old, neu] = selectSceneDetails(baseForm(), null);
     expect(old.title).toBeNull();
     expect(neu.title).toBe("Title");
-    expect(neu.added_performers).toHaveLength(1);
+    expect(neu.added_credits).toHaveLength(1);
   });
 });

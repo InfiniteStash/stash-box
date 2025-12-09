@@ -479,13 +479,15 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
 	createdPerformer, err := s.createTestPerformer(nil)
 	assert.NoError(s.t, err)
 
-	sceneAppearance := models.PerformerAppearanceInput{
-		PerformerID: createdPerformer.UUID(),
+	creditRolePerformance := int32(1) // PERFORMANCE role ID
+	sceneCredit := models.CreditInput{
+		PerformerID:  createdPerformer.UUID(),
+		CreditRoleID: creditRolePerformance,
 	}
 
 	sceneInput := models.SceneCreateInput{
-		Performers: []models.PerformerAppearanceInput{
-			sceneAppearance,
+		Credits: []models.CreditInput{
+			sceneCredit,
 		},
 		Date: "2020-01-02",
 	}
@@ -541,13 +543,15 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithAliases() {
 	createdPerformer, err := s.createTestPerformer(nil)
 	assert.NoError(s.t, err)
 
-	sceneAppearance := models.PerformerAppearanceInput{
-		PerformerID: createdPerformer.UUID(),
+	creditRolePerformance := int32(1) // PERFORMANCE role ID
+	sceneCredit := models.CreditInput{
+		PerformerID:  createdPerformer.UUID(),
+		CreditRoleID: creditRolePerformance,
 	}
 
 	sceneInput := models.SceneCreateInput{
-		Performers: []models.PerformerAppearanceInput{
-			sceneAppearance,
+		Credits: []models.CreditInput{
+			sceneCredit,
 		},
 		Date: "2020-01-02",
 	}
@@ -649,12 +653,14 @@ func (s *performerEditTestRunner) testApplyDestroyPerformerEdit() {
 	assert.NoError(s.t, err)
 
 	performerID := createdPerformer.UUID()
-	appearance := models.PerformerAppearanceInput{
-		PerformerID: performerID,
+	creditRolePerformance := int32(1) // PERFORMANCE role ID
+	credit := models.CreditInput{
+		PerformerID:  performerID,
+		CreditRoleID: creditRolePerformance,
 	}
 	sceneInput := models.SceneCreateInput{
-		Performers: []models.PerformerAppearanceInput{appearance},
-		Date:       "2020-03-02",
+		Credits: []models.CreditInput{credit},
+		Date:    "2020-03-02",
 	}
 	scene, _ := s.createTestScene(&sceneInput)
 
@@ -700,20 +706,24 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 	mergeTarget, err := s.createTestPerformer(nil)
 	assert.NoError(s.t, err)
 
-	mergeSource1Appearance := models.PerformerAppearanceInput{
-		PerformerID: mergeSource1.UUID(),
+	creditRolePerformance := int32(1) // PERFORMANCE role ID
+	mergeSource1Credit := models.CreditInput{
+		PerformerID:  mergeSource1.UUID(),
+		CreditRoleID: creditRolePerformance,
 	}
-	mergeSource2Appearance := models.PerformerAppearanceInput{
-		PerformerID: mergeSource2.UUID(),
+	mergeSource2Credit := models.CreditInput{
+		PerformerID:  mergeSource2.UUID(),
+		CreditRoleID: creditRolePerformance,
 	}
-	mergeTargetAppearance := models.PerformerAppearanceInput{
-		PerformerID: mergeTarget.UUID(),
+	mergeTargetCredit := models.CreditInput{
+		PerformerID:  mergeTarget.UUID(),
+		CreditRoleID: creditRolePerformance,
 	}
 	// Scene with performer from both source and target, should not cause db unique error
 	sceneInput := models.SceneCreateInput{
-		Performers: []models.PerformerAppearanceInput{
-			mergeSource2Appearance,
-			mergeTargetAppearance,
+		Credits: []models.CreditInput{
+			mergeSource2Credit,
+			mergeTargetCredit,
 		},
 		Date: "2020-02-03",
 	}
@@ -721,9 +731,9 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 	assert.NoError(s.t, err)
 
 	sceneInput = models.SceneCreateInput{
-		Performers: []models.PerformerAppearanceInput{
-			mergeSource1Appearance,
-			mergeSource2Appearance,
+		Credits: []models.CreditInput{
+			mergeSource1Credit,
+			mergeSource2Credit,
 		},
 		Date: "2020-03-02",
 	}
@@ -834,13 +844,15 @@ func (s *performerEditTestRunner) testApplyMergePerformerEditWithoutAlias() {
 	mergeTarget, err := s.createTestPerformer(nil)
 	assert.NoError(s.t, err)
 
-	mergeSourceAppearance := models.PerformerAppearanceInput{
-		PerformerID: mergeSource.UUID(),
+	creditRolePerformance := int32(1) // PERFORMANCE role ID
+	mergeSourceCredit := models.CreditInput{
+		PerformerID:  mergeSource.UUID(),
+		CreditRoleID: creditRolePerformance,
 	}
 
 	sceneInput := models.SceneCreateInput{
-		Performers: []models.PerformerAppearanceInput{
-			mergeSourceAppearance,
+		Credits: []models.CreditInput{
+			mergeSourceCredit,
 		},
 		Date: "2020-03-02",
 	}

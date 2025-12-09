@@ -30,7 +30,7 @@ export type InitialScene = {
     name: string;
     aliases: string[];
   }[];
-  performers?:
+  credits?:
     | {
         as?: string | null;
         performer: {
@@ -41,6 +41,15 @@ export type InitialScene = {
           gender?: GenderEnum | null;
           deleted: boolean;
         };
+        credit_role: {
+          id: number;
+          name: string;
+          description: string;
+        };
+        tags: {
+          id: string;
+          name: string;
+        }[];
       }[]
     | null;
 };

@@ -11,7 +11,7 @@ import (
 // ApplyMultiIDCriterion applies multi-ID criterion (includes/includes_all/excludes)
 // Modifies the query pointer in place
 // tableName: the main table name (e.g., "scenes")
-// joinTable: the join table name (e.g., "scene_performers")
+// joinTable: the join table name (e.g., "scene_credits")
 // fkColumn: the foreign key column in the join table referencing the main table (e.g., "scene_id")
 // joinField: the field in the join table to filter on (e.g., "performer_id")
 func ApplyMultiIDCriterion(query *sq.SelectBuilder, tableName, joinTable, fkColumn, joinField string, criterion *models.MultiIDCriterionInput) error {

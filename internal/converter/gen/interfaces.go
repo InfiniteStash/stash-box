@@ -11,7 +11,7 @@ import (
 // goverter:converter
 // goverter:output:file ./generated.go
 // goverter:enum:unknown @ignore
-// goverter:extend ConvertNullIntToInt ConvertTime
+// goverter:extend ConvertNullIntToInt ConvertTime ConvertIntToInt32
 type ModelConverter interface {
 	// goverter:map Url RemoteURL
 	ConvertImage(source queries.Image) models.Image
@@ -24,6 +24,7 @@ type ModelConverter interface {
 
 	// goverter:map CreatedAt CreatedAt
 	// goverter:map UpdatedAt UpdatedAt
+	// goverter:ignore Director
 	ConvertScene(source queries.Scene) models.Scene
 
 	// goverter:map Url URL
@@ -32,6 +33,10 @@ type ModelConverter interface {
 	// goverter:map CreatedAt CreatedAt
 	// goverter:map UpdatedAt UpdatedAt
 	ConvertSiteCategory(source queries.SiteCategory) models.SiteCategory
+
+	// goverter:map CreatedAt CreatedAt
+	// goverter:map UpdatedAt UpdatedAt
+	ConvertCreditRole(source queries.CreditRole) models.CreditRole
 
 	// goverter:map CreatedAt CreatedAt
 	// goverter:map UpdatedAt UpdatedAt
@@ -81,6 +86,7 @@ type ModelConverter interface {
 	ConvertSiteCategories(source []queries.SiteCategory) []models.SiteCategory
 	ConvertTagCategories(source []queries.TagCategory) []models.TagCategory
 	ConvertTags(source []queries.Tag) []models.Tag
+	ConvertCreditRoles(source []queries.CreditRole) []models.CreditRole
 	ConvertInviteKeys(source []queries.InviteKey) []models.InviteKey
 	ConvertNotifications(source []queries.Notification) []models.Notification
 }

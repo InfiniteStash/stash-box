@@ -240,25 +240,25 @@ INSERT INTO performer_piercings (performer_id, location, description) VALUES ($1
 INSERT INTO performer_urls (performer_id, url, site_id) VALUES ($1, $2, $3);
 
 -- name: SetScenePerformerAlias :exec
-UPDATE scene_performers
+UPDATE scene_credits
 SET "as" = $2
 WHERE performer_id = $1
 AND "as" IS NULL;
 
 -- name: ClearScenePerformerAlias :exec
-UPDATE scene_performers
+UPDATE scene_credits
 SET "as" = NULL
 WHERE performer_id = $1
 AND "as" = $2;
 
 -- name: ReassignPerformerAliases :exec
-UPDATE scene_performers
+UPDATE scene_credits
 SET performer_id = @new_performer_id
-WHERE scene_performers.performer_id = @old_performer_id
-AND scene_id NOT IN (SELECT scene_id from scene_performers sp WHERE sp.performer_id = @new_performer_id);
+WHERE scene_credits.performer_id = @old_performer_id
+AND scene_id NOT IN (SELECT scene_id from scene_credits sc WHERE sc.performer_id = @new_performer_id);
 
 -- name: DeletePerformerScenes :exec
-DELETE FROM scene_performers WHERE performer_id = $1;
+DELETE FROM scene_credits WHERE performer_id = $1;
 
 -- name: FindMergeIDsByPerformerIds :many
 -- Find merge target IDs for performers (for merges where these are sources)

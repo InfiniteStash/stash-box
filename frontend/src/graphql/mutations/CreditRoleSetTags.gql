@@ -1,0 +1,12 @@
+#import "../fragments/TagFragment.gql"
+
+mutation CreditRoleSetTags($input: CreditRoleSetTagsInput!) {
+  creditRoleSetTags(input: $input) {
+    id
+    name
+    description
+    valid_tags {
+      ...TagFragment
+    }
+  }
+}

@@ -21,9 +21,7 @@ type DraftData = NonNullable<DraftQuery["findDraft"]>["data"];
 type SceneDraft = DraftData & { __typename: "SceneDraft" };
 type PerformerDraft = DraftData & { __typename: "PerformerDraft" };
 type Tag = NonNullable<SceneQuery["findScene"]>["tags"][number];
-type ScenePerformer = NonNullable<
-  SceneQuery["findScene"]
->["performers"][number];
+type SceneCredit = NonNullable<SceneQuery["findScene"]>["credits"][number];
 
 type URL = { url: string; site: { id: string; name: string; icon: string } };
 const joinURLs = <T extends URL>(
@@ -138,13 +136,24 @@ export const parseSceneDraft = (
       }, []),
       existingScene?.tags,
     ),
-    performers: joinPerformers(
-      (draft.performers ?? []).reduce<ScenePerformer[]>((res, p) => {
+    credits: joinPerformers(
+      (draft.performers ?? []).reduce<SceneCredit[]>((res, p) => {
         if (p.__typename === "Performer")
-          res.push({ performer: p, as: "", __typename: "PerformerAppearance" });
+          res.push({
+            performer: p,
+            as: "",
+            credit_role: {
+              __typename: "CreditRole",
+              id: 1,
+              name: "Performer",
+              description: "Default role",
+            },
+            tags: [],
+            __typename: "SceneCredit",
+          });
         return res;
       }, []),
-      existingScene?.performers,
+      existingScene?.credits,
     ),
   };
 

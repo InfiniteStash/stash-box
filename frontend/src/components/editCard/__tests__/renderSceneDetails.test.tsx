@@ -26,7 +26,7 @@ const site = (id: string) => ({
   icon: `icon-${id}`,
 });
 
-const performer = (id: string, name: string, as: string | null = null) => ({
+const credit = (id: string, name: string, as: string | null = null) => ({
   as,
   performer: {
     id,
@@ -35,18 +35,19 @@ const performer = (id: string, name: string, as: string | null = null) => ({
     disambiguation: null,
     deleted: false,
   },
+  credit_role: { id: 1, name: "PERFORMANCE", description: "" },
+  tags: [],
 });
 
 describe("renderSceneDetails", () => {
   describe("create flow", () => {
-    it("renders title, date, duration, details, director, production_date, code", () => {
+    it("renders title, date, duration, details, production_date, code", () => {
       render(
         {
           title: "My Scene",
           date: "2024-06-01",
           duration: 3661, // 1:01:01
           details: "Some details",
-          director: "Jane Director",
           production_date: "2024-05-01",
           code: "CODE-1",
         },
@@ -62,9 +63,6 @@ describe("renderSceneDetails", () => {
       ).toBeInTheDocument();
       expect(
         within(rowFor("Details")).getByText("Some details"),
-      ).toBeInTheDocument();
-      expect(
-        within(rowFor("Director")).getByText("Jane Director"),
       ).toBeInTheDocument();
       expect(
         within(rowFor("Production Date")).getByText("2024-05-01"),
@@ -86,19 +84,16 @@ describe("renderSceneDetails", () => {
       ).toHaveAttribute("href", expect.stringContaining("stu-1"));
     });
 
-    it("renders added performers", () => {
+    it("renders added credits", () => {
       render(
         {
           title: "X",
-          added_performers: [
-            performer("p-1", "Alice"),
-            performer("p-2", "Bob"),
-          ],
+          added_credits: [credit("p-1", "Alice"), credit("p-2", "Bob")],
         },
         undefined,
         false,
       );
-      const row = rowFor("Performers");
+      const row = rowFor("Credits");
       expect(
         within(row).getByRole("link", { name: /Alice/ }),
       ).toBeInTheDocument();
@@ -206,16 +201,16 @@ describe("renderSceneDetails", () => {
       ).toHaveAttribute("href", expect.stringContaining("stu-new"));
     });
 
-    it("renders performer add/remove side-by-side", () => {
+    it("renders credit add/remove side-by-side", () => {
       render(
         {
-          added_performers: [performer("p-new", "NewPerf")],
-          removed_performers: [performer("p-old", "OldPerf")],
+          added_credits: [credit("p-new", "NewPerf")],
+          removed_credits: [credit("p-old", "OldPerf")],
         },
         {},
         true,
       );
-      const row = rowFor("Performers");
+      const row = rowFor("Credits");
       expect(within(row).getByText("Removed")).toBeInTheDocument();
       expect(within(row).getByText("Added")).toBeInTheDocument();
       expect(
@@ -247,7 +242,7 @@ describe("renderSceneDetails", () => {
     it("renders performer 'as' alias when set", () => {
       render(
         {
-          added_performers: [performer("p-1", "Alice", "Alyssa")],
+          added_credits: [credit("p-1", "Alice", "Alyssa")],
         },
         {},
         true,
@@ -268,11 +263,10 @@ describe("renderSceneDetails", () => {
         "Title",
         "Date",
         "Duration",
-        "Performers",
+        "Credits",
         "Studio",
         "Links",
         "Details",
-        "Director",
         "Production Date",
         "Studio Code",
         "Tags",

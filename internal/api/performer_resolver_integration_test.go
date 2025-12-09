@@ -116,9 +116,10 @@ func (s *performerResolverTestRunner) testPerformerSceneCount() {
 	performerID := performer.ID
 	scene, err := s.resolver.Mutation().SceneCreate(s.ctx, models.SceneCreateInput{
 		Date: "2020-01-01",
-		Performers: []models.PerformerAppearanceInput{
+		Credits: []models.CreditInput{
 			{
-				PerformerID: performerID,
+				PerformerID:  performerID,
+				CreditRoleID: int32(1), // PERFORMANCE role ID
 			},
 		},
 	})
@@ -149,16 +150,16 @@ func (s *performerResolverTestRunner) testPerformerScenes() {
 	// Create two scenes with this performer
 	scene1, err := s.resolver.Mutation().SceneCreate(s.ctx, models.SceneCreateInput{
 		Date: "2020-01-01",
-		Performers: []models.PerformerAppearanceInput{
-			{PerformerID: performerID},
+		Credits: []models.CreditInput{
+			{PerformerID: performerID, CreditRoleID: int32(1)}, // PERFORMANCE role ID
 		},
 	})
 	assert.NoError(s.t, err)
 
 	scene2, err := s.resolver.Mutation().SceneCreate(s.ctx, models.SceneCreateInput{
 		Date: "2020-02-02",
-		Performers: []models.PerformerAppearanceInput{
-			{PerformerID: performerID},
+		Credits: []models.CreditInput{
+			{PerformerID: performerID, CreditRoleID: int32(1)}, // PERFORMANCE role ID
 		},
 	})
 	assert.NoError(s.t, err)
@@ -217,8 +218,8 @@ func (s *performerResolverTestRunner) testPerformerStudios() {
 	_, err = s.resolver.Mutation().SceneCreate(s.ctx, models.SceneCreateInput{
 		Date:     "2020-01-01",
 		StudioID: &studio1.ID,
-		Performers: []models.PerformerAppearanceInput{
-			{PerformerID: performerID},
+		Credits: []models.CreditInput{
+			{PerformerID: performerID, CreditRoleID: int32(1)}, // PERFORMANCE role ID
 		},
 	})
 	assert.NoError(s.t, err)
@@ -227,8 +228,8 @@ func (s *performerResolverTestRunner) testPerformerStudios() {
 	_, err = s.resolver.Mutation().SceneCreate(s.ctx, models.SceneCreateInput{
 		Date:     "2020-02-02",
 		StudioID: &studio2.ID,
-		Performers: []models.PerformerAppearanceInput{
-			{PerformerID: performerID},
+		Credits: []models.CreditInput{
+			{PerformerID: performerID, CreditRoleID: int32(1)}, // PERFORMANCE role ID
 		},
 	})
 	assert.NoError(s.t, err)

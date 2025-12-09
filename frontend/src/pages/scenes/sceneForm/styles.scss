@@ -32,20 +32,11 @@
     }
   }
 
-  &-performer-change {
-    width: 5rem;
-  }
-
   .SearchField {
     flex-grow: 1;
     max-width: 400px;
     width: auto;
     position: relative;
-
-    .react-select__control {
-      border-top-left-radius: 0;
-      border-bottom-left-radius: 0;
-    }
   }
 
   .add-performer {
@@ -81,5 +72,11 @@
     width: max-content;
     max-width: 45rem;
     right: 0;
+  }
+
+  &-credit-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
   }
 }

@@ -1,4 +1,6 @@
 #import "../fragments/PerformerFragment.gql"
+#import "../fragments/CreditRoleFragment.gql"
+#import "../fragments/TagFragment.gql"
 query FullPerformer($id: ID!) {
   findPerformer(id: $id) {
     ...PerformerFragment
@@ -10,6 +12,18 @@ query FullPerformer($id: ID!) {
         parent {
           id
           name
+        }
+      }
+    }
+    credit_roles {
+      scene_count
+      role {
+        ...CreditRoleFragment
+      }
+      tags {
+        scene_count
+        tag {
+          ...TagFragment
         }
       }
     }

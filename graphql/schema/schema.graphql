@@ -44,6 +44,8 @@ type Query {
   findSiteCategory(id: Int!): SiteCategory @hasRole(role: READ)
   querySiteCategories: QuerySiteCategoriesResultType! @hasRole(role: READ)
 
+  getCreditRoles: [CreditRole!]!
+
   #### Edits ####
 
   findEdit(id: ID!): Edit @hasRole(role: READ)
@@ -218,6 +220,12 @@ type Mutation {
   markNotificationsRead(notification: MarkNotificationReadInput): Boolean! @hasRole(role: READ)
   """Update notification subscriptions for current user."""
   updateNotificationSubscriptions(subscriptions: [NotificationEnum!]!): Boolean! @hasRole(role: READ)
+
+  """Scene Credits"""
+  creditRoleCreate(input: CreditRoleCreateInput!): CreditRole! @hasRole(role: ADMIN)
+  creditRoleUpdate(input: CreditRoleUpdateInput!): CreditRole! @hasRole(role: ADMIN)
+  creditRoleDestroy(input: CreditRoleDestroyInput!): Boolean! @hasRole(role: ADMIN)
+  creditRoleSetTags(input: CreditRoleSetTagsInput!): CreditRole! @hasRole(role: ADMIN)
 }
 
 schema {

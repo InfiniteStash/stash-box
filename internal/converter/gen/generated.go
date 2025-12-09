@@ -128,13 +128,9 @@ func (c *CreateParamsConverterImpl) ConvertSceneToCreateParams(source models.Sce
 		xint := *source.Duration
 		queriesCreateSceneParams.Duration = &xint
 	}
-	if source.Director != nil {
-		xstring5 := *source.Director
-		queriesCreateSceneParams.Director = &xstring5
-	}
 	if source.Code != nil {
-		xstring6 := *source.Code
-		queriesCreateSceneParams.Code = &xstring6
+		xstring5 := *source.Code
+		queriesCreateSceneParams.Code = &xstring5
 	}
 	return queriesCreateSceneParams
 }
@@ -433,6 +429,28 @@ func (c *InputConverterImpl) uuidUUIDToUuidUUID2(source uuid.UUID) uuid.UUID {
 
 type ModelConverterImpl struct{}
 
+func (c *ModelConverterImpl) ConvertCreditRole(source queries.CreditRole) models.CreditRole {
+	var modelsCreditRole models.CreditRole
+	modelsCreditRole.ID = ConvertIntToInt32(source.ID)
+	modelsCreditRole.Name = source.Name
+	if source.Description != nil {
+		xstring := *source.Description
+		modelsCreditRole.Description = &xstring
+	}
+	modelsCreditRole.CreatedAt = ConvertTime(source.CreatedAt)
+	modelsCreditRole.UpdatedAt = ConvertTime(source.UpdatedAt)
+	return modelsCreditRole
+}
+func (c *ModelConverterImpl) ConvertCreditRoles(source []queries.CreditRole) []models.CreditRole {
+	var modelsCreditRoleList []models.CreditRole
+	if source != nil {
+		modelsCreditRoleList = make([]models.CreditRole, len(source))
+		for i := 0; i < len(source); i++ {
+			modelsCreditRoleList[i] = c.ConvertCreditRole(source[i])
+		}
+	}
+	return modelsCreditRoleList
+}
 func (c *ModelConverterImpl) ConvertEdit(source queries.Edit) models.Edit {
 	var modelsEdit models.Edit
 	modelsEdit.ID = c.uuidUUIDToUuidUUID3(source.ID)
@@ -672,13 +690,9 @@ func (c *ModelConverterImpl) ConvertScene(source queries.Scene) models.Scene {
 		xint := *source.Duration
 		modelsScene.Duration = &xint
 	}
-	if source.Director != nil {
-		xstring5 := *source.Director
-		modelsScene.Director = &xstring5
-	}
 	if source.Code != nil {
-		xstring6 := *source.Code
-		modelsScene.Code = &xstring6
+		xstring5 := *source.Code
+		modelsScene.Code = &xstring5
 	}
 	modelsScene.Deleted = source.Deleted
 	return modelsScene
@@ -1096,13 +1110,9 @@ func (c *UpdateParamsConverterImpl) ConvertSceneToUpdateParams(source models.Sce
 		xint := *source.Duration
 		queriesUpdateSceneParams.Duration = &xint
 	}
-	if source.Director != nil {
-		xstring5 := *source.Director
-		queriesUpdateSceneParams.Director = &xstring5
-	}
 	if source.Code != nil {
-		xstring6 := *source.Code
-		queriesUpdateSceneParams.Code = &xstring6
+		xstring5 := *source.Code
+		queriesUpdateSceneParams.Code = &xstring5
 	}
 	return queriesUpdateSceneParams
 }

@@ -9,17 +9,47 @@ type Appearance = {
   as: string;
 };
 
-export const renderPerformer = (appearance: {
+type CreditAppearance = {
   as?: string | null;
   performer: Pick<
     Appearance["performer"],
     "name" | "id" | "gender" | "disambiguation" | "deleted"
   >;
-}) => (
-  <Link key={appearance.performer.id} to={performerHref(appearance.performer)}>
-    <GenderIcon gender={appearance.performer.gender} />
-    <PerformerName performer={appearance.performer} as={appearance.as} />
-  </Link>
+  credit_role?: {
+    id: number;
+    name: string;
+    description?: string;
+  };
+  tags?: Array<{
+    id: string;
+    name: string;
+    description?: string | null;
+  }>;
+};
+
+export const renderPerformer = (appearance: CreditAppearance) => (
+  <div key={appearance.performer.id}>
+    <div className="d-flex align-items-center gap-2 flex-wrap">
+      <Link to={performerHref(appearance.performer)}>
+        <GenderIcon gender={appearance.performer.gender} />
+        <PerformerName performer={appearance.performer} as={appearance.as} />
+      </Link>
+    </div>
+    <div>
+      {appearance.credit_role && (
+        <span className="badge bg-secondary">
+          {appearance.credit_role.name}
+        </span>
+      )}
+      {appearance.tags?.map((tag) => (
+        <TagLink
+          title={tag.name}
+          link={tagHref(tag)}
+          description={tag.description}
+        />
+      ))}
+    </div>
+  </div>
 );
 
 export const renderTag = (tag: {

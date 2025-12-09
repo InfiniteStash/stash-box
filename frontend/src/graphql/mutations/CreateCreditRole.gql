@@ -1,0 +1,7 @@
+mutation CreateCreditRole($input: CreditRoleCreateInput!) {
+  creditRoleCreate(input: $input) {
+    id
+    name
+    description
+  }
+}

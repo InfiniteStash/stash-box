@@ -5,6 +5,7 @@ import {
   ROUTE_ACTIVATE,
   ROUTE_AUDITS,
   ROUTE_CATEGORIES,
+  ROUTE_CREDIT_ROLES,
   ROUTE_DRAFTS,
   ROUTE_EDITS,
   ROUTE_FORGOT_PASSWORD,
@@ -27,6 +28,7 @@ import Login from "src/Login";
 import ActivateUser from "src/pages/activateUser";
 import Audits from "src/pages/audits";
 import Categories from "src/pages/categories";
+import CreditRoles from "src/pages/creditRoles";
 import Drafts from "src/pages/drafts";
 import Edits from "src/pages/edits";
 import ForgotPassword from "src/pages/forgotPassword";
@@ -71,6 +73,7 @@ const Pages: FC = () => (
               path={`${ROUTE_SITE_CATEGORIES}/*`}
               element={<SiteCategories />}
             />
+            <Route path={`${ROUTE_CREDIT_ROLES}/*`} element={<CreditRoles />} />
             <Route path={`${ROUTE_DRAFTS}/*`} element={<Drafts />} />
             <Route path={ROUTE_NOTIFICATIONS} element={<Notifications />} />
             <Route path={`${ROUTE_AUDITS}/*`} element={<Audits />} />

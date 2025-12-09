@@ -48,10 +48,11 @@ func (s *sceneTestRunner) testCreateScene() {
 			s.generateSceneFingerprint(nil),
 		},
 		StudioID: &studioID,
-		Performers: []models.PerformerAppearanceInput{
+		Credits: []models.CreditInput{
 			{
-				PerformerID: performerID,
-				As:          &performerAlias,
+				PerformerID:  performerID,
+				CreditRoleID: int32(1), // PERFORMANCE role ID
+				As:           &performerAlias,
 			},
 		},
 		Urls: []models.URL{
@@ -83,7 +84,7 @@ func (s *sceneTestRunner) verifyCreatedScene(input models.SceneCreateInput, scen
 	assert.True(s.t, bothNil(scene.Date, input.Date) || (!oneNil(scene.Date, input.Date) && input.Date == *scene.Date))
 	assert.True(s.t, bothNil(scene.ProductionDate, input.ProductionDate) || (!oneNil(scene.ProductionDate, input.ProductionDate) && *input.ProductionDate == *scene.ProductionDate))
 	assert.True(s.t, compareFingerprints(input.Fingerprints, scene.Fingerprints))
-	assert.True(s.t, comparePerformers(input.Performers, scene.Performers))
+	assert.True(s.t, compareCredits(input.Credits, scene.Credits))
 	assert.True(s.t, compareTags(input.TagIds, scene.Tags))
 }
 
@@ -133,10 +134,11 @@ func (s *sceneTestRunner) testUpdateScene() {
 			s.generateSceneFingerprint(nil),
 		},
 		StudioID: &studioID,
-		Performers: []models.PerformerAppearanceInput{
+		Credits: []models.CreditInput{
 			{
-				PerformerID: performerID,
-				As:          &performerAlias,
+				PerformerID:  performerID,
+				CreditRoleID: int32(1), // PERFORMANCE role ID
+				As:           &performerAlias,
 			},
 		},
 		Urls: []models.URL{
@@ -180,10 +182,11 @@ func (s *sceneTestRunner) testUpdateScene() {
 			input.Fingerprints[0],
 			s.generateSceneFingerprint(nil),
 		},
-		Performers: []models.PerformerAppearanceInput{
+		Credits: []models.CreditInput{
 			{
-				PerformerID: performerID,
-				As:          &performerAlias,
+				PerformerID:  performerID,
+				CreditRoleID: int32(1), // PERFORMANCE role ID
+				As:           &performerAlias,
 			},
 		},
 		Urls: []models.URL{
@@ -229,7 +232,7 @@ func (s *sceneTestRunner) verifyUpdatedScene(input models.SceneUpdateInput, scen
 
 	s.compareSiteURLs(input.Urls, scene.Urls)
 
-	assert.True(s.t, comparePerformers(input.Performers, scene.Performers))
+	assert.True(s.t, compareCredits(input.Credits, scene.Credits))
 	assert.True(s.t, compareTags(input.TagIds, scene.Tags))
 }
 
@@ -606,9 +609,10 @@ func (s *sceneTestRunner) testQueryScenesByPerformer() {
 	scene3Title := prefix + "scene3Title"
 
 	input := models.SceneCreateInput{
-		Performers: []models.PerformerAppearanceInput{
+		Credits: []models.CreditInput{
 			{
-				PerformerID: performer1ID,
+				PerformerID:  performer1ID,
+				CreditRoleID: int32(1), // PERFORMANCE role ID
 			},
 		},
 		Title: &scene1Title,
@@ -618,13 +622,14 @@ func (s *sceneTestRunner) testQueryScenesByPerformer() {
 	scene1, err := s.createTestScene(&input)
 	assert.NoError(s.t, err)
 
-	input.Performers[0].PerformerID = performer2ID
+	input.Credits[0].PerformerID = performer2ID
 	input.Title = &scene2Title
 	scene2, err := s.createTestScene(&input)
 	assert.NoError(s.t, err)
 
-	input.Performers = append(input.Performers, models.PerformerAppearanceInput{
-		PerformerID: performer1ID,
+	input.Credits = append(input.Credits, models.CreditInput{
+		PerformerID:  performer1ID,
+		CreditRoleID: int32(1), // PERFORMANCE role ID
 	})
 	input.Title = &scene3Title
 	scene3, err := s.createTestScene(&input)

@@ -616,6 +616,14 @@ func (s *Edit) GetMergedPerformers(ctx context.Context, id uuid.UUID) ([]models.
 	return result, nil
 }
 
+func (s *Edit) GetMergedCredits(ctx context.Context, id uuid.UUID) ([]models.SceneCredit, error) {
+	credits, err := s.queries.GetMergedCreditsForEdit(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return converter.MergedCreditsToModels(credits), nil
+}
+
 func (s *Edit) FindByPerformerID(ctx context.Context, performerID uuid.UUID) ([]models.Edit, error) {
 	edits, err := s.queries.GetEditsByPerformer(ctx, performerID)
 	if err != nil {

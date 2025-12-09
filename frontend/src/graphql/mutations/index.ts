@@ -42,6 +42,15 @@ import {
   ConfirmChangeEmailDocument,
   type ConfirmChangeEmailMutation,
   type ConfirmChangeEmailMutationVariables,
+  CreateCreditRoleDocument,
+  type CreateCreditRoleMutation,
+  type CreateCreditRoleMutationVariables,
+  CreditRoleSetTagsDocument,
+  type CreditRoleSetTagsMutation,
+  type CreditRoleSetTagsMutationVariables,
+  DeleteCreditRoleDocument,
+  type DeleteCreditRoleMutation,
+  type DeleteCreditRoleMutationVariables,
   DeleteDraftDocument,
   type DeleteDraftMutation,
   type DeleteDraftMutationVariables,
@@ -140,6 +149,9 @@ import {
   UnmatchFingerprintDocument,
   type UnmatchFingerprintMutation,
   type UnmatchFingerprintMutationVariables,
+  UpdateCreditRoleDocument,
+  type UpdateCreditRoleMutation,
+  type UpdateCreditRoleMutationVariables,
   UpdateEditCommentDocument,
   type UpdateEditCommentMutation,
   type UpdateEditCommentMutationVariables,
@@ -449,6 +461,66 @@ export const useUpdateSite = (
     UpdateSiteMutationVariables
   >,
 ) => useMutation(UpdateSiteDocument, options);
+
+export const useCreateCreditRole = (
+  options?: MutationHookOptions<
+    CreateCreditRoleMutation,
+    CreateCreditRoleMutationVariables
+  >,
+) =>
+  useMutation(CreateCreditRoleDocument, {
+    update(cache, { data }) {
+      if (data?.creditRoleCreate) {
+        cache.evict({ fieldName: "getCreditRoles" });
+      }
+    },
+    ...options,
+  });
+
+export const useUpdateCreditRole = (
+  options?: MutationHookOptions<
+    UpdateCreditRoleMutation,
+    UpdateCreditRoleMutationVariables
+  >,
+) =>
+  useMutation(UpdateCreditRoleDocument, {
+    update(cache, { data }) {
+      if (data?.creditRoleUpdate) {
+        cache.evict({ fieldName: "getCreditRoles" });
+      }
+    },
+    ...options,
+  });
+
+export const useDeleteCreditRole = (
+  options?: MutationHookOptions<
+    DeleteCreditRoleMutation,
+    DeleteCreditRoleMutationVariables
+  >,
+) =>
+  useMutation(DeleteCreditRoleDocument, {
+    update(cache, { data }) {
+      if (data?.creditRoleDestroy) {
+        cache.evict({ fieldName: "getCreditRoles" });
+      }
+    },
+    ...options,
+  });
+
+export const useCreditRoleSetTags = (
+  options?: MutationHookOptions<
+    CreditRoleSetTagsMutation,
+    CreditRoleSetTagsMutationVariables
+  >,
+) =>
+  useMutation(CreditRoleSetTagsDocument, {
+    update(cache, { data }) {
+      if (data?.creditRoleSetTags) {
+        cache.evict({ fieldName: "getCreditRoles" });
+      }
+    },
+    ...options,
+  });
 
 export const useSetFavorite = <T extends "performer" | "studio">(
   type: T,

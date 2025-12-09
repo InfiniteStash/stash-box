@@ -48,8 +48,8 @@ func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input mode
 			query = psql.Select("COUNT(DISTINCT performers.id)").From("performers").
 				Join(`(
 					SELECT performer_id, MIN(date) as debut, MAX(date) AS last_scene, COUNT(*) as scene_count
-					FROM scene_performers
-					JOIN scenes ON scene_id = id AND studio_id = ?
+					FROM scene_credits
+					JOIN scenes ON scene_credits.scene_id = scenes.id AND scenes.studio_id = ?
 					GROUP BY performer_id
 				) D ON performers.id = D.performer_id`, input.StudioID)
 		} else {
@@ -60,8 +60,8 @@ func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input mode
 			query = psql.Select("performers.*").From("performers").
 				Join(`(
 					SELECT performer_id, MIN(date) as debut, MAX(date) AS last_scene, COUNT(*) as scene_count
-					FROM scene_performers
-					JOIN scenes ON scene_id = id AND studio_id = ?
+					FROM scene_credits
+					JOIN scenes ON scene_credits.scene_id = scenes.id AND scenes.studio_id = ?
 					GROUP BY performer_id
 				) D ON performers.id = D.performer_id`, input.StudioID)
 		} else {
@@ -147,8 +147,8 @@ func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input mode
 	if input.PerformedWith != nil {
 		subquery := `
 			performers.id IN (
-				SELECT SP.performer_id FROM scene_performers SP
-				JOIN scene_performers SPP ON SP.scene_id = SPP.scene_id
+				SELECT SP.performer_id FROM scene_credits SP
+				JOIN scene_credits SPP ON SP.scene_id = SPP.scene_id
 				WHERE SPP.performer_id = ? AND SP.performer_id != ?
 				GROUP BY SP.performer_id
 			)`
@@ -183,8 +183,8 @@ func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.Perf
 		if !needsStudioJoin {
 			query = query.LeftJoin(`(
 				SELECT performer_id, MIN(date) as debut
-				FROM scene_performers
-				JOIN scenes ON scene_id = id
+				FROM scene_credits
+				JOIN scenes ON scene_credits.scene_id = scenes.id
 				GROUP BY performer_id
 			) D ON performers.id = D.performer_id`)
 		}
@@ -193,8 +193,8 @@ func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.Perf
 		if !needsStudioJoin {
 			query = query.LeftJoin(`(
 				SELECT performer_id, MAX(date) as last_scene
-				FROM scene_performers
-				JOIN scenes ON scene_id = id
+				FROM scene_credits
+				JOIN scenes ON scene_credits.scene_id = scenes.id
 				GROUP BY performer_id
 			) D ON performers.id = D.performer_id`)
 		}
@@ -203,7 +203,7 @@ func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.Perf
 		if !needsStudioJoin {
 			query = query.LeftJoin(`(
 				SELECT performer_id, COUNT(*) as scene_count
-				FROM scene_performers
+				FROM scene_credits
 				GROUP BY performer_id
 			) D ON performers.id = D.performer_id`)
 		}

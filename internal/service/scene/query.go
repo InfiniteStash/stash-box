@@ -63,8 +63,12 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 
 	// Filter by performers
 	if input.Performers != nil && len(input.Performers.Value) > 0 {
-		if err := queryhelper.ApplyMultiIDCriterion(&query, "scenes", "scene_performers", "scene_id", "performer_id", input.Performers); err != nil {
+		if err := queryhelper.ApplyMultiIDCriterion(&query, "scenes", "scene_credits", "scene_id", "performer_id", input.Performers); err != nil {
 			return query, err
+		}
+		// Filter by credit role if specified
+		if input.CreditRoleID != nil {
+			query = query.Where(sq.Eq{"scene_credits.credit_role_id": *input.CreditRoleID})
 		}
 	}
 
@@ -165,7 +169,7 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 		if *input.Favorites == models.FavoriteFilterPerformer || *input.Favorites == models.FavoriteFilterAll {
 			clauses = append(clauses, `(
 				SELECT scene_id FROM performer_favorites PF
-				JOIN scene_performers SP ON PF.performer_id = SP.performer_id
+				JOIN scene_credits SP ON PF.performer_id = SP.performer_id
 				WHERE PF.user_id = ?
 			)`)
 			args = append(args, userID)

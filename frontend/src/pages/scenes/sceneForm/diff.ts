@@ -17,12 +17,22 @@ import type { SceneFormData } from "./schema";
 
 type OmittedKeys = "draft_id" | "added_fingerprints" | "removed_fingerprints";
 
-type Performer = {
+type SceneCredit = {
   performer: Pick<
-    SceneFragment["performers"][number]["performer"],
+    SceneFragment["credits"][number]["performer"],
     "id" | "name" | "gender" | "disambiguation" | "deleted"
   >;
   as?: string | null;
+  credit_role: {
+    id: number;
+    name: string;
+    description: string;
+  };
+  tags: Array<{
+    id: string;
+    name: string;
+    description?: string | null;
+  }>;
 };
 
 type Tag = {
@@ -35,25 +45,35 @@ const selectSceneDetails = (
   data: SceneFormData,
   original: SceneFragment | null | undefined,
 ): [Required<OldSceneDetails>, Required<Omit<SceneDetails, OmittedKeys>>] => {
-  const [addedPerformers, removedPerformers] = diffArray<Performer>(
-    (data.performers ?? []).flatMap((p) =>
-      p.performerId && p.name
+  const [addedCredits, removedCredits] = diffArray<SceneCredit>(
+    (data.credits ?? []).flatMap((c) =>
+      c.performerId && c.name
         ? [
             {
               performer: {
-                id: p.performerId,
-                name: p.name,
-                gender: genderEnum(p.gender),
-                disambiguation: p.disambiguation ?? null,
-                deleted: p.deleted ?? false,
+                id: c.performerId,
+                name: c.name,
+                gender: genderEnum(c.gender),
+                disambiguation: c.disambiguation ?? null,
+                deleted: c.deleted ?? false,
               },
-              as: p.alias ?? null,
+              as: c.alias || null,
+              credit_role: {
+                id: c.creditRoleId,
+                name: c.creditRoleName,
+                description: "",
+              },
+              tags: c.tags ?? [],
             },
           ]
         : [],
     ),
-    original?.performers ?? [],
-    (s) => `${s.performer.id}${s.as}`,
+    original?.credits ?? [],
+    (s) =>
+      `${s.performer.id}|${s.credit_role.id}|${s.as ?? ""}|${s.tags
+        .map((t) => t.id)
+        .sort()
+        .join(",")}`,
   );
 
   const [addedTags, removedTags] = diffArray<Tag>(
@@ -88,7 +108,6 @@ const selectSceneDetails = (
         data.production_date,
       ),
       duration: diffValue(original?.duration, parseDuration(data.duration)),
-      director: diffValue(original?.director, data.director),
       code: diffValue(original?.code, data.code),
       studio:
         original?.studio?.id !== data.studio?.id &&
@@ -109,7 +128,6 @@ const selectSceneDetails = (
         original?.production_date,
       ),
       duration: diffValue(parseDuration(data.duration), original?.duration),
-      director: diffValue(data.director, original?.director),
       code: diffValue(data.code, original?.code),
       studio:
         data.studio?.id !== original?.studio?.id &&
@@ -122,8 +140,8 @@ const selectSceneDetails = (
           : null,
       added_urls: addedUrls,
       removed_urls: removedUrls,
-      added_performers: addedPerformers,
-      removed_performers: removedPerformers,
+      added_credits: addedCredits,
+      removed_credits: removedCredits,
       added_tags: addedTags,
       removed_tags: removedTags,
       added_images: addedImages,

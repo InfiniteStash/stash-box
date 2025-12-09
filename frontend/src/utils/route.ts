@@ -1,6 +1,7 @@
 import { generatePath, matchPath } from "react-router-dom";
 import {
   ROUTE_CATEGORY,
+  ROUTE_CREDIT_ROLE,
   ROUTE_EDIT,
   ROUTE_PERFORMER,
   ROUTE_SCENE,
@@ -38,6 +39,11 @@ export const performerHref = (
 
 export const siteHref = (obj: { id: string }, route: string = ROUTE_SITE) =>
   generatePath(route, obj);
+
+export const creditRoleHref = (
+  obj: { id: string },
+  route: string = ROUTE_CREDIT_ROLE,
+) => generatePath(route, obj);
 
 export const createHref = (route: string, params: unknown = {}) =>
   generatePath(

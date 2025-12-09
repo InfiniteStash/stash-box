@@ -91,7 +91,6 @@ func (s *sceneEditTestRunner) verifySceneEditDetails(input models.SceneEditDetai
 	c := fieldComparator{r: &s.testRunner}
 	c.strPtrStrPtr(input.Title, sceneDetails.Title, "Title")
 	c.strPtrStrPtr(input.Details, sceneDetails.Details, "Details")
-	c.strPtrStrPtr(input.Director, sceneDetails.Director, "Director")
 	c.strPtrStrPtr(input.Code, sceneDetails.Code, "Code")
 	c.uuidPtrUUIDPtr(input.StudioID, sceneDetails.StudioID, "StudioID")
 	c.intPtrIntPtr(input.Duration, sceneDetails.Duration, "Duration")
@@ -102,8 +101,8 @@ func (s *sceneEditTestRunner) verifySceneEditDetails(input models.SceneEditDetai
 	assert.Equal(s.t, input.ImageIds, sceneDetails.AddedImages)
 	assert.Equal(s.t, input.TagIds, sceneDetails.AddedTags)
 
-	if !comparePerformersInput(input.Performers, sceneDetails.AddedPerformers) {
-		s.fieldMismatch(input.Performers, sceneDetails.AddedPerformers, "Performers")
+	if !compareCreditsInput(input.Credits, sceneDetails.AddedCredits) {
+		s.fieldMismatch(input.Credits, sceneDetails.AddedCredits, "Credits")
 	}
 }
 
@@ -113,7 +112,6 @@ func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput
 	c := fieldComparator{r: &s.testRunner}
 	c.strPtrStrPtr(input.Title, scene.Title, "Title")
 	c.strPtrStrPtr(input.Details, scene.Details, "Details")
-	c.strPtrStrPtr(input.Director, scene.Director, "Director")
 	c.strPtrStrPtr(input.Code, scene.Code, "Code")
 	c.uuidPtrNullUUID(input.StudioID, scene.StudioID, "StudioID")
 	c.intPtrIntPtr(input.Duration, scene.Duration, "Duration")
@@ -141,19 +139,25 @@ func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput
 		s.fieldMismatch(input.TagIds, tags, "Tags")
 	}
 
-	performers, _ := resolver.Performers(s.ctx, scene)
-	var performerIdObjs []performerAppearance
-	for _, p := range performers {
-		performerIdObjs = append(performerIdObjs, performerAppearance{
+	credits, _ := resolver.Credits(s.ctx, scene)
+	creditResolver := s.resolver.SceneCredit()
+	var creditObjs []sceneCredit
+	for _, c := range credits {
+		performer, _ := creditResolver.Performer(s.ctx, &c)
+		role, _ := creditResolver.CreditRole(s.ctx, &c)
+		creditObjs = append(creditObjs, sceneCredit{
 			Performer: &idObject{
-				ID: p.Performer.ID.String(),
+				ID: performer.ID.String(),
 			},
-			As: p.As,
+			CreditRole: &creditRole{
+				ID: int(role.ID),
+			},
+			As: c.As,
 		})
 	}
 
-	if !comparePerformers(input.Performers, performerIdObjs) {
-		s.fieldMismatch(input.Performers, performers, "Performers")
+	if !compareCredits(input.Credits, creditObjs) {
+		s.fieldMismatch(input.Credits, credits, "Credits")
 	}
 }
 
@@ -313,7 +317,7 @@ func (s *sceneEditTestRunner) testApplyModifyUnsetSceneEdit() {
 		mutation {
 			sceneEdit(input: {
 				edit: {id: "%v", operation: MODIFY}
-				details: { urls: [], director: null }
+				details: { urls: [] }
 			}) {
 				id
 			}

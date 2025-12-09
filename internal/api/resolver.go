@@ -45,6 +45,12 @@ func (r *Resolver) TagEdit() models.TagEditResolver {
 func (r *Resolver) SceneEdit() models.SceneEditResolver {
 	return &sceneEditResolver{r}
 }
+func (r *Resolver) SceneCredit() models.SceneCreditResolver {
+	return &sceneCreditResolver{r}
+}
+func (r *Resolver) SceneCreditEdit() models.SceneCreditEditResolver {
+	return &sceneCreditEditResolver{r}
+}
 func (r *Resolver) Tag() models.TagResolver {
 	return &tagResolver{r}
 }
@@ -110,6 +116,9 @@ func (r *Resolver) ModAudit() models.ModAuditResolver {
 }
 func (r *Resolver) ClusterSceneSubmission() models.ClusterSceneSubmissionResolver {
 	return &clusterSceneSubmissionResolver{r}
+}
+func (r *Resolver) CreditRole() models.CreditRoleResolver {
+	return &creditRoleResolver{r}
 }
 
 type mutationResolver struct{ *Resolver }

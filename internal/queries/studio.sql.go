@@ -453,8 +453,8 @@ SELECT
     COUNT(scenes.id) as scene_count
 FROM studios
 JOIN scenes ON studios.id = scenes.studio_id
-JOIN scene_performers SP ON scenes.id = SP.scene_id
-WHERE SP.performer_id = $1
+JOIN scene_credits SC ON scenes.id = SC.scene_id
+WHERE SC.performer_id = $1
 GROUP BY studios.id
 `
 
@@ -507,7 +507,7 @@ SELECT
     COUNT(scenes.id) as scene_count
 FROM studios
 JOIN scenes ON studios.id = scenes.studio_id
-JOIN scene_performers SP ON scenes.id = SP.scene_id
+JOIN scene_credits SP ON scenes.id = SP.scene_id
 WHERE SP.performer_id = $1
   AND studios.id IN (SELECT id FROM studio_network WHERE id IS NOT NULL)
 GROUP BY studios.id

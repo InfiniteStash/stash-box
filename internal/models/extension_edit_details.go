@@ -201,9 +201,6 @@ func (e SceneEditDetailsInput) SceneEditFromDiff(orig Scene, inputArgs utils.Arg
 	if e.Duration != nil || inputArgs.Field("duration").IsNull() {
 		oldData.Duration, newData.Duration = ed.int(orig.Duration, e.Duration)
 	}
-	if e.Director != nil || inputArgs.Field("director").IsNull() {
-		oldData.Director, newData.Director = ed.string(orig.Director, e.Director)
-	}
 	if e.Code != nil || inputArgs.Field("code").IsNull() {
 		oldData.Code, newData.Code = ed.string(orig.Code, e.Code)
 	}

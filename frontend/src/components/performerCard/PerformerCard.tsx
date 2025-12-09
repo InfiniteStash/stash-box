@@ -19,13 +19,18 @@ type PerformerType = Pick<
 interface PerformerCardProps {
   performer: PerformerType;
   className?: string;
+  hideFooter?: boolean;
 }
 
 const CLASSNAME = "PerformerCard";
 const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 const CLASSNAME_STAR = `${CLASSNAME}-star`;
 
-const PerformerCard: FC<PerformerCardProps> = ({ className, performer }) => (
+const PerformerCard: FC<PerformerCardProps> = ({
+  className,
+  performer,
+  hideFooter = false,
+}) => (
   <Card className={cx(CLASSNAME, className)}>
     <Link to={performerHref(performer)}>
       <div className={CLASSNAME_IMAGE}>
@@ -41,12 +46,14 @@ const PerformerCard: FC<PerformerCardProps> = ({ className, performer }) => (
           className={CLASSNAME_STAR}
         />
       </div>
-      <Card.Footer>
-        <h5 className="my-1">
-          <GenderIcon gender={performer.gender} />
-          <PerformerName performer={performer} />
-        </h5>
-      </Card.Footer>
+      {!hideFooter && (
+        <Card.Footer>
+          <h5 className="my-1">
+            <GenderIcon gender={performer.gender} />
+            <PerformerName performer={performer} />
+          </h5>
+        </Card.Footer>
+      )}
     </Link>
   </Card>
 );

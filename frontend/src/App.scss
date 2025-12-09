@@ -10,6 +10,7 @@
 @import "./pages/studios/styles";
 @import "./pages/search/search";
 @import "./components/checkboxSelect/styles";
+@import "./components/creditRoleSelect/styles";
 @import "./components/editCard/styles";
 @import "./components/form/styles";
 @import "./components/fragments/styles";
@@ -46,12 +47,24 @@
     background-color: $muted-gray;
     color: $text-color;
   }
+
+  .input-group & {
+    &:not(:last-child) {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    &:not(:first-child) {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+  }
 }
 
 div.react-select__menu {
   background-color: $secondary;
   color: $text-color;
-  z-index: 2;
+  z-index: 50;
 
   .react-select__option {
     color: $text-color;
