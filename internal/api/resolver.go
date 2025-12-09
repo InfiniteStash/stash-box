@@ -45,6 +45,9 @@ func (r *Resolver) TagEdit() models.TagEditResolver {
 func (r *Resolver) SceneEdit() models.SceneEditResolver {
 	return &sceneEditResolver{r}
 }
+func (r *Resolver) SceneCredit() models.SceneCreditResolver {
+	return &sceneCreditResolver{r}
+}
 func (r *Resolver) Tag() models.TagResolver {
 	return &tagResolver{r}
 }
@@ -101,6 +104,9 @@ func (r *Resolver) QueryNotificationsResult() models.QueryNotificationsResultRes
 }
 func (r *Resolver) Notification() models.NotificationResolver {
 	return &notificationResolver{r}
+}
+func (r *Resolver) CreditRole() models.CreditRoleResolver {
+	return &creditRoleResolver{r}
 }
 
 type mutationResolver struct{ *Resolver }

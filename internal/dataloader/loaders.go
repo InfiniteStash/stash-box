@@ -32,7 +32,7 @@ type Loaders struct {
 	PerformerIsFavoriteByID        BoolsLoader
 	SceneByID                      SceneLoader
 	SceneImageIDsByID              UUIDsLoader
-	SceneAppearancesByID           SceneAppearancesLoader
+	SceneCreditsByID               SceneCreditsLoader
 	SceneUrlsByID                  URLLoader
 	StudioImageIDsByID             UUIDsLoader
 	StudioIsFavoriteByID           BoolsLoader
@@ -149,12 +149,12 @@ func GetLoaders(ctx context.Context, fac service.Factory) *Loaders {
 				return s.LoadPiercings(ctx, ids)
 			},
 		},
-		SceneAppearancesByID: SceneAppearancesLoader{
+		SceneCreditsByID: SceneCreditsLoader{
 			maxBatch: 100,
 			wait:     1 * time.Millisecond,
-			fetch: func(ids []uuid.UUID) ([][]models.PerformerScene, []error) {
+			fetch: func(ids []uuid.UUID) ([][]models.SceneCredit, []error) {
 				s := fac.Scene()
-				return s.LoadAppearances(ctx, ids)
+				return s.LoadCreditsBySceneIDs(ctx, ids)
 			},
 		},
 		SceneUrlsByID: URLLoader{

@@ -27,7 +27,7 @@ All SQL files now correctly match the current database schema including:
 - Proper column names (`password_hash` not `password`, `deathdate` not `death_date`)
 - Normalized fingerprint schema (separate `fingerprints` table)
 - Correct table relationships and foreign keys
-- Reserved word handling (quoted `"as"` column in `scene_performers`)
+- Reserved word handling (quoted `"as"` column in `scene_credits`)
 - Boolean `deleted` columns (not timestamp `deleted_at`)
 
 ## Query Coverage

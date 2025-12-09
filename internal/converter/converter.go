@@ -94,6 +94,34 @@ func TagToModelPtr(t queries.Tag) *models.Tag {
 	return &tag
 }
 
+// CreditRoleToModel converts a queries.CreditRole to a models.CreditRole
+func CreditRoleToModel(ct queries.CreditRole) models.CreditRole {
+	return modelConverter.ConvertCreditRole(ct)
+}
+
+func CreditRoleToModelPtr(ct queries.CreditRole) *models.CreditRole {
+	creditRole := CreditRoleToModel(ct)
+	return &creditRole
+}
+
+// CreditRolesToModels converts a slice of queries.CreditRole to a slice of models.CreditRole
+func CreditRolesToModels(creditRoles []queries.CreditRole) []models.CreditRole {
+	return modelConverter.ConvertCreditRoles(creditRoles)
+}
+
+// MergedCreditsToModels converts GetMergedCreditsForEditRow to models.SceneCredit
+func MergedCreditsToModels(creditRows []queries.GetMergedCreditsForEditRow) []models.SceneCredit {
+	var result []models.SceneCredit
+	for _, row := range creditRows {
+		result = append(result, models.SceneCredit{
+			PerformerID:  row.PerformerID,
+			CreditRoleID: int32(row.CreditRoleID),
+			As:           row.As,
+		})
+	}
+	return result
+}
+
 // UserTokenToModel converts a queries.UserToken to a models.UserToken
 func UserTokenToModel(ut queries.UserToken) models.UserToken {
 	return modelConverter.ConvertUserToken(ut)
@@ -301,7 +329,6 @@ func SceneCreateInputToScene(input models.SceneCreateInput) models.Scene {
 		ProductionDate: input.ProductionDate,
 		StudioID:       studioID,
 		Duration:       input.Duration,
-		Director:       input.Director,
 		Code:           input.Code,
 	}
 }
@@ -325,9 +352,6 @@ func UpdateSceneFromUpdateInput(scene *models.Scene, input models.SceneUpdateInp
 	}
 	if input.Duration != nil {
 		scene.Duration = input.Duration
-	}
-	if input.Director != nil {
-		scene.Director = input.Director
 	}
 	if input.Code != nil {
 		scene.Code = input.Code

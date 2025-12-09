@@ -177,6 +177,74 @@ func (q *Queries) CreatePerformerURLs(ctx context.Context, arg []CreatePerformer
 	return q.db.CopyFrom(ctx, []string{"performer_urls"}, []string{"performer_id", "url", "site_id"}, &iteratorForCreatePerformerURLs{rows: arg})
 }
 
+// iteratorForCreateSceneCreditTags implements pgx.CopyFromSource.
+type iteratorForCreateSceneCreditTags struct {
+	rows                 []CreateSceneCreditTagsParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreateSceneCreditTags) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreateSceneCreditTags) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].SceneCreditID,
+		r.rows[0].TagID,
+	}, nil
+}
+
+func (r iteratorForCreateSceneCreditTags) Err() error {
+	return nil
+}
+
+func (q *Queries) CreateSceneCreditTags(ctx context.Context, arg []CreateSceneCreditTagsParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"scene_credit_tags"}, []string{"scene_credit_id", "tag_id"}, &iteratorForCreateSceneCreditTags{rows: arg})
+}
+
+// iteratorForCreateSceneCredits implements pgx.CopyFromSource.
+type iteratorForCreateSceneCredits struct {
+	rows                 []CreateSceneCreditsParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreateSceneCredits) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreateSceneCredits) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].SceneID,
+		r.rows[0].PerformerID,
+		r.rows[0].CreditRoleID,
+		r.rows[0].As,
+	}, nil
+}
+
+func (r iteratorForCreateSceneCredits) Err() error {
+	return nil
+}
+
+func (q *Queries) CreateSceneCredits(ctx context.Context, arg []CreateSceneCreditsParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"scene_credits"}, []string{"scene_id", "performer_id", "credit_role_id", "as"}, &iteratorForCreateSceneCredits{rows: arg})
+}
+
 // iteratorForCreateSceneFingerprints implements pgx.CopyFromSource.
 type iteratorForCreateSceneFingerprints struct {
 	rows                 []CreateSceneFingerprintsParams
@@ -243,41 +311,6 @@ func (r iteratorForCreateSceneImages) Err() error {
 
 func (q *Queries) CreateSceneImages(ctx context.Context, arg []CreateSceneImagesParams) (int64, error) {
 	return q.db.CopyFrom(ctx, []string{"scene_images"}, []string{"scene_id", "image_id"}, &iteratorForCreateSceneImages{rows: arg})
-}
-
-// iteratorForCreateScenePerformers implements pgx.CopyFromSource.
-type iteratorForCreateScenePerformers struct {
-	rows                 []CreateScenePerformersParams
-	skippedFirstNextCall bool
-}
-
-func (r *iteratorForCreateScenePerformers) Next() bool {
-	if len(r.rows) == 0 {
-		return false
-	}
-	if !r.skippedFirstNextCall {
-		r.skippedFirstNextCall = true
-		return true
-	}
-	r.rows = r.rows[1:]
-	return len(r.rows) > 0
-}
-
-func (r iteratorForCreateScenePerformers) Values() ([]interface{}, error) {
-	return []interface{}{
-		r.rows[0].SceneID,
-		r.rows[0].PerformerID,
-		r.rows[0].As,
-	}, nil
-}
-
-func (r iteratorForCreateScenePerformers) Err() error {
-	return nil
-}
-
-// Scene performers
-func (q *Queries) CreateScenePerformers(ctx context.Context, arg []CreateScenePerformersParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"scene_performers"}, []string{"scene_id", "performer_id", "as"}, &iteratorForCreateScenePerformers{rows: arg})
 }
 
 // iteratorForCreateSceneTags implements pgx.CopyFromSource.

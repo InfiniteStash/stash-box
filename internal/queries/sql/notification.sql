@@ -39,12 +39,12 @@ JOIN user_notifications N ON SF.user_id = N.user_id AND N.type = 'FAVORITE_STUDI
 WHERE S.id = $1
 UNION
 SELECT N.user_id, N.type, $1 as id
-FROM scene_performers SP
-JOIN scene_edits SE ON SP.scene_id = SE.scene_id
+FROM scene_credits SC
+JOIN scene_edits SE ON SC.scene_id = SE.scene_id
 JOIN edits E ON SE.edit_id = E.id AND E.operation = 'CREATE'
-JOIN performer_favorites PF ON SP.performer_id = PF.performer_id
+JOIN performer_favorites PF ON SC.performer_id = PF.performer_id
 JOIN user_notifications N ON PF.user_id = N.user_id AND N.type = 'FAVORITE_PERFORMER_SCENE' AND E.user_id != N.user_id
-WHERE SP.scene_id = $1;
+WHERE SC.scene_id = $1;
 
 -- name: TriggerPerformerEditNotifications :exec
 INSERT INTO notifications (user_id, type, id)
@@ -113,8 +113,8 @@ SELECT DISTINCT ON (user_id) user_id, type, $1 FROM (
     SELECT N.user_id, N.type
     FROM edits E
     JOIN scene_edits SE ON E.id = SE.edit_id
-    JOIN scene_performers SP ON SP.scene_id = SE.scene_id
-    JOIN performer_favorites PF ON PF.performer_id = SP.performer_id
+    JOIN scene_credits SC ON SC.scene_id = SE.scene_id
+    JOIN performer_favorites PF ON PF.performer_id = SC.performer_id
     JOIN user_notifications N ON PF.user_id = N.user_id AND N.type = 'FAVORITE_PERFORMER_EDIT' AND N.user_id != E.user_id
     WHERE E.id = $1
     UNION

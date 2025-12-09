@@ -47,13 +47,13 @@ JOIN studios S ON S.id = T.id
 ORDER BY score DESC;
 
 -- name: GetStudiosByPerformer :many
-SELECT 
+SELECT
     sqlc.embed(studios),
     COUNT(scenes.id) as scene_count
-FROM studios 
+FROM studios
 JOIN scenes ON studios.id = scenes.studio_id
-JOIN scene_performers SP ON scenes.id = SP.scene_id
-WHERE SP.performer_id = $1
+JOIN scene_credits SC ON scenes.id = SC.scene_id
+WHERE SC.performer_id = $1
 GROUP BY studios.id;
 
 -- name: GetChildStudios :many

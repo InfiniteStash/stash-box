@@ -21,6 +21,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stashapp/stash-box/internal/email"
 	"github.com/stashapp/stash-box/internal/queries"
+	"github.com/stashapp/stash-box/internal/service/credit_role"
 	"github.com/stashapp/stash-box/internal/service/draft"
 	"github.com/stashapp/stash-box/internal/service/edit"
 	"github.com/stashapp/stash-box/internal/service/image"
@@ -54,6 +55,11 @@ func NewFactory(pool *pgxpool.Pool, emailMgr *email.Manager) *Factory {
 // Tag returns a TagService instance
 func (f *Factory) Tag() *tag.Tag {
 	return tag.NewTag(queries.New(f.db), f.withTxn)
+}
+
+// CreditRole returns a CreditRoleService instance
+func (f *Factory) CreditRole() *credit.CreditRole {
+	return credit.NewCreditRole(queries.New(f.db), f.withTxn)
 }
 
 // Performer returns a PerformerService instance

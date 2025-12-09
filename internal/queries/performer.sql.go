@@ -13,7 +13,7 @@ import (
 )
 
 const clearScenePerformerAlias = `-- name: ClearScenePerformerAlias :exec
-UPDATE scene_performers
+UPDATE scene_credits
 SET "as" = NULL
 WHERE performer_id = $1
 AND "as" = $2
@@ -238,7 +238,7 @@ func (q *Queries) DeletePerformerPiercings(ctx context.Context, performerID uuid
 }
 
 const deletePerformerScenes = `-- name: DeletePerformerScenes :exec
-DELETE FROM scene_performers WHERE performer_id = $1
+DELETE FROM scene_credits WHERE performer_id = $1
 `
 
 func (q *Queries) DeletePerformerScenes(ctx context.Context, performerID uuid.UUID) error {
@@ -932,10 +932,10 @@ func (q *Queries) GetPerformerURLs(ctx context.Context, performerID uuid.UUID) (
 }
 
 const reassignPerformerAliases = `-- name: ReassignPerformerAliases :exec
-UPDATE scene_performers
+UPDATE scene_credits
 SET performer_id = $1
-WHERE scene_performers.performer_id = $2
-AND scene_id NOT IN (SELECT scene_id from scene_performers sp WHERE sp.performer_id = $1)
+WHERE scene_credits.performer_id = $2
+AND scene_id NOT IN (SELECT scene_id from scene_credits sc WHERE sc.performer_id = $1)
 `
 
 type ReassignPerformerAliasesParams struct {
@@ -1041,7 +1041,7 @@ func (q *Queries) SearchPerformers(ctx context.Context, arg SearchPerformersPara
 }
 
 const setScenePerformerAlias = `-- name: SetScenePerformerAlias :exec
-UPDATE scene_performers
+UPDATE scene_credits
 SET "as" = $2
 WHERE performer_id = $1
 AND "as" IS NULL

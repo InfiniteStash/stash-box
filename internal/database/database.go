@@ -21,7 +21,7 @@ import (
 
 const (
 	postgresDriver = "postgres"
-	schemaVersion  = 50
+	schemaVersion  = 55
 )
 
 //go:embed migrations/postgres/*.sql

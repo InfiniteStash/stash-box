@@ -104,7 +104,7 @@ func (q *Queries) DeleteSceneFingerprintsByScene(ctx context.Context, sceneID uu
 }
 
 const findScenesByFingerprint = `-- name: FindScenesByFingerprint :many
-SELECT DISTINCT s.id, s.title, s.details, s.studio_id, s.created_at, s.updated_at, s.duration, s.director, s.deleted, s.code, s.date, s.production_date FROM scenes s
+SELECT DISTINCT s.id, s.title, s.details, s.studio_id, s.created_at, s.updated_at, s.duration, s.deleted, s.code, s.date, s.production_date FROM scenes s
 JOIN scene_fingerprints sf ON s.id = sf.scene_id
 JOIN fingerprints f ON sf.fingerprint_id = f.id
 WHERE f.hash = $1 AND f.algorithm = $2 AND s.deleted = false
@@ -132,7 +132,6 @@ func (q *Queries) FindScenesByFingerprint(ctx context.Context, arg FindScenesByF
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Duration,
-			&i.Director,
 			&i.Deleted,
 			&i.Code,
 			&i.Date,

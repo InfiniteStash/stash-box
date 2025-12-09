@@ -12,7 +12,7 @@ import (
 )
 
 const countScenesByPerformer = `-- name: CountScenesByPerformer :one
-SELECT COUNT(*) FROM scene_performers WHERE performer_id = $1
+SELECT COUNT(DISTINCT scene_id) FROM scene_credits WHERE performer_id = $1
 `
 
 func (q *Queries) CountScenesByPerformer(ctx context.Context, performerID uuid.UUID) (int64, error) {
@@ -24,9 +24,9 @@ func (q *Queries) CountScenesByPerformer(ctx context.Context, performerID uuid.U
 
 const createScene = `-- name: CreateScene :one
 
-INSERT INTO scenes (id, title, details, date, production_date, studio_id, duration, director, code, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now(), now())
-RETURNING id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date
+INSERT INTO scenes (id, title, details, date, production_date, studio_id, duration, code, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now(), now())
+RETURNING id, title, details, studio_id, created_at, updated_at, duration, deleted, code, date, production_date
 `
 
 type CreateSceneParams struct {
@@ -37,7 +37,6 @@ type CreateSceneParams struct {
 	ProductionDate *string       `db:"production_date" json:"production_date"`
 	StudioID       uuid.NullUUID `db:"studio_id" json:"studio_id"`
 	Duration       *int          `db:"duration" json:"duration"`
-	Director       *string       `db:"director" json:"director"`
 	Code           *string       `db:"code" json:"code"`
 }
 
@@ -51,7 +50,6 @@ func (q *Queries) CreateScene(ctx context.Context, arg CreateSceneParams) (Scene
 		arg.ProductionDate,
 		arg.StudioID,
 		arg.Duration,
-		arg.Director,
 		arg.Code,
 	)
 	var i Scene
@@ -63,7 +61,6 @@ func (q *Queries) CreateScene(ctx context.Context, arg CreateSceneParams) (Scene
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Duration,
-		&i.Director,
 		&i.Deleted,
 		&i.Code,
 		&i.Date,
@@ -75,12 +72,6 @@ func (q *Queries) CreateScene(ctx context.Context, arg CreateSceneParams) (Scene
 type CreateSceneImagesParams struct {
 	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
 	ImageID uuid.UUID `db:"image_id" json:"image_id"`
-}
-
-type CreateScenePerformersParams struct {
-	SceneID     uuid.UUID `db:"scene_id" json:"scene_id"`
-	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
-	As          *string   `db:"as" json:"as"`
 }
 
 const createSceneRedirect = `-- name: CreateSceneRedirect :exec
@@ -125,15 +116,6 @@ func (q *Queries) DeleteSceneImages(ctx context.Context, sceneID uuid.UUID) erro
 	return err
 }
 
-const deleteScenePerformers = `-- name: DeleteScenePerformers :exec
-DELETE FROM scene_performers WHERE scene_id = $1
-`
-
-func (q *Queries) DeleteScenePerformers(ctx context.Context, sceneID uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteScenePerformers, sceneID)
-	return err
-}
-
 const deleteSceneStudios = `-- name: DeleteSceneStudios :exec
 UPDATE scenes SET studio_id = NULL WHERE studio_id = $1
 `
@@ -153,7 +135,7 @@ func (q *Queries) DeleteSceneURLs(ctx context.Context, sceneID uuid.UUID) error 
 }
 
 const findExistingScenes = `-- name: FindExistingScenes :many
-SELECT id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date FROM scenes WHERE (
+SELECT id, title, details, studio_id, created_at, updated_at, duration, deleted, code, date, production_date FROM scenes WHERE (
     ($1::text IS NOT NULL AND $2::uuid IS NOT NULL
      AND TRIM(LOWER(title)) = TRIM(LOWER($1))
      AND studio_id = $2)
@@ -192,7 +174,6 @@ func (q *Queries) FindExistingScenes(ctx context.Context, arg FindExistingScenes
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Duration,
-			&i.Director,
 			&i.Deleted,
 			&i.Code,
 			&i.Date,
@@ -209,7 +190,7 @@ func (q *Queries) FindExistingScenes(ctx context.Context, arg FindExistingScenes
 }
 
 const findScene = `-- name: FindScene :one
-SELECT id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date FROM scenes WHERE id = $1
+SELECT id, title, details, studio_id, created_at, updated_at, duration, deleted, code, date, production_date FROM scenes WHERE id = $1
 `
 
 func (q *Queries) FindScene(ctx context.Context, id uuid.UUID) (Scene, error) {
@@ -223,7 +204,6 @@ func (q *Queries) FindScene(ctx context.Context, id uuid.UUID) (Scene, error) {
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Duration,
-		&i.Director,
 		&i.Deleted,
 		&i.Code,
 		&i.Date,
@@ -233,7 +213,7 @@ func (q *Queries) FindScene(ctx context.Context, id uuid.UUID) (Scene, error) {
 }
 
 const findSceneAppearancesByIds = `-- name: FindSceneAppearancesByIds :many
-SELECT scene_id, performer_id, "as" FROM scene_performers WHERE scene_id = ANY($1::UUID[])
+SELECT scene_id, performer_id, "as" FROM scene_credits WHERE scene_id = ANY($1::UUID[])
 `
 
 type FindSceneAppearancesByIdsRow struct {
@@ -242,7 +222,7 @@ type FindSceneAppearancesByIdsRow struct {
 	As          *string   `db:"as" json:"as"`
 }
 
-// Get performer appearances for multiple scenes
+// Get performer appearances for multiple scenes (legacy - now handled by FindSceneCreditsByIds in scene_credit.sql)
 func (q *Queries) FindSceneAppearancesByIds(ctx context.Context, sceneIds []uuid.UUID) ([]FindSceneAppearancesByIdsRow, error) {
 	rows, err := q.db.Query(ctx, findSceneAppearancesByIds, sceneIds)
 	if err != nil {
@@ -264,7 +244,7 @@ func (q *Queries) FindSceneAppearancesByIds(ctx context.Context, sceneIds []uuid
 }
 
 const findSceneByURL = `-- name: FindSceneByURL :many
-SELECT s.id, s.title, s.details, s.studio_id, s.created_at, s.updated_at, s.duration, s.director, s.deleted, s.code, s.date, s.production_date
+SELECT s.id, s.title, s.details, s.studio_id, s.created_at, s.updated_at, s.duration, s.deleted, s.code, s.date, s.production_date
 FROM scenes S
 JOIN scene_urls SU ON SU.scene_id = S.id
 WHERE LOWER(SU.url) = LOWER($1)
@@ -293,7 +273,6 @@ func (q *Queries) FindSceneByURL(ctx context.Context, arg FindSceneByURLParams) 
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Duration,
-			&i.Director,
 			&i.Deleted,
 			&i.Code,
 			&i.Date,
@@ -336,7 +315,7 @@ func (q *Queries) FindSceneUrlsByIds(ctx context.Context, sceneIds []uuid.UUID) 
 
 const findScenesByFingerprints = `-- name: FindScenesByFingerprints :many
 
-SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.director, scenes.deleted, scenes.code, scenes.date, scenes.production_date FROM scenes
+SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.deleted, scenes.code, scenes.date, scenes.production_date FROM scenes
 WHERE id IN (
     SELECT scene_id AS id
     FROM scene_fingerprints SFP
@@ -364,7 +343,6 @@ func (q *Queries) FindScenesByFingerprints(ctx context.Context, fingerprints []s
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Duration,
-			&i.Director,
 			&i.Deleted,
 			&i.Code,
 			&i.Date,
@@ -381,7 +359,7 @@ func (q *Queries) FindScenesByFingerprints(ctx context.Context, fingerprints []s
 }
 
 const findScenesByFullFingerprints = `-- name: FindScenesByFullFingerprints :many
-SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.director, scenes.deleted, scenes.code, scenes.date, scenes.production_date FROM scenes
+SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.deleted, scenes.code, scenes.date, scenes.production_date FROM scenes
 WHERE id IN (
     SELECT SFP.scene_id AS id
     FROM UNNEST($1::BIGINT[]) phash
@@ -425,7 +403,6 @@ func (q *Queries) FindScenesByFullFingerprints(ctx context.Context, arg FindScen
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Duration,
-			&i.Director,
 			&i.Deleted,
 			&i.Code,
 			&i.Date,
@@ -442,7 +419,7 @@ func (q *Queries) FindScenesByFullFingerprints(ctx context.Context, arg FindScen
 }
 
 const findScenesByFullFingerprintsWithHash = `-- name: FindScenesByFullFingerprintsWithHash :many
-SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.director, scenes.deleted, scenes.code, scenes.date, scenes.production_date, matches.hash FROM (
+SELECT scenes.id, scenes.title, scenes.details, scenes.studio_id, scenes.created_at, scenes.updated_at, scenes.duration, scenes.deleted, scenes.code, scenes.date, scenes.production_date, matches.hash FROM (
     SELECT SFP.scene_id AS id, FP.hash
     FROM UNNEST($1::BIGINT[]) phash
     JOIN fingerprints FP ON ('x' || FP.hash)::bit(64)::bigint <@ (phash::BIGINT, $2::INTEGER)
@@ -491,64 +468,11 @@ func (q *Queries) FindScenesByFullFingerprintsWithHash(ctx context.Context, arg 
 			&i.Scene.CreatedAt,
 			&i.Scene.UpdatedAt,
 			&i.Scene.Duration,
-			&i.Scene.Director,
 			&i.Scene.Deleted,
 			&i.Scene.Code,
 			&i.Scene.Date,
 			&i.Scene.ProductionDate,
 			&i.Hash,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getScenePerformers = `-- name: GetScenePerformers :many
-SELECT p.id, p.name, p.disambiguation, p.gender, p.ethnicity, p.country, p.eye_color, p.hair_color, p.height, p.cup_size, p.band_size, p.hip_size, p.waist_size, p.breast_type, p.career_start_year, p.career_end_year, p.created_at, p.updated_at, p.deleted, p.birthdate, p.deathdate, "as" FROM scene_performers SP JOIN performers P ON SP.performer_id = P.id WHERE scene_id = $1
-`
-
-type GetScenePerformersRow struct {
-	Performer Performer `db:"performer" json:"performer"`
-	As        *string   `db:"as" json:"as"`
-}
-
-func (q *Queries) GetScenePerformers(ctx context.Context, sceneID uuid.UUID) ([]GetScenePerformersRow, error) {
-	rows, err := q.db.Query(ctx, getScenePerformers, sceneID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []GetScenePerformersRow{}
-	for rows.Next() {
-		var i GetScenePerformersRow
-		if err := rows.Scan(
-			&i.Performer.ID,
-			&i.Performer.Name,
-			&i.Performer.Disambiguation,
-			&i.Performer.Gender,
-			&i.Performer.Ethnicity,
-			&i.Performer.Country,
-			&i.Performer.EyeColor,
-			&i.Performer.HairColor,
-			&i.Performer.Height,
-			&i.Performer.CupSize,
-			&i.Performer.BandSize,
-			&i.Performer.HipSize,
-			&i.Performer.WaistSize,
-			&i.Performer.BreastType,
-			&i.Performer.CareerStartYear,
-			&i.Performer.CareerEndYear,
-			&i.Performer.CreatedAt,
-			&i.Performer.UpdatedAt,
-			&i.Performer.Deleted,
-			&i.Performer.Birthdate,
-			&i.Performer.Deathdate,
-			&i.As,
 		); err != nil {
 			return nil, err
 		}
@@ -590,7 +514,7 @@ func (q *Queries) GetSceneURLs(ctx context.Context, sceneID uuid.UUID) ([]GetSce
 }
 
 const getScenes = `-- name: GetScenes :many
-SELECT id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date FROM scenes WHERE id = ANY($1::UUID[]) ORDER BY title
+SELECT id, title, details, studio_id, created_at, updated_at, duration, deleted, code, date, production_date FROM scenes WHERE id = ANY($1::UUID[]) ORDER BY title
 `
 
 func (q *Queries) GetScenes(ctx context.Context, dollar_1 []uuid.UUID) ([]Scene, error) {
@@ -610,7 +534,6 @@ func (q *Queries) GetScenes(ctx context.Context, dollar_1 []uuid.UUID) ([]Scene,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Duration,
-			&i.Director,
 			&i.Deleted,
 			&i.Code,
 			&i.Date,
@@ -627,7 +550,7 @@ func (q *Queries) GetScenes(ctx context.Context, dollar_1 []uuid.UUID) ([]Scene,
 }
 
 const searchScenes = `-- name: SearchScenes :many
-SELECT s.id, s.title, s.details, s.studio_id, s.created_at, s.updated_at, s.duration, s.director, s.deleted, s.code, s.date, s.production_date FROM scenes S
+SELECT s.id, s.title, s.details, s.studio_id, s.created_at, s.updated_at, s.duration, s.deleted, s.code, s.date, s.production_date FROM scenes S
 LEFT JOIN scene_search SS ON SS.scene_id = S.id
 WHERE (
     to_tsvector('english', COALESCE(scene_date, '')) ||
@@ -662,7 +585,6 @@ func (q *Queries) SearchScenes(ctx context.Context, arg SearchScenesParams) ([]S
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Duration,
-			&i.Director,
 			&i.Deleted,
 			&i.Code,
 			&i.Date,
@@ -680,7 +602,7 @@ func (q *Queries) SearchScenes(ctx context.Context, arg SearchScenesParams) ([]S
 
 const softDeleteScene = `-- name: SoftDeleteScene :one
 UPDATE scenes SET deleted = true, updated_at = NOW() WHERE id = $1
-RETURNING id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date
+RETURNING id, title, details, studio_id, created_at, updated_at, duration, deleted, code, date, production_date
 `
 
 func (q *Queries) SoftDeleteScene(ctx context.Context, id uuid.UUID) (Scene, error) {
@@ -694,7 +616,6 @@ func (q *Queries) SoftDeleteScene(ctx context.Context, id uuid.UUID) (Scene, err
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Duration,
-		&i.Director,
 		&i.Deleted,
 		&i.Code,
 		&i.Date,
@@ -704,11 +625,11 @@ func (q *Queries) SoftDeleteScene(ctx context.Context, id uuid.UUID) (Scene, err
 }
 
 const updateScene = `-- name: UpdateScene :one
-UPDATE scenes 
-SET title = $2, details = $3, date = $4, production_date = $5, studio_id = $6, 
-    duration = $7, director = $8, code = $9, updated_at = now()
+UPDATE scenes
+SET title = $2, details = $3, date = $4, production_date = $5, studio_id = $6,
+    duration = $7, code = $8, updated_at = now()
 WHERE id = $1
-RETURNING id, title, details, studio_id, created_at, updated_at, duration, director, deleted, code, date, production_date
+RETURNING id, title, details, studio_id, created_at, updated_at, duration, deleted, code, date, production_date
 `
 
 type UpdateSceneParams struct {
@@ -719,7 +640,6 @@ type UpdateSceneParams struct {
 	ProductionDate *string       `db:"production_date" json:"production_date"`
 	StudioID       uuid.NullUUID `db:"studio_id" json:"studio_id"`
 	Duration       *int          `db:"duration" json:"duration"`
-	Director       *string       `db:"director" json:"director"`
 	Code           *string       `db:"code" json:"code"`
 }
 
@@ -732,7 +652,6 @@ func (q *Queries) UpdateScene(ctx context.Context, arg UpdateSceneParams) (Scene
 		arg.ProductionDate,
 		arg.StudioID,
 		arg.Duration,
-		arg.Director,
 		arg.Code,
 	)
 	var i Scene
@@ -744,7 +663,6 @@ func (q *Queries) UpdateScene(ctx context.Context, arg UpdateSceneParams) (Scene
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Duration,
-		&i.Director,
 		&i.Deleted,
 		&i.Code,
 		&i.Date,

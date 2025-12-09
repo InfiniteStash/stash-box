@@ -447,13 +447,13 @@ func (q *Queries) GetStudios(ctx context.Context, dollar_1 []uuid.UUID) ([]Studi
 }
 
 const getStudiosByPerformer = `-- name: GetStudiosByPerformer :many
-SELECT 
+SELECT
     studios.id, studios.name, studios.parent_studio_id, studios.created_at, studios.updated_at, studios.deleted,
     COUNT(scenes.id) as scene_count
-FROM studios 
+FROM studios
 JOIN scenes ON studios.id = scenes.studio_id
-JOIN scene_performers SP ON scenes.id = SP.scene_id
-WHERE SP.performer_id = $1
+JOIN scene_credits SC ON scenes.id = SC.scene_id
+WHERE SC.performer_id = $1
 GROUP BY studios.id
 `
 

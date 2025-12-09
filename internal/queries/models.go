@@ -65,6 +65,25 @@ func (ns NullNotificationType) Value() (driver.Value, error) {
 	return string(ns.NotificationType), nil
 }
 
+type CreditRole struct {
+	ID          int       `db:"id" json:"id"`
+	Name        string    `db:"name" json:"name"`
+	Description *string   `db:"description" json:"description"`
+	CreatedAt   time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
+}
+
+type CreditRoleTag struct {
+	CreditRoleID int       `db:"credit_role_id" json:"credit_role_id"`
+	TagID        uuid.UUID `db:"tag_id" json:"tag_id"`
+}
+
+type DirectorPerformer struct {
+	DirectorName *string       `db:"director_name" json:"director_name"`
+	StudioID     uuid.NullUUID `db:"studio_id" json:"studio_id"`
+	StudioName   *string       `db:"studio_name" json:"studio_name"`
+}
+
 type Draft struct {
 	ID        uuid.UUID       `db:"id" json:"id"`
 	UserID    uuid.UUID       `db:"user_id" json:"user_id"`
@@ -210,11 +229,23 @@ type Scene struct {
 	CreatedAt      time.Time     `db:"created_at" json:"created_at"`
 	UpdatedAt      time.Time     `db:"updated_at" json:"updated_at"`
 	Duration       *int          `db:"duration" json:"duration"`
-	Director       *string       `db:"director" json:"director"`
 	Deleted        bool          `db:"deleted" json:"deleted"`
 	Code           *string       `db:"code" json:"code"`
 	Date           *string       `db:"date" json:"date"`
 	ProductionDate *string       `db:"production_date" json:"production_date"`
+}
+
+type SceneCredit struct {
+	ID           int       `db:"id" json:"id"`
+	SceneID      uuid.UUID `db:"scene_id" json:"scene_id"`
+	PerformerID  uuid.UUID `db:"performer_id" json:"performer_id"`
+	CreditRoleID int       `db:"credit_role_id" json:"credit_role_id"`
+	As           *string   `db:"as" json:"as"`
+}
+
+type SceneCreditTag struct {
+	SceneCreditID int       `db:"scene_credit_id" json:"scene_credit_id"`
+	TagID         uuid.UUID `db:"tag_id" json:"tag_id"`
 }
 
 type SceneEdit struct {
@@ -234,12 +265,6 @@ type SceneFingerprint struct {
 type SceneImage struct {
 	SceneID uuid.UUID `db:"scene_id" json:"scene_id"`
 	ImageID uuid.UUID `db:"image_id" json:"image_id"`
-}
-
-type ScenePerformer struct {
-	SceneID     uuid.UUID `db:"scene_id" json:"scene_id"`
-	As          *string   `db:"as" json:"as"`
-	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
 }
 
 type SceneRedirect struct {

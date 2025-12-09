@@ -168,21 +168,6 @@ func (s *Scene) CountByPerformer(ctx context.Context, performerID uuid.UUID) (in
 	return int(count), nil
 }
 
-func (s *Scene) GetPerformers(ctx context.Context, sceneID uuid.UUID) ([]models.PerformerAppearance, error) {
-	performers, err := s.queries.GetScenePerformers(ctx, sceneID)
-	if err != nil {
-		return nil, err
-	}
-
-	var result []models.PerformerAppearance
-	for _, row := range performers {
-		result = append(result, models.PerformerAppearance{
-			Performer: converter.PerformerToModelPtr(row.Performer),
-			As:        row.As,
-		})
-	}
-	return result, nil
-}
 
 func (s *Scene) GetTags(ctx context.Context, sceneID uuid.UUID) ([]models.Tag, error) {
 	dbTags, err := s.queries.GetSceneTags(ctx, sceneID)
@@ -367,8 +352,8 @@ func (s *Scene) Create(ctx context.Context, input models.SceneCreateInput) (*mod
 			return err
 		}
 
-		// save the performers
-		if err := createPerformers(ctx, tx, scene.ID, input.Performers); err != nil {
+		// save the credits
+		if err := createCredits(ctx, tx, scene.ID, input.Credits); err != nil {
 			return err
 		}
 
@@ -412,7 +397,7 @@ func (s *Scene) Update(ctx context.Context, input models.SceneUpdateInput) (*mod
 			return err
 		}
 
-		if err := updatePerformers(ctx, tx, scene.ID, input.Performers); err != nil {
+		if err := updateCredits(ctx, tx, scene.ID, input.Credits); err != nil {
 			return err
 		}
 
@@ -646,27 +631,6 @@ func updateFingerprints(ctx context.Context, tx *queries.Queries, sceneID uuid.U
 	return err
 }
 
-func createPerformers(ctx context.Context, tx *queries.Queries, sceneID uuid.UUID, performers []models.PerformerAppearanceInput) error {
-	var params []queries.CreateScenePerformersParams
-	for _, performer := range performers {
-		param := queries.CreateScenePerformersParams{
-			SceneID:     sceneID,
-			PerformerID: performer.PerformerID,
-			As:          performer.As,
-		}
-
-		params = append(params, param)
-	}
-	_, err := tx.CreateScenePerformers(ctx, params)
-	return err
-}
-
-func updatePerformers(ctx context.Context, tx *queries.Queries, sceneID uuid.UUID, performers []models.PerformerAppearanceInput) error {
-	if err := tx.DeleteScenePerformers(ctx, sceneID); err != nil {
-		return err
-	}
-	return createPerformers(ctx, tx, sceneID, performers)
-}
 
 func createURLs(ctx context.Context, tx *queries.Queries, sceneID uuid.UUID, urls []models.URL) error {
 	var params []queries.CreateSceneURLsParams
@@ -727,6 +691,28 @@ func updateTags(ctx context.Context, tx *queries.Queries, sceneID uuid.UUID, tag
 		return err
 	}
 	return createTags(ctx, tx, sceneID, tags)
+}
+
+func createCredits(ctx context.Context, tx *queries.Queries, sceneID uuid.UUID, credits []models.CreditInput) error {
+	var params []queries.CreateSceneCreditsParams
+	for _, credit := range credits {
+		params = append(params, queries.CreateSceneCreditsParams{
+			SceneID:      sceneID,
+			PerformerID:  credit.PerformerID,
+			CreditRoleID: int(credit.CreditRoleID),
+			As:           credit.As,
+		})
+	}
+
+	_, err := tx.CreateSceneCredits(ctx, params)
+	return err
+}
+
+func updateCredits(ctx context.Context, tx *queries.Queries, sceneID uuid.UUID, credits []models.CreditInput) error {
+	if err := tx.DeleteSceneCredits(ctx, sceneID); err != nil {
+		return err
+	}
+	return createCredits(ctx, tx, sceneID, credits)
 }
 
 func createUpdatedSceneFingerprints(sceneID uuid.UUID, original []models.SceneFingerprint, updated []models.FingerprintEditInput, currentUserID uuid.UUID) []models.SceneFingerprint {

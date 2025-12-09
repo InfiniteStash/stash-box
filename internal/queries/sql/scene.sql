@@ -1,14 +1,14 @@
 -- Scene queries
 
 -- name: CreateScene :one
-INSERT INTO scenes (id, title, details, date, production_date, studio_id, duration, director, code, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now(), now())
+INSERT INTO scenes (id, title, details, date, production_date, studio_id, duration, code, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now(), now())
 RETURNING *;
 
 -- name: UpdateScene :one
-UPDATE scenes 
-SET title = $2, details = $3, date = $4, production_date = $5, studio_id = $6, 
-    duration = $7, director = $8, code = $9, updated_at = now()
+UPDATE scenes
+SET title = $2, details = $3, date = $4, production_date = $5, studio_id = $6,
+    duration = $7, code = $8, updated_at = now()
 WHERE id = $1
 RETURNING *;
 
@@ -68,7 +68,7 @@ AND S.deleted = FALSE
 LIMIT sqlc.arg('limit');
 
 -- name: CountScenesByPerformer :one
-SELECT COUNT(*) FROM scene_performers WHERE performer_id = $1;
+SELECT COUNT(DISTINCT scene_id) FROM scene_credits WHERE performer_id = $1;
 
 -- Scene fingerprints (use fingerprint.sql for most fingerprint operations)
 
@@ -135,17 +135,6 @@ DELETE FROM scene_urls WHERE scene_id = $1;
 -- name: GetSceneURLs :many
 SELECT url, site_id FROM scene_urls WHERE scene_id = $1;
 
--- Scene performers
-
--- name: CreateScenePerformers :copyfrom
-INSERT INTO scene_performers (scene_id, performer_id, "as") VALUES ($1, $2, $3);
-
--- name: DeleteScenePerformers :exec
-DELETE FROM scene_performers WHERE scene_id = $1;
-
--- name: GetScenePerformers :many
-SELECT sqlc.embed(P), "as" FROM scene_performers SP JOIN performers P ON SP.performer_id = P.id WHERE scene_id = $1;
-
 -- Scene images
 
 -- name: DeleteSceneImages :exec
@@ -163,8 +152,8 @@ INSERT INTO scene_redirects (source_id, target_id) VALUES ($1, $2);
 UPDATE scene_redirects SET target_id = @new_target_id WHERE target_id = @old_target_id;
 
 -- name: FindSceneAppearancesByIds :many
--- Get performer appearances for multiple scenes
-SELECT scene_id, performer_id, "as" FROM scene_performers WHERE scene_id = ANY(sqlc.arg(scene_ids)::UUID[]);
+-- Get performer appearances for multiple scenes (legacy - now handled by FindSceneCreditsByIds in scene_credit.sql)
+SELECT scene_id, performer_id, "as" FROM scene_credits WHERE scene_id = ANY(sqlc.arg(scene_ids)::UUID[]);
 
 -- name: FindSceneUrlsByIds :many
 -- Get URLs for multiple scenes

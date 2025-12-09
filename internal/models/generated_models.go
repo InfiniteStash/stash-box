@@ -94,6 +94,26 @@ type CommentVotedEdit struct {
 
 func (CommentVotedEdit) IsNotificationData() {}
 
+type CreditRoleCreateInput struct {
+	Name        string  `json:"name"`
+	Description *string `json:"description,omitempty"`
+}
+
+type CreditRoleDestroyInput struct {
+	ID int `json:"id"`
+}
+
+type CreditRoleSetTagsInput struct {
+	RoleID int         `json:"role_id"`
+	TagIds []uuid.UUID `json:"tag_ids"`
+}
+
+type CreditRoleUpdateInput struct {
+	ID          int     `json:"id"`
+	Name        *string `json:"name,omitempty"`
+	Description *string `json:"description,omitempty"`
+}
+
 type DateCriterionInput struct {
 	Value    string            `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
@@ -334,12 +354,6 @@ type NewUserInput struct {
 
 type PerformerAppearance struct {
 	Performer *Performer `json:"performer"`
-	// Performing as alias
-	As *string `json:"as,omitempty"`
-}
-
-type PerformerAppearanceInput struct {
-	PerformerID uuid.UUID `json:"performer_id"`
 	// Performing as alias
 	As *string `json:"as,omitempty"`
 }
@@ -589,19 +603,18 @@ type RoleCriterionInput struct {
 }
 
 type SceneCreateInput struct {
-	Title          *string                    `json:"title,omitempty"`
-	Details        *string                    `json:"details,omitempty"`
-	Urls           []URL                      `json:"urls,omitempty"`
-	Date           string                     `json:"date"`
-	ProductionDate *string                    `json:"production_date,omitempty"`
-	StudioID       *uuid.UUID                 `json:"studio_id,omitempty"`
-	Performers     []PerformerAppearanceInput `json:"performers,omitempty"`
-	TagIds         []uuid.UUID                `json:"tag_ids,omitempty"`
-	ImageIds       []uuid.UUID                `json:"image_ids,omitempty"`
-	Fingerprints   []FingerprintEditInput     `json:"fingerprints"`
-	Duration       *int                       `json:"duration,omitempty"`
-	Director       *string                    `json:"director,omitempty"`
-	Code           *string                    `json:"code,omitempty"`
+	Title          *string                `json:"title,omitempty"`
+	Details        *string                `json:"details,omitempty"`
+	Urls           []URL                  `json:"urls,omitempty"`
+	Date           string                 `json:"date"`
+	ProductionDate *string                `json:"production_date,omitempty"`
+	StudioID       *uuid.UUID             `json:"studio_id,omitempty"`
+	Credits        []CreditInput          `json:"credits,omitempty"`
+	TagIds         []uuid.UUID            `json:"tag_ids,omitempty"`
+	ImageIds       []uuid.UUID            `json:"image_ids,omitempty"`
+	Fingerprints   []FingerprintEditInput `json:"fingerprints"`
+	Duration       *int                   `json:"duration,omitempty"`
+	Code           *string                `json:"code,omitempty"`
 }
 
 type SceneDestroyInput struct {
@@ -626,20 +639,19 @@ type SceneDraftInput struct {
 }
 
 type SceneEditDetailsInput struct {
-	Title          *string                    `json:"title,omitempty"`
-	Details        *string                    `json:"details,omitempty"`
-	Urls           []URL                      `json:"urls,omitempty"`
-	Date           *string                    `json:"date,omitempty"`
-	ProductionDate *string                    `json:"production_date,omitempty"`
-	StudioID       *uuid.UUID                 `json:"studio_id,omitempty"`
-	Performers     []PerformerAppearanceInput `json:"performers,omitempty"`
-	TagIds         []uuid.UUID                `json:"tag_ids,omitempty"`
-	ImageIds       []uuid.UUID                `json:"image_ids,omitempty"`
-	Duration       *int                       `json:"duration,omitempty"`
-	Director       *string                    `json:"director,omitempty"`
-	Code           *string                    `json:"code,omitempty"`
-	Fingerprints   []FingerprintInput         `json:"fingerprints,omitempty"`
-	DraftID        *uuid.UUID                 `json:"draft_id,omitempty"`
+	Title          *string            `json:"title,omitempty"`
+	Details        *string            `json:"details,omitempty"`
+	Urls           []URL              `json:"urls,omitempty"`
+	Date           *string            `json:"date,omitempty"`
+	ProductionDate *string            `json:"production_date,omitempty"`
+	StudioID       *uuid.UUID         `json:"studio_id,omitempty"`
+	Credits        []CreditInput      `json:"credits,omitempty"`
+	TagIds         []uuid.UUID        `json:"tag_ids,omitempty"`
+	ImageIds       []uuid.UUID        `json:"image_ids,omitempty"`
+	Duration       *int               `json:"duration,omitempty"`
+	Code           *string            `json:"code,omitempty"`
+	Fingerprints   []FingerprintInput `json:"fingerprints,omitempty"`
+	DraftID        *uuid.UUID         `json:"draft_id,omitempty"`
 }
 
 type SceneEditInput struct {
@@ -682,20 +694,19 @@ type SceneQueryInput struct {
 }
 
 type SceneUpdateInput struct {
-	ID             uuid.UUID                  `json:"id"`
-	Title          *string                    `json:"title,omitempty"`
-	Details        *string                    `json:"details,omitempty"`
-	Urls           []URL                      `json:"urls,omitempty"`
-	Date           *string                    `json:"date,omitempty"`
-	ProductionDate *string                    `json:"production_date,omitempty"`
-	StudioID       *uuid.UUID                 `json:"studio_id,omitempty"`
-	Performers     []PerformerAppearanceInput `json:"performers,omitempty"`
-	TagIds         []uuid.UUID                `json:"tag_ids,omitempty"`
-	ImageIds       []uuid.UUID                `json:"image_ids,omitempty"`
-	Fingerprints   []FingerprintEditInput     `json:"fingerprints,omitempty"`
-	Duration       *int                       `json:"duration,omitempty"`
-	Director       *string                    `json:"director,omitempty"`
-	Code           *string                    `json:"code,omitempty"`
+	ID             uuid.UUID              `json:"id"`
+	Title          *string                `json:"title,omitempty"`
+	Details        *string                `json:"details,omitempty"`
+	Urls           []URL                  `json:"urls,omitempty"`
+	Date           *string                `json:"date,omitempty"`
+	ProductionDate *string                `json:"production_date,omitempty"`
+	StudioID       *uuid.UUID             `json:"studio_id,omitempty"`
+	Credits        []CreditInput          `json:"credits,omitempty"`
+	TagIds         []uuid.UUID            `json:"tag_ids,omitempty"`
+	ImageIds       []uuid.UUID            `json:"image_ids,omitempty"`
+	Fingerprints   []FingerprintEditInput `json:"fingerprints,omitempty"`
+	Duration       *int                   `json:"duration,omitempty"`
+	Code           *string                `json:"code,omitempty"`
 }
 
 type SiteCreateInput struct {
