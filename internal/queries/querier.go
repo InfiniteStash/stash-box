@@ -96,6 +96,7 @@ type Querier interface {
 	// so MoveSceneFingerprintSubmissions can move the remainder without tripping the unique constraint.
 	DeleteDuplicateSceneFingerprintSubmissions(ctx context.Context, arg DeleteDuplicateSceneFingerprintSubmissionsParams) (int64, error)
 	DeleteEdit(ctx context.Context, id uuid.UUID) error
+	DeleteEditComment(ctx context.Context, id uuid.UUID) error
 	DeleteExpiredDrafts(ctx context.Context, dollar_1 interface{}) error
 	DeleteExpiredModAudits(ctx context.Context, dollar_1 interface{}) error
 	DeleteExpiredUserTokens(ctx context.Context) error
@@ -151,6 +152,7 @@ type Querier interface {
 	FindDraft(ctx context.Context, id uuid.UUID) (Draft, error)
 	FindDraftsByUser(ctx context.Context, userID uuid.UUID) ([]Draft, error)
 	FindEdit(ctx context.Context, id uuid.UUID) (Edit, error)
+	FindEditComment(ctx context.Context, id uuid.UUID) (EditComment, error)
 	FindExistingPerformers(ctx context.Context, arg FindExistingPerformersParams) ([]Performer, error)
 	FindExistingScenes(ctx context.Context, arg FindExistingScenesParams) ([]Scene, error)
 	FindImage(ctx context.Context, id uuid.UUID) (Image, error)

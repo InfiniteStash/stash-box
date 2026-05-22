@@ -161,6 +161,11 @@ input DeleteEditInput {
     reason: String!
 }
 
+input DeleteEditCommentInput {
+    id: ID!
+    reason: String!
+}
+
 input AmendEditInput {
     id: ID!
     reason: String!

@@ -1,0 +1,9 @@
+#import "../fragments/CommentFragment.gql"
+mutation DeleteEditComment($input: DeleteEditCommentInput!) {
+  deleteEditComment(input: $input) {
+    id
+    comments {
+      ...CommentFragment
+    }
+  }
+}

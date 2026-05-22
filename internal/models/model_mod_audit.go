@@ -28,3 +28,13 @@ type EditAmendmentAuditData struct {
 	AmendedAt   time.Time       `json:"amended_at"`
 	RemovedData json.RawMessage `json:"removed_data"`
 }
+
+type EditCommentDeleteAuditData struct {
+	CommentID     uuid.UUID     `json:"comment_id"`
+	EditID        uuid.UUID     `json:"edit_id"`
+	CommentUserID uuid.NullUUID `json:"comment_user_id"`
+	CommentText   string        `json:"comment_text"`
+	CommentDate   time.Time     `json:"comment_date"`
+	DeletedBy     uuid.UUID     `json:"deleted_by"`
+	DeletedAt     time.Time     `json:"deleted_at"`
+}

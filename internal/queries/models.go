@@ -17,8 +17,9 @@ import (
 type ModAuditAction string
 
 const (
-	ModAuditActionEDITDELETE    ModAuditAction = "EDIT_DELETE"
-	ModAuditActionEDITAMENDMENT ModAuditAction = "EDIT_AMENDMENT"
+	ModAuditActionEDITDELETE        ModAuditAction = "EDIT_DELETE"
+	ModAuditActionEDITAMENDMENT     ModAuditAction = "EDIT_AMENDMENT"
+	ModAuditActionEDITCOMMENTDELETE ModAuditAction = "EDIT_COMMENT_DELETE"
 )
 
 func (e *ModAuditAction) Scan(src interface{}) error {

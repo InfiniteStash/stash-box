@@ -129,3 +129,7 @@ func (r *mutationResolver) DeleteEdit(ctx context.Context, input models.DeleteEd
 func (r *mutationResolver) AmendEdit(ctx context.Context, input models.AmendEditInput) (*models.Edit, error) {
 	return r.services.Edit().AmendEdit(ctx, input)
 }
+
+func (r *mutationResolver) DeleteEditComment(ctx context.Context, input models.DeleteEditCommentInput) (*models.Edit, error) {
+	return r.services.Edit().DeleteComment(ctx, input)
+}

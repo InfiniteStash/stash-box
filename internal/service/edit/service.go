@@ -885,6 +885,67 @@ func (s *Edit) CreateVote(ctx context.Context, input models.EditVoteInput) (*mod
 	return voteEdit, err
 }
 
+func (s *Edit) DeleteComment(ctx context.Context, input models.DeleteEditCommentInput) (*models.Edit, error) {
+	currentUser := auth.GetCurrentUser(ctx)
+	if currentUser == nil {
+		return nil, fmt.Errorf("no authenticated user found")
+	}
+
+	var updatedEdit *models.Edit
+	err := s.withTxn(func(tx *queries.Queries) error {
+		dbComment, err := tx.FindEditComment(ctx, input.ID)
+		if err != nil {
+			return fmt.Errorf("failed to find edit comment: %w", err)
+		}
+
+		if config.GetModAuditRetentionDays() > 0 {
+			auditData, err := json.Marshal(models.EditCommentDeleteAuditData{
+				CommentID:     dbComment.ID,
+				EditID:        dbComment.EditID,
+				CommentUserID: dbComment.UserID,
+				CommentText:   dbComment.Text,
+				CommentDate:   dbComment.CreatedAt,
+				DeletedBy:     currentUser.ID,
+				DeletedAt:     time.Now(),
+			})
+			if err != nil {
+				return fmt.Errorf("failed to marshal audit data: %w", err)
+			}
+
+			auditID, err := uuid.NewV7()
+			if err != nil {
+				return fmt.Errorf("failed to generate audit ID: %w", err)
+			}
+
+			_, err = tx.CreateModAudit(ctx, queries.CreateModAuditParams{
+				ID:         auditID,
+				Action:     queries.ModAuditActionEDITCOMMENTDELETE,
+				UserID:     uuid.NullUUID{UUID: currentUser.ID, Valid: true},
+				TargetID:   dbComment.ID,
+				TargetType: "EDIT_COMMENT",
+				Data:       auditData,
+				Reason:     &input.Reason,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to create audit record: %w", err)
+			}
+		}
+
+		if err := tx.DeleteEditComment(ctx, input.ID); err != nil {
+			return fmt.Errorf("failed to delete edit comment: %w", err)
+		}
+
+		dbEdit, err := tx.FindEdit(ctx, dbComment.EditID)
+		if err != nil {
+			return fmt.Errorf("failed to find edit: %w", err)
+		}
+		updatedEdit = converter.EditToModelPtr(dbEdit)
+		return nil
+	})
+
+	return updatedEdit, err
+}
+
 func (s *Edit) CreateComment(ctx context.Context, input models.EditCommentInput) (*models.Edit, *models.EditComment, error) {
 	edit, err := s.queries.FindEdit(ctx, input.ID)
 	if err != nil {

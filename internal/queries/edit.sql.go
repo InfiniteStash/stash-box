@@ -192,6 +192,15 @@ func (q *Queries) DeleteEdit(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const deleteEditComment = `-- name: DeleteEditComment :exec
+DELETE FROM edit_comments WHERE id = $1
+`
+
+func (q *Queries) DeleteEditComment(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteEditComment, id)
+	return err
+}
+
 const findCompletedEdits = `-- name: FindCompletedEdits :many
 SELECT id, user_id, operation, target_type, data, votes, status, applied, created_at, updated_at, closed_at, bot, update_count FROM edits
 WHERE status = 'PENDING'
@@ -275,6 +284,23 @@ func (q *Queries) FindEdit(ctx context.Context, id uuid.UUID) (Edit, error) {
 		&i.ClosedAt,
 		&i.Bot,
 		&i.UpdateCount,
+	)
+	return i, err
+}
+
+const findEditComment = `-- name: FindEditComment :one
+SELECT id, edit_id, user_id, created_at, text FROM edit_comments WHERE id = $1
+`
+
+func (q *Queries) FindEditComment(ctx context.Context, id uuid.UUID) (EditComment, error) {
+	row := q.db.QueryRow(ctx, findEditComment, id)
+	var i EditComment
+	err := row.Scan(
+		&i.ID,
+		&i.EditID,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.Text,
 	)
 	return i, err
 }

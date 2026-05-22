@@ -179,6 +179,8 @@ type Mutation {
   deleteEdit(input: DeleteEditInput!): Boolean! @hasRole(role: MODERATE)
   """Amend a closed edit by removing fields - moderator only"""
   amendEdit(input: AmendEditInput!): Edit! @hasRole(role: MODERATE)
+  """Delete a comment from an edit - moderator only"""
+  deleteEditComment(input: DeleteEditCommentInput!): Edit! @hasRole(role: MODERATE)
 
   """Matches/unmatches a scene to fingerprint"""
   submitFingerprint(input: FingerprintSubmission!): Boolean! @hasRole(role: READ)

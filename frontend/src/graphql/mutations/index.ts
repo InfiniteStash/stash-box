@@ -41,6 +41,9 @@ import {
   DeleteDraftDocument,
   type DeleteDraftMutation,
   type DeleteDraftMutationVariables,
+  DeleteEditCommentDocument,
+  type DeleteEditCommentMutation,
+  type DeleteEditCommentMutationVariables,
   DeleteEditDocument,
   type DeleteEditMutation,
   type DeleteEditMutationVariables,
@@ -319,6 +322,13 @@ export const useDeleteEdit = (
 export const useAmendEdit = (
   options?: MutationHookOptions<AmendEditMutation, AmendEditMutationVariables>,
 ) => useMutation(AmendEditDocument, options);
+
+export const useDeleteEditComment = (
+  options?: MutationHookOptions<
+    DeleteEditCommentMutation,
+    DeleteEditCommentMutationVariables
+  >,
+) => useMutation(DeleteEditCommentDocument, options);
 
 export const useChangePassword = (
   options?: useMutation.Options<

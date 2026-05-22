@@ -92,6 +92,12 @@ RETURNING *;
 -- name: GetEditComments :many
 SELECT * FROM edit_comments WHERE edit_id = $1 ORDER BY created_at ASC;
 
+-- name: FindEditComment :one
+SELECT * FROM edit_comments WHERE id = $1;
+
+-- name: DeleteEditComment :exec
+DELETE FROM edit_comments WHERE id = $1;
+
 -- Edit votes
 
 -- name: CreateEditVote :exec

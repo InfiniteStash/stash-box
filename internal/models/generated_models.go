@@ -117,6 +117,11 @@ type DateCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
+type DeleteEditCommentInput struct {
+	ID     uuid.UUID `json:"id"`
+	Reason string    `json:"reason"`
+}
+
 type DeleteEditInput struct {
 	ID     uuid.UUID `json:"id"`
 	Reason string    `json:"reason"`
@@ -1830,18 +1835,20 @@ func (e HairColorEnum) MarshalJSON() ([]byte, error) {
 type ModAuditActionEnum string
 
 const (
-	ModAuditActionEnumEditDelete    ModAuditActionEnum = "EDIT_DELETE"
-	ModAuditActionEnumEditAmendment ModAuditActionEnum = "EDIT_AMENDMENT"
+	ModAuditActionEnumEditDelete        ModAuditActionEnum = "EDIT_DELETE"
+	ModAuditActionEnumEditAmendment     ModAuditActionEnum = "EDIT_AMENDMENT"
+	ModAuditActionEnumEditCommentDelete ModAuditActionEnum = "EDIT_COMMENT_DELETE"
 )
 
 var AllModAuditActionEnum = []ModAuditActionEnum{
 	ModAuditActionEnumEditDelete,
 	ModAuditActionEnumEditAmendment,
+	ModAuditActionEnumEditCommentDelete,
 }
 
 func (e ModAuditActionEnum) IsValid() bool {
 	switch e {
-	case ModAuditActionEnumEditDelete, ModAuditActionEnumEditAmendment:
+	case ModAuditActionEnumEditDelete, ModAuditActionEnumEditAmendment, ModAuditActionEnumEditCommentDelete:
 		return true
 	}
 	return false
