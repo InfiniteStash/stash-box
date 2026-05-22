@@ -1,11 +1,13 @@
 import type { FC } from "react";
+import { Link } from "react-router-dom";
 
-import { formatDateTime } from "src/utils";
+import { ROUTE_EDIT } from "src/constants/route";
+import { createHref, formatDateTime } from "src/utils";
 
 interface EditCommentDeleteData {
   comment_id: string;
   edit_id: string;
-  comment_user_id: { UUID: string; Valid: boolean } | null;
+  comment_user_id: string | null;
   comment_text: string;
   comment_date: string;
   deleted_by: string;
@@ -27,18 +29,17 @@ const CommentDeleteAuditDetails: FC<{ data: string }> = ({ data }) => {
         <strong>Comment ID:</strong> {parsed.comment_id}
       </div>
       <div className="mb-2">
-        <strong>Edit ID:</strong> {parsed.edit_id}
+        <strong>Edit:</strong>{" "}
+        <Link to={createHref(ROUTE_EDIT, { id: parsed.edit_id })}>
+          {parsed.edit_id}
+        </Link>
       </div>
       <div className="mb-2">
         <strong>Posted:</strong> {formatDateTime(parsed.comment_date)}
       </div>
       <div className="mb-2">
         <strong>Author ID:</strong>{" "}
-        {parsed.comment_user_id?.Valid ? (
-          parsed.comment_user_id.UUID
-        ) : (
-          <em>Deleted User</em>
-        )}
+        {parsed.comment_user_id ?? <em>Deleted User</em>}
       </div>
       <div className="mt-3">
         <strong>Comment:</strong>

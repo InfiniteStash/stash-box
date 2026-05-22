@@ -1035,3 +1035,23 @@ func (c *graphqlClient) amendEdit(input models.AmendEditInput) (bool, error) {
 
 	return resp.AmendEdit.ID != uuid.Nil, nil
 }
+
+func (c *graphqlClient) deleteEditComment(input models.DeleteEditCommentInput) (bool, error) {
+	q := `
+	mutation DeleteEditComment($input: DeleteEditCommentInput!) {
+		deleteEditComment(input: $input) {
+			id
+		}
+	}`
+
+	var resp struct {
+		DeleteEditComment struct {
+			ID uuid.UUID
+		}
+	}
+	if err := c.Post(q, &resp, client.Var("input", input)); err != nil {
+		return false, err
+	}
+
+	return resp.DeleteEditComment.ID != uuid.Nil, nil
+}
