@@ -13,6 +13,7 @@ const baseSite = {
   url: "https://existing.org",
   regex: "(https?://example\\.org/.*)",
   valid_types: [ValidSiteTypeEnum.SCENE],
+  highlighted: true,
   created: "2024-01-01",
   updated: "2024-01-01",
   icon: "",
@@ -52,6 +53,8 @@ describe("SiteForm", () => {
         url: "https://example.org",
         regex: "(https?://example\\.org/.*)",
         valid_types: [ValidSiteTypeEnum.SCENE],
+        category_id: null,
+        highlighted: true,
       });
     });
 
@@ -125,6 +128,21 @@ describe("SiteForm", () => {
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
       expect(callback).toHaveBeenCalledWith(
         expect.objectContaining({ regex: "(new-regex)" }),
+      );
+    });
+
+    it("disables highlighting", async () => {
+      const callback = vi.fn();
+      const { user } = renderForm(
+        <SiteForm site={baseSite} callback={callback} />,
+      );
+      const toggle = screen.getByLabelText("Highlight links");
+      expect(toggle).toBeChecked();
+      await user.click(toggle);
+      await user.click(screen.getByRole("button", { name: "Save" }));
+      await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({ highlighted: false }),
       );
     });
 

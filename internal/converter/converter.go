@@ -364,6 +364,7 @@ func SiteCreateInputToSite(input models.SiteCreateInput) models.Site {
 		Regex:       input.Regex,
 		ValidTypes:  validTypes,
 		CategoryID:  categoryID,
+		Highlighted: input.Highlighted,
 	}
 }
 
@@ -394,6 +395,8 @@ func UpdateSiteFromUpdateInput(site *models.Site, input models.SiteUpdateInput) 
 	if input.CategoryID != nil {
 		site.CategoryID = uuid.NullUUID{UUID: *input.CategoryID, Valid: true}
 	}
+
+	site.Highlighted = input.Highlighted
 }
 
 // StudioCreateInputToCreateParams converts a models.StudioCreateInput to a queries.CreateStudioParams

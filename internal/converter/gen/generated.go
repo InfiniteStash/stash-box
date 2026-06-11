@@ -161,6 +161,7 @@ func (c *CreateParamsConverterImpl) ConvertSiteToCreateParams(source models.Site
 		}
 	}
 	queriesCreateSiteParams.CategoryID = c.uuidNullUUIDToUuidNullUUID(source.CategoryID)
+	queriesCreateSiteParams.Highlighted = source.Highlighted
 	return queriesCreateSiteParams
 }
 func (c *CreateParamsConverterImpl) ConvertStudioToCreateParams(source models.Studio) queries.CreateStudioParams {
@@ -712,6 +713,7 @@ func (c *ModelConverterImpl) ConvertSite(source queries.Site) models.Site {
 		}
 	}
 	modelsSite.CategoryID = c.uuidNullUUIDToUuidNullUUID2(source.CategoryID)
+	modelsSite.Highlighted = source.Highlighted
 	modelsSite.CreatedAt = ConvertTime(source.CreatedAt)
 	modelsSite.UpdatedAt = ConvertTime(source.UpdatedAt)
 	return modelsSite
@@ -1121,6 +1123,7 @@ func (c *UpdateParamsConverterImpl) ConvertSiteToUpdateParams(source models.Site
 		}
 	}
 	queriesUpdateSiteParams.CategoryID = c.uuidNullUUIDToUuidNullUUID3(source.CategoryID)
+	queriesUpdateSiteParams.Highlighted = source.Highlighted
 	return queriesUpdateSiteParams
 }
 func (c *UpdateParamsConverterImpl) ConvertStudioToUpdateParams(source models.Studio) queries.UpdateStudioParams {

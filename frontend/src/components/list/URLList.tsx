@@ -30,12 +30,17 @@ const renderURL = (u: URL) => (
 );
 
 const URLList: FC<URLListProps> = ({ urls }) => {
+  const sortedURLs = sortBy(urls, [
+    (u) => u.site?.name.toLowerCase(),
+    (u) => u.url,
+  ]);
   const hasCategories = urls.some((u) => u.site?.category);
 
-  if (!hasCategories) return <ul className="URLList">{urls.map(renderURL)}</ul>;
+  if (!hasCategories)
+    return <ul className="URLList">{sortedURLs.map(renderURL)}</ul>;
 
   const groups = sortBy(
-    Object.values(groupBy(urls, (u) => u.site?.category?.id ?? "")),
+    Object.values(groupBy(sortedURLs, (u) => u.site?.category?.id ?? "")),
     [
       (group) => (group[0].site?.category ? 0 : 1),
       (group) => group[0].site?.category?.sort_order ?? 0,
