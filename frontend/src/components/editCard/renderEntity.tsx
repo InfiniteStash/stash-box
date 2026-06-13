@@ -15,13 +15,13 @@ type CreditAppearance = {
     Appearance["performer"],
     "name" | "id" | "gender" | "disambiguation" | "deleted"
   >;
-  credit_role?: {
+  credit_type?: {
     id: number;
     name: string;
     description?: string;
   };
-  tags?: Array<{
-    id: string;
+  attributes?: Array<{
+    id: number;
     name: string;
     description?: string | null;
   }>;
@@ -36,17 +36,15 @@ export const renderPerformer = (appearance: CreditAppearance) => (
       </Link>
     </div>
     <div>
-      {appearance.credit_role && (
-        <span className="badge bg-secondary">
-          {appearance.credit_role.name}
+      {appearance.credit_type && (
+        <span className="badge bg-secondary me-1">
+          {appearance.credit_type.name}
         </span>
       )}
-      {appearance.tags?.map((tag) => (
-        <TagLink
-          title={tag.name}
-          link={tagHref(tag)}
-          description={tag.description}
-        />
+      {appearance.attributes?.map((attr) => (
+        <span key={attr.id} className="badge bg-info me-1">
+          {attr.name}
+        </span>
       ))}
     </div>
   </div>

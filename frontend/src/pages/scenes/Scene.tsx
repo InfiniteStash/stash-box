@@ -51,7 +51,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
     navigate({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
 
   const performers = scene.credits
-    .filter((c) => c.credit_role.name === "Performer")
+    .filter((c) => c.credit_type.id === 1)
     .map(({ performer, as }) => (
       <Link
         key={performer.id}

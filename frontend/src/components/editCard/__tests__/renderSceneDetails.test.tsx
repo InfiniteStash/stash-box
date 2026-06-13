@@ -35,8 +35,8 @@ const credit = (id: string, name: string, as: string | null = null) => ({
     disambiguation: null,
     deleted: false,
   },
-  credit_role: { id: 1, name: "PERFORMANCE", description: "" },
-  tags: [],
+  credit_type: { id: 1, name: "Performer", description: "" },
+  attributes: [],
 });
 
 describe("renderSceneDetails", () => {

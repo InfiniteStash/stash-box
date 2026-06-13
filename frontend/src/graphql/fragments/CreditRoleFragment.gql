@@ -1,5 +1,0 @@
-fragment CreditRoleFragment on CreditRole {
-  id
-  name
-  description
-}

@@ -1,0 +1,12 @@
+#import "../fragments/CreditTypeFragment.gql"
+
+query GetCreditAttributes {
+  getCreditAttributes {
+    id
+    name
+    description
+    credit_types {
+      ...CreditTypeFragment
+    }
+  }
+}

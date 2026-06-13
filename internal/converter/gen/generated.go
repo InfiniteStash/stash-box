@@ -429,27 +429,49 @@ func (c *InputConverterImpl) uuidUUIDToUuidUUID2(source uuid.UUID) uuid.UUID {
 
 type ModelConverterImpl struct{}
 
-func (c *ModelConverterImpl) ConvertCreditRole(source queries.CreditRole) models.CreditRole {
-	var modelsCreditRole models.CreditRole
-	modelsCreditRole.ID = ConvertIntToInt32(source.ID)
-	modelsCreditRole.Name = source.Name
+func (c *ModelConverterImpl) ConvertCreditAttribute(source queries.CreditAttribute) models.CreditAttribute {
+	var modelsCreditAttribute models.CreditAttribute
+	modelsCreditAttribute.ID = ConvertIntToInt32(source.ID)
+	modelsCreditAttribute.Name = source.Name
 	if source.Description != nil {
 		xstring := *source.Description
-		modelsCreditRole.Description = &xstring
+		modelsCreditAttribute.Description = &xstring
 	}
-	modelsCreditRole.CreatedAt = ConvertTime(source.CreatedAt)
-	modelsCreditRole.UpdatedAt = ConvertTime(source.UpdatedAt)
-	return modelsCreditRole
+	modelsCreditAttribute.CreatedAt = ConvertTime(source.CreatedAt)
+	modelsCreditAttribute.UpdatedAt = ConvertTime(source.UpdatedAt)
+	return modelsCreditAttribute
 }
-func (c *ModelConverterImpl) ConvertCreditRoles(source []queries.CreditRole) []models.CreditRole {
-	var modelsCreditRoleList []models.CreditRole
+func (c *ModelConverterImpl) ConvertCreditAttributes(source []queries.CreditAttribute) []models.CreditAttribute {
+	var modelsCreditAttributeList []models.CreditAttribute
 	if source != nil {
-		modelsCreditRoleList = make([]models.CreditRole, len(source))
+		modelsCreditAttributeList = make([]models.CreditAttribute, len(source))
 		for i := 0; i < len(source); i++ {
-			modelsCreditRoleList[i] = c.ConvertCreditRole(source[i])
+			modelsCreditAttributeList[i] = c.ConvertCreditAttribute(source[i])
 		}
 	}
-	return modelsCreditRoleList
+	return modelsCreditAttributeList
+}
+func (c *ModelConverterImpl) ConvertCreditType(source queries.CreditType) models.CreditType {
+	var modelsCreditType models.CreditType
+	modelsCreditType.ID = ConvertIntToInt32(source.ID)
+	modelsCreditType.Name = source.Name
+	if source.Description != nil {
+		xstring := *source.Description
+		modelsCreditType.Description = &xstring
+	}
+	modelsCreditType.CreatedAt = ConvertTime(source.CreatedAt)
+	modelsCreditType.UpdatedAt = ConvertTime(source.UpdatedAt)
+	return modelsCreditType
+}
+func (c *ModelConverterImpl) ConvertCreditTypes(source []queries.CreditType) []models.CreditType {
+	var modelsCreditTypeList []models.CreditType
+	if source != nil {
+		modelsCreditTypeList = make([]models.CreditType, len(source))
+		for i := 0; i < len(source); i++ {
+			modelsCreditTypeList[i] = c.ConvertCreditType(source[i])
+		}
+	}
+	return modelsCreditTypeList
 }
 func (c *ModelConverterImpl) ConvertEdit(source queries.Edit) models.Edit {
 	var modelsEdit models.Edit

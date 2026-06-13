@@ -694,7 +694,7 @@ func (s *performerTestRunner) testQueryPerformersSceneCountSort() {
 		Credits: []models.CreditInput{
 			{
 				PerformerID:  performerWithScenes.UUID(),
-				CreditRoleID: creditRolePerformance,
+				CreditTypeID: creditRolePerformance,
 			},
 		},
 	})

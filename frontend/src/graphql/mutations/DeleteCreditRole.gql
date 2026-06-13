@@ -1,3 +1,0 @@
-mutation DeleteCreditRole($input: CreditRoleDestroyInput!) {
-  creditRoleDestroy(input: $input)
-}

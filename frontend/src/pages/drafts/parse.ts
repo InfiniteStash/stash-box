@@ -142,13 +142,13 @@ export const parseSceneDraft = (
           res.push({
             performer: p,
             as: "",
-            credit_role: {
-              __typename: "CreditRole",
+            credit_type: {
+              __typename: "CreditType",
               id: 1,
               name: "Performer",
               description: "Default role",
             },
-            tags: [],
+            attributes: [],
             __typename: "SceneCredit",
           });
         return res;

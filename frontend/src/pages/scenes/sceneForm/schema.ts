@@ -75,13 +75,13 @@ export const SceneSchema = yup.object({
             .nullable()
             .oneOf([null, ...Object.keys(GenderEnum)]),
           deleted: yup.bool().required(),
-          creditRoleId: yup.number().required(),
-          creditRoleName: yup.string().required(),
-          tags: yup
+          creditTypeId: yup.number().required(),
+          creditTypeName: yup.string().required(),
+          attributes: yup
             .array()
             .of(
               yup.object({
-                id: yup.string().required(),
+                id: yup.number().required(),
                 name: yup.string().required(),
                 description: yup.string().nullable().optional(),
               }),

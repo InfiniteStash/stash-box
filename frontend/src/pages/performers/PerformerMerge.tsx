@@ -116,7 +116,7 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
               <PerformerSelect
                 performers={[]}
                 onChange={(performers) => setMergeSources(performers)}
-                message="Search for performers to merge..."
+                message="Search for people to merge..."
                 excludePerformers={[
                   performer.id,
                   ...mergeSources.map((p) => p.id),

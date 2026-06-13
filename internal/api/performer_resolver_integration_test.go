@@ -119,7 +119,7 @@ func (s *performerResolverTestRunner) testPerformerSceneCount() {
 		Credits: []models.CreditInput{
 			{
 				PerformerID:  performerID,
-				CreditRoleID: int32(1), // PERFORMANCE role ID
+				CreditTypeID: int32(1), // PERFORMANCE role ID
 			},
 		},
 	})
@@ -151,7 +151,7 @@ func (s *performerResolverTestRunner) testPerformerScenes() {
 	scene1, err := s.resolver.Mutation().SceneCreate(s.ctx, models.SceneCreateInput{
 		Date: "2020-01-01",
 		Credits: []models.CreditInput{
-			{PerformerID: performerID, CreditRoleID: int32(1)}, // PERFORMANCE role ID
+			{PerformerID: performerID, CreditTypeID: int32(1)}, // PERFORMANCE role ID
 		},
 	})
 	assert.NoError(s.t, err)
@@ -159,7 +159,7 @@ func (s *performerResolverTestRunner) testPerformerScenes() {
 	scene2, err := s.resolver.Mutation().SceneCreate(s.ctx, models.SceneCreateInput{
 		Date: "2020-02-02",
 		Credits: []models.CreditInput{
-			{PerformerID: performerID, CreditRoleID: int32(1)}, // PERFORMANCE role ID
+			{PerformerID: performerID, CreditTypeID: int32(1)}, // PERFORMANCE role ID
 		},
 	})
 	assert.NoError(s.t, err)
@@ -219,7 +219,7 @@ func (s *performerResolverTestRunner) testPerformerStudios() {
 		Date:     "2020-01-01",
 		StudioID: &studio1.ID,
 		Credits: []models.CreditInput{
-			{PerformerID: performerID, CreditRoleID: int32(1)}, // PERFORMANCE role ID
+			{PerformerID: performerID, CreditTypeID: int32(1)}, // PERFORMANCE role ID
 		},
 	})
 	assert.NoError(s.t, err)
@@ -229,7 +229,7 @@ func (s *performerResolverTestRunner) testPerformerStudios() {
 		Date:     "2020-02-02",
 		StudioID: &studio2.ID,
 		Credits: []models.CreditInput{
-			{PerformerID: performerID, CreditRoleID: int32(1)}, // PERFORMANCE role ID
+			{PerformerID: performerID, CreditTypeID: int32(1)}, // PERFORMANCE role ID
 		},
 	})
 	assert.NoError(s.t, err)

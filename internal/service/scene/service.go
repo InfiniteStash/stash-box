@@ -941,18 +941,21 @@ func updateTags(ctx context.Context, tx *queries.Queries, sceneID uuid.UUID, tag
 }
 
 func createCredits(ctx context.Context, tx *queries.Queries, sceneID uuid.UUID, credits []models.CreditInput) error {
-	var params []queries.CreateSceneCreditsParams
 	for _, credit := range credits {
-		params = append(params, queries.CreateSceneCreditsParams{
+		c, err := tx.CreateSceneCredit(ctx, queries.CreateSceneCreditParams{
 			SceneID:      sceneID,
 			PerformerID:  credit.PerformerID,
-			CreditRoleID: int(credit.CreditRoleID),
+			CreditTypeID: int(credit.CreditTypeID),
 			As:           credit.As,
 		})
+		if err != nil {
+			return err
+		}
+		if err := createCreditAttributes(ctx, tx, c.ID, credit.AttributeIDs); err != nil {
+			return err
+		}
 	}
-
-	_, err := tx.CreateSceneCredits(ctx, params)
-	return err
+	return nil
 }
 
 func updateCredits(ctx context.Context, tx *queries.Queries, sceneID uuid.UUID, credits []models.CreditInput) error {

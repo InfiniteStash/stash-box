@@ -1,0 +1,12 @@
+#import "../fragments/CreditTypeFragment.gql"
+
+mutation UpdateCreditAttribute($input: CreditAttributeUpdateInput!) {
+  creditAttributeUpdate(input: $input) {
+    id
+    name
+    description
+    credit_types {
+      ...CreditTypeFragment
+    }
+  }
+}

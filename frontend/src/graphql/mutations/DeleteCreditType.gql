@@ -1,0 +1,3 @@
+mutation DeleteCreditType($input: CreditTypeDestroyInput!) {
+  creditTypeDestroy(input: $input)
+}

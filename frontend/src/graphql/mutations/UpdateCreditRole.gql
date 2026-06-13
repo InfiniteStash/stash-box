@@ -1,7 +1,0 @@
-mutation UpdateCreditRole($input: CreditRoleUpdateInput!) {
-  creditRoleUpdate(input: $input) {
-    id
-    name
-    description
-  }
-}

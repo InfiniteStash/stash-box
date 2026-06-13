@@ -41,14 +41,15 @@ export type InitialScene = {
           gender?: GenderEnum | null;
           deleted: boolean;
         };
-        credit_role: {
+        credit_type: {
           id: number;
           name: string;
           description: string;
         };
-        tags: {
-          id: string;
+        attributes: {
+          id: number;
           name: string;
+          description?: string | null;
         }[];
       }[]
     | null;

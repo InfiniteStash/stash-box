@@ -482,7 +482,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithoutAliases() {
 	creditRolePerformance := int32(1) // PERFORMANCE role ID
 	sceneCredit := models.CreditInput{
 		PerformerID:  createdPerformer.UUID(),
-		CreditRoleID: creditRolePerformance,
+		CreditTypeID: creditRolePerformance,
 	}
 
 	sceneInput := models.SceneCreateInput{
@@ -546,7 +546,7 @@ func (s *performerEditTestRunner) testApplyModifyPerformerWithAliases() {
 	creditRolePerformance := int32(1) // PERFORMANCE role ID
 	sceneCredit := models.CreditInput{
 		PerformerID:  createdPerformer.UUID(),
-		CreditRoleID: creditRolePerformance,
+		CreditTypeID: creditRolePerformance,
 	}
 
 	sceneInput := models.SceneCreateInput{
@@ -656,7 +656,7 @@ func (s *performerEditTestRunner) testApplyDestroyPerformerEdit() {
 	creditRolePerformance := int32(1) // PERFORMANCE role ID
 	credit := models.CreditInput{
 		PerformerID:  performerID,
-		CreditRoleID: creditRolePerformance,
+		CreditTypeID: creditRolePerformance,
 	}
 	sceneInput := models.SceneCreateInput{
 		Credits: []models.CreditInput{credit},
@@ -709,15 +709,15 @@ func (s *performerEditTestRunner) testApplyMergePerformerEdit() {
 	creditRolePerformance := int32(1) // PERFORMANCE role ID
 	mergeSource1Credit := models.CreditInput{
 		PerformerID:  mergeSource1.UUID(),
-		CreditRoleID: creditRolePerformance,
+		CreditTypeID: creditRolePerformance,
 	}
 	mergeSource2Credit := models.CreditInput{
 		PerformerID:  mergeSource2.UUID(),
-		CreditRoleID: creditRolePerformance,
+		CreditTypeID: creditRolePerformance,
 	}
 	mergeTargetCredit := models.CreditInput{
 		PerformerID:  mergeTarget.UUID(),
-		CreditRoleID: creditRolePerformance,
+		CreditTypeID: creditRolePerformance,
 	}
 	// Scene with performer from both source and target, should not cause db unique error
 	sceneInput := models.SceneCreateInput{
@@ -847,7 +847,7 @@ func (s *performerEditTestRunner) testApplyMergePerformerEditWithoutAlias() {
 	creditRolePerformance := int32(1) // PERFORMANCE role ID
 	mergeSourceCredit := models.CreditInput{
 		PerformerID:  mergeSource.UUID(),
-		CreditRoleID: creditRolePerformance,
+		CreditTypeID: creditRolePerformance,
 	}
 
 	sceneInput := models.SceneCreateInput{

@@ -23,13 +23,13 @@ type SceneCredit = {
     "id" | "name" | "gender" | "disambiguation" | "deleted"
   >;
   as?: string | null;
-  credit_role: {
+  credit_type: {
     id: number;
     name: string;
     description: string;
   };
-  tags: Array<{
-    id: string;
+  attributes: Array<{
+    id: number;
     name: string;
     description?: string | null;
   }>;
@@ -58,21 +58,21 @@ const selectSceneDetails = (
                 deleted: c.deleted ?? false,
               },
               as: c.alias || null,
-              credit_role: {
-                id: c.creditRoleId,
-                name: c.creditRoleName,
+              credit_type: {
+                id: c.creditTypeId,
+                name: c.creditTypeName,
                 description: "",
               },
-              tags: c.tags ?? [],
+              attributes: c.attributes ?? [],
             },
           ]
         : [],
     ),
     original?.credits ?? [],
     (s) =>
-      `${s.performer.id}|${s.credit_role.id}|${s.as ?? ""}|${s.tags
-        .map((t) => t.id)
-        .sort()
+      `${s.performer.id}|${s.credit_type.id}|${s.as ?? ""}|${s.attributes
+        .map((a) => a.id)
+        .sort((x, y) => x - y)
         .join(",")}`,
   );
 

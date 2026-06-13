@@ -1,0 +1,7 @@
+mutation CreateCreditType($input: CreditTypeCreateInput!) {
+  creditTypeCreate(input: $input) {
+    id
+    name
+    description
+  }
+}

@@ -13,15 +13,15 @@ import (
 
 const createSceneCredit = `-- name: CreateSceneCredit :one
 
-INSERT INTO scene_credits (scene_id, performer_id, credit_role_id, "as")
+INSERT INTO scene_credits (scene_id, performer_id, credit_type_id, "as")
 VALUES ($1, $2, $3, $4)
-RETURNING id, scene_id, performer_id, credit_role_id, "as"
+RETURNING id, scene_id, performer_id, credit_type_id, "as"
 `
 
 type CreateSceneCreditParams struct {
 	SceneID      uuid.UUID `db:"scene_id" json:"scene_id"`
 	PerformerID  uuid.UUID `db:"performer_id" json:"performer_id"`
-	CreditRoleID int       `db:"credit_role_id" json:"credit_role_id"`
+	CreditTypeID int       `db:"credit_type_id" json:"credit_type_id"`
 	As           *string   `db:"as" json:"as"`
 }
 
@@ -30,7 +30,7 @@ func (q *Queries) CreateSceneCredit(ctx context.Context, arg CreateSceneCreditPa
 	row := q.db.QueryRow(ctx, createSceneCredit,
 		arg.SceneID,
 		arg.PerformerID,
-		arg.CreditRoleID,
+		arg.CreditTypeID,
 		arg.As,
 	)
 	var i SceneCredit
@@ -38,31 +38,31 @@ func (q *Queries) CreateSceneCredit(ctx context.Context, arg CreateSceneCreditPa
 		&i.ID,
 		&i.SceneID,
 		&i.PerformerID,
-		&i.CreditRoleID,
+		&i.CreditTypeID,
 		&i.As,
 	)
 	return i, err
 }
 
-type CreateSceneCreditTagsParams struct {
-	SceneCreditID int       `db:"scene_credit_id" json:"scene_credit_id"`
-	TagID         uuid.UUID `db:"tag_id" json:"tag_id"`
+type CreateSceneCreditAttributesParams struct {
+	SceneCreditID     int `db:"scene_credit_id" json:"scene_credit_id"`
+	CreditAttributeID int `db:"credit_attribute_id" json:"credit_attribute_id"`
 }
 
 type CreateSceneCreditsParams struct {
 	SceneID      uuid.UUID `db:"scene_id" json:"scene_id"`
 	PerformerID  uuid.UUID `db:"performer_id" json:"performer_id"`
-	CreditRoleID int       `db:"credit_role_id" json:"credit_role_id"`
+	CreditTypeID int       `db:"credit_type_id" json:"credit_type_id"`
 	As           *string   `db:"as" json:"as"`
 }
 
-const deleteSceneCreditTags = `-- name: DeleteSceneCreditTags :exec
-DELETE FROM scene_credit_tags
+const deleteSceneCreditAttributes = `-- name: DeleteSceneCreditAttributes :exec
+DELETE FROM scene_credit_attributes
 WHERE scene_credit_id = $1
 `
 
-func (q *Queries) DeleteSceneCreditTags(ctx context.Context, sceneCreditID int) error {
-	_, err := q.db.Exec(ctx, deleteSceneCreditTags, sceneCreditID)
+func (q *Queries) DeleteSceneCreditAttributes(ctx context.Context, sceneCreditID int) error {
+	_, err := q.db.Exec(ctx, deleteSceneCreditAttributes, sceneCreditID)
 	return err
 }
 
@@ -75,43 +75,36 @@ func (q *Queries) DeleteSceneCredits(ctx context.Context, sceneID uuid.UUID) err
 	return err
 }
 
-const findCreditTagsBySceneIds = `-- name: FindCreditTagsBySceneIds :many
-SELECT sc.scene_id, sc.performer_id, sc.credit_role_id, t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id
-FROM scene_credit_tags sct
-JOIN scene_credits sc ON sct.scene_credit_id = sc.id
-JOIN tags t ON sct.tag_id = t.id
-WHERE sc.scene_id = ANY($1::UUID[])
-ORDER BY sc.scene_id, sc.performer_id, sc.credit_role_id, t.name
+const findCreditAttributesBySceneCreditIds = `-- name: FindCreditAttributesBySceneCreditIds :many
+SELECT sca.scene_credit_id, ca.id, ca.name, ca.description, ca.created_at, ca.updated_at
+FROM scene_credit_attributes sca
+JOIN credit_attributes ca ON sca.credit_attribute_id = ca.id
+WHERE sca.scene_credit_id = ANY($1::INT[])
+ORDER BY sca.scene_credit_id, ca.name
 `
 
-type FindCreditTagsBySceneIdsRow struct {
-	SceneID      uuid.UUID `db:"scene_id" json:"scene_id"`
-	PerformerID  uuid.UUID `db:"performer_id" json:"performer_id"`
-	CreditRoleID int       `db:"credit_role_id" json:"credit_role_id"`
-	Tag          Tag       `db:"tag" json:"tag"`
+type FindCreditAttributesBySceneCreditIdsRow struct {
+	SceneCreditID   int             `db:"scene_credit_id" json:"scene_credit_id"`
+	CreditAttribute CreditAttribute `db:"credit_attribute" json:"credit_attribute"`
 }
 
-// Get all credit tags for multiple scenes (for DataLoader)
-func (q *Queries) FindCreditTagsBySceneIds(ctx context.Context, sceneIds []uuid.UUID) ([]FindCreditTagsBySceneIdsRow, error) {
-	rows, err := q.db.Query(ctx, findCreditTagsBySceneIds, sceneIds)
+// Get attributes for multiple scene credits, keyed by scene_credit_id (for DataLoader)
+func (q *Queries) FindCreditAttributesBySceneCreditIds(ctx context.Context, sceneCreditIds []int) ([]FindCreditAttributesBySceneCreditIdsRow, error) {
+	rows, err := q.db.Query(ctx, findCreditAttributesBySceneCreditIds, sceneCreditIds)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []FindCreditTagsBySceneIdsRow{}
+	items := []FindCreditAttributesBySceneCreditIdsRow{}
 	for rows.Next() {
-		var i FindCreditTagsBySceneIdsRow
+		var i FindCreditAttributesBySceneCreditIdsRow
 		if err := rows.Scan(
-			&i.SceneID,
-			&i.PerformerID,
-			&i.CreditRoleID,
-			&i.Tag.ID,
-			&i.Tag.Name,
-			&i.Tag.Description,
-			&i.Tag.CreatedAt,
-			&i.Tag.UpdatedAt,
-			&i.Tag.Deleted,
-			&i.Tag.CategoryID,
+			&i.SceneCreditID,
+			&i.CreditAttribute.ID,
+			&i.CreditAttribute.Name,
+			&i.CreditAttribute.Description,
+			&i.CreditAttribute.CreatedAt,
+			&i.CreditAttribute.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -124,7 +117,7 @@ func (q *Queries) FindCreditTagsBySceneIds(ctx context.Context, sceneIds []uuid.
 }
 
 const findSceneCreditsByIds = `-- name: FindSceneCreditsByIds :many
-SELECT id, scene_id, performer_id, credit_role_id, "as"
+SELECT id, scene_id, performer_id, credit_type_id, "as"
 FROM scene_credits
 WHERE scene_id = ANY($1::UUID[])
 ORDER BY scene_id
@@ -144,7 +137,7 @@ func (q *Queries) FindSceneCreditsByIds(ctx context.Context, sceneIds []uuid.UUI
 			&i.ID,
 			&i.SceneID,
 			&i.PerformerID,
-			&i.CreditRoleID,
+			&i.CreditTypeID,
 			&i.As,
 		); err != nil {
 			return nil, err
@@ -158,7 +151,7 @@ func (q *Queries) FindSceneCreditsByIds(ctx context.Context, sceneIds []uuid.UUI
 }
 
 const getSceneCredits = `-- name: GetSceneCredits :many
-SELECT id, scene_id, performer_id, credit_role_id, "as" FROM scene_credits WHERE scene_id = $1
+SELECT id, scene_id, performer_id, credit_type_id, "as" FROM scene_credits WHERE scene_id = $1
 `
 
 func (q *Queries) GetSceneCredits(ctx context.Context, sceneID uuid.UUID) ([]SceneCredit, error) {
@@ -174,7 +167,7 @@ func (q *Queries) GetSceneCredits(ctx context.Context, sceneID uuid.UUID) ([]Sce
 			&i.ID,
 			&i.SceneID,
 			&i.PerformerID,
-			&i.CreditRoleID,
+			&i.CreditTypeID,
 			&i.As,
 		); err != nil {
 			return nil, err
@@ -187,18 +180,18 @@ func (q *Queries) GetSceneCredits(ctx context.Context, sceneID uuid.UUID) ([]Sce
 	return items, nil
 }
 
-const getSceneCreditsByRole = `-- name: GetSceneCreditsByRole :many
-SELECT id, scene_id, performer_id, credit_role_id, "as" FROM scene_credits WHERE scene_id = $1 AND credit_role_id = $2
+const getSceneCreditsByType = `-- name: GetSceneCreditsByType :many
+SELECT id, scene_id, performer_id, credit_type_id, "as" FROM scene_credits WHERE scene_id = $1 AND credit_type_id = $2
 `
 
-type GetSceneCreditsByRoleParams struct {
+type GetSceneCreditsByTypeParams struct {
 	SceneID      uuid.UUID `db:"scene_id" json:"scene_id"`
-	CreditRoleID int       `db:"credit_role_id" json:"credit_role_id"`
+	CreditTypeID int       `db:"credit_type_id" json:"credit_type_id"`
 }
 
-// Get scene credits filtered by role
-func (q *Queries) GetSceneCreditsByRole(ctx context.Context, arg GetSceneCreditsByRoleParams) ([]SceneCredit, error) {
-	rows, err := q.db.Query(ctx, getSceneCreditsByRole, arg.SceneID, arg.CreditRoleID)
+// Get scene credits filtered by credit type
+func (q *Queries) GetSceneCreditsByType(ctx context.Context, arg GetSceneCreditsByTypeParams) ([]SceneCredit, error) {
+	rows, err := q.db.Query(ctx, getSceneCreditsByType, arg.SceneID, arg.CreditTypeID)
 	if err != nil {
 		return nil, err
 	}
@@ -210,48 +203,8 @@ func (q *Queries) GetSceneCreditsByRole(ctx context.Context, arg GetSceneCredits
 			&i.ID,
 			&i.SceneID,
 			&i.PerformerID,
-			&i.CreditRoleID,
+			&i.CreditTypeID,
 			&i.As,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getTagsForCredit = `-- name: GetTagsForCredit :many
-SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.deleted, t.category_id
-FROM scene_credit_tags sct
-JOIN tags t ON sct.tag_id = t.id
-WHERE sct.scene_credit_id = $1
-ORDER BY t.name ASC
-`
-
-type GetTagsForCreditRow struct {
-	Tag Tag `db:"tag" json:"tag"`
-}
-
-func (q *Queries) GetTagsForCredit(ctx context.Context, sceneCreditID int) ([]GetTagsForCreditRow, error) {
-	rows, err := q.db.Query(ctx, getTagsForCredit, sceneCreditID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []GetTagsForCreditRow{}
-	for rows.Next() {
-		var i GetTagsForCreditRow
-		if err := rows.Scan(
-			&i.Tag.ID,
-			&i.Tag.Name,
-			&i.Tag.Description,
-			&i.Tag.CreatedAt,
-			&i.Tag.UpdatedAt,
-			&i.Tag.Deleted,
-			&i.Tag.CategoryID,
 		); err != nil {
 			return nil, err
 		}

@@ -66,9 +66,9 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 		if err := queryhelper.ApplyMultiIDCriterion(&query, "scenes", "scene_credits", "scene_id", "performer_id", input.Performers); err != nil {
 			return query, err
 		}
-		// Filter by credit role if specified
-		if input.CreditRoleID != nil {
-			query = query.Where(sq.Eq{"scene_credits.credit_role_id": *input.CreditRoleID})
+		// Filter by credit type if specified
+		if input.CreditTypeID != nil {
+			query = query.Where(sq.Eq{"scene_credits.credit_type_id": *input.CreditTypeID})
 		}
 	}
 

@@ -828,7 +828,7 @@ func (s *testRunner) createFullSceneCreateInput() *models.SceneCreateInput {
 		Credits: []models.CreditInput{
 			{
 				PerformerID:  director.UUID(),
-				CreditRoleID: creditRoleDirector,
+				CreditTypeID: creditRoleDirector,
 				As:           &directorAs,
 			},
 		},
@@ -871,7 +871,7 @@ func (s *testRunner) createSceneEditDetailsInput() *models.SceneEditDetailsInput
 		Credits: []models.CreditInput{
 			{
 				PerformerID:  director.UUID(),
-				CreditRoleID: creditRoleDirector,
+				CreditTypeID: creditRoleDirector,
 				As:           &directorAs,
 			},
 		},
@@ -927,12 +927,12 @@ func (s *testRunner) createFullSceneEditDetailsInput() *models.SceneEditDetailsI
 		Credits: []models.CreditInput{
 			{
 				PerformerID:  createdPerformer.UUID(),
-				CreditRoleID: creditRolePerformance,
+				CreditTypeID: creditRolePerformance,
 				As:           &as,
 			},
 			{
 				PerformerID:  directorPerformer.UUID(),
-				CreditRoleID: creditRoleDirector,
+				CreditTypeID: creditRoleDirector,
 				As:           &directorAs,
 			},
 		},
@@ -1073,7 +1073,7 @@ func compareCredits(input []models.CreditInput, credits []sceneCredit) bool {
 			return false
 		}
 
-		if int32(v.CreditRole.ID) != input[i].CreditRoleID {
+		if int32(v.CreditType.ID) != input[i].CreditTypeID {
 			return false
 		}
 
@@ -1102,7 +1102,7 @@ func compareCreditsInput(input, credits []models.CreditInput) bool {
 			return false
 		}
 
-		if v.CreditRoleID != input[i].CreditRoleID {
+		if v.CreditTypeID != input[i].CreditTypeID {
 			return false
 		}
 

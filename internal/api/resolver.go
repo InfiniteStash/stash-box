@@ -117,8 +117,11 @@ func (r *Resolver) ModAudit() models.ModAuditResolver {
 func (r *Resolver) ClusterSceneSubmission() models.ClusterSceneSubmissionResolver {
 	return &clusterSceneSubmissionResolver{r}
 }
-func (r *Resolver) CreditRole() models.CreditRoleResolver {
-	return &creditRoleResolver{r}
+func (r *Resolver) CreditType() models.CreditTypeResolver {
+	return &creditTypeResolver{r}
+}
+func (r *Resolver) CreditAttribute() models.CreditAttributeResolver {
+	return &creditAttributeResolver{r}
 }
 
 type mutationResolver struct{ *Resolver }

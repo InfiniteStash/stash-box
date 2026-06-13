@@ -76,7 +76,7 @@ export const ScenePairings: FC<Props> = ({ id }) => {
       <Form.Control
         id="performer-name"
         onChange={(e) => debouncedHandler("query", e.currentTarget.value)}
-        placeholder="Filter performer name"
+        placeholder="Filter person name"
         defaultValue={params.query}
         className="w-auto"
       />

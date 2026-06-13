@@ -1,0 +1,12 @@
+#import "../fragments/CreditTypeFragment.gql"
+
+mutation CreateCreditAttribute($input: CreditAttributeCreateInput!) {
+  creditAttributeCreate(input: $input) {
+    id
+    name
+    description
+    credit_types {
+      ...CreditTypeFragment
+    }
+  }
+}

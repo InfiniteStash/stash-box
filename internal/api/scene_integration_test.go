@@ -51,7 +51,7 @@ func (s *sceneTestRunner) testCreateScene() {
 		Credits: []models.CreditInput{
 			{
 				PerformerID:  performerID,
-				CreditRoleID: int32(1), // PERFORMANCE role ID
+				CreditTypeID: int32(1), // PERFORMANCE role ID
 				As:           &performerAlias,
 			},
 		},
@@ -137,7 +137,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 		Credits: []models.CreditInput{
 			{
 				PerformerID:  performerID,
-				CreditRoleID: int32(1), // PERFORMANCE role ID
+				CreditTypeID: int32(1), // PERFORMANCE role ID
 				As:           &performerAlias,
 			},
 		},
@@ -185,7 +185,7 @@ func (s *sceneTestRunner) testUpdateScene() {
 		Credits: []models.CreditInput{
 			{
 				PerformerID:  performerID,
-				CreditRoleID: int32(1), // PERFORMANCE role ID
+				CreditTypeID: int32(1), // PERFORMANCE role ID
 				As:           &performerAlias,
 			},
 		},
@@ -612,7 +612,7 @@ func (s *sceneTestRunner) testQueryScenesByPerformer() {
 		Credits: []models.CreditInput{
 			{
 				PerformerID:  performer1ID,
-				CreditRoleID: int32(1), // PERFORMANCE role ID
+				CreditTypeID: int32(1), // PERFORMANCE role ID
 			},
 		},
 		Title: &scene1Title,
@@ -629,7 +629,7 @@ func (s *sceneTestRunner) testQueryScenesByPerformer() {
 
 	input.Credits = append(input.Credits, models.CreditInput{
 		PerformerID:  performer1ID,
-		CreditRoleID: int32(1), // PERFORMANCE role ID
+		CreditTypeID: int32(1), // PERFORMANCE role ID
 	})
 	input.Title = &scene3Title
 	scene3, err := s.createTestScene(&input)

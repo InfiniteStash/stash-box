@@ -69,7 +69,7 @@ func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]mo
 
 	var ret []models.PerformerAppearance
 	for _, credit := range credits {
-		if credit.CreditRoleID != 1 {
+		if credit.CreditTypeID != 1 {
 			continue
 		}
 		performer, err := dataloader.For(ctx).PerformerByID.Load(credit.PerformerID)
@@ -123,7 +123,7 @@ func (r *sceneResolver) Director(ctx context.Context, obj *models.Scene) (*strin
 	const directorRoleID int32 = 2 // DIRECTOR credit role
 	var directorNames []string
 	for _, credit := range credits {
-		if credit.CreditRoleID == directorRoleID {
+		if credit.CreditTypeID == directorRoleID {
 			// Load performer to get name
 			performer, err := dataloader.For(ctx).PerformerByID.Load(credit.PerformerID)
 			if err != nil {

@@ -125,26 +125,26 @@ func TestSceneSearchRankingRegressions(t *testing.T) {
 			t.FailNow()
 		}
 
-		performers := make([]models.PerformerAppearanceInput, 0, len(sc.Performers))
+		credits := make([]models.CreditInput, 0, len(sc.Performers))
 		for _, pref := range sc.Performers {
 			pid, ok := performerIDs[pref.ID]
 			if !assert.True(t, ok, "scene %s references unknown performer %s", sc.ID, pref.ID) {
 				t.FailNow()
 			}
-			app := models.PerformerAppearanceInput{PerformerID: pid}
+			credit := models.CreditInput{PerformerID: pid, CreditTypeID: 1}
 			if pref.As != "" {
 				as := pref.As
-				app.As = &as
+				credit.As = &as
 			}
-			performers = append(performers, app)
+			credits = append(credits, credit)
 		}
 
 		title := sc.Title
 		input := &models.SceneCreateInput{
-			Title:      &title,
-			Date:       sc.Date,
-			StudioID:   &studioID,
-			Performers: performers,
+			Title:    &title,
+			Date:     sc.Date,
+			StudioID: &studioID,
+			Credits:  credits,
 		}
 		if sc.Code != "" {
 			code := sc.Code

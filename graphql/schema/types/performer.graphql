@@ -121,7 +121,7 @@ type Performer {
   """ID of performer that replaces this one"""
   merged_into_id: ID
   studios(studio_id: ID): [PerformerStudio!]!
-  credit_roles: [PerformerCreditRole!]!
+  credit_types: [PerformerCreditType!]!
   is_favorite: Boolean!
   created: Time!
   updated: Time!
@@ -143,14 +143,8 @@ type PerformerStudio {
   scene_count: Int!
 }
 
-type PerformerCreditRole {
-  role: CreditRole!
-  scene_count: Int!
-  tags: [PerformerCreditTag!]!
-}
-
-type PerformerCreditTag {
-  tag: Tag!
+type PerformerCreditType {
+  credit_type: CreditType!
   scene_count: Int!
 }
 

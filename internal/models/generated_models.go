@@ -123,21 +123,36 @@ type CommentVotedEdit struct {
 
 func (CommentVotedEdit) IsNotificationData() {}
 
-type CreditRoleCreateInput struct {
+type CreditAttributeCreateInput struct {
 	Name        string  `json:"name"`
 	Description *string `json:"description,omitempty"`
 }
 
-type CreditRoleDestroyInput struct {
+type CreditAttributeDestroyInput struct {
 	ID int `json:"id"`
 }
 
-type CreditRoleSetTagsInput struct {
-	RoleID int         `json:"role_id"`
-	TagIds []uuid.UUID `json:"tag_ids"`
+type CreditAttributeSetCreditTypesInput struct {
+	AttributeID   int   `json:"attribute_id"`
+	CreditTypeIds []int `json:"credit_type_ids"`
 }
 
-type CreditRoleUpdateInput struct {
+type CreditAttributeUpdateInput struct {
+	ID          int     `json:"id"`
+	Name        *string `json:"name,omitempty"`
+	Description *string `json:"description,omitempty"`
+}
+
+type CreditTypeCreateInput struct {
+	Name        string  `json:"name"`
+	Description *string `json:"description,omitempty"`
+}
+
+type CreditTypeDestroyInput struct {
+	ID int `json:"id"`
+}
+
+type CreditTypeUpdateInput struct {
 	ID          int     `json:"id"`
 	Name        *string `json:"name,omitempty"`
 	Description *string `json:"description,omitempty"`
@@ -490,15 +505,9 @@ type PerformerCreateInput struct {
 	DraftID         *uuid.UUID              `json:"draft_id,omitempty"`
 }
 
-type PerformerCreditRole struct {
-	Role       *CreditRole          `json:"role"`
-	SceneCount int                  `json:"scene_count"`
-	Tags       []PerformerCreditTag `json:"tags"`
-}
-
-type PerformerCreditTag struct {
-	Tag        *Tag `json:"tag"`
-	SceneCount int  `json:"scene_count"`
+type PerformerCreditType struct {
+	CreditType *CreditType `json:"credit_type"`
+	SceneCount int         `json:"scene_count"`
 }
 
 type PerformerDestroyInput struct {
@@ -805,8 +814,8 @@ type SceneQueryInput struct {
 	Tags *MultiIDCriterionInput `json:"tags,omitempty"`
 	// Filter to only include scenes with these performers
 	Performers *MultiIDCriterionInput `json:"performers,omitempty"`
-	// Filter to only include scenes with performers in this credit role
-	CreditRoleID *int `json:"credit_role_id,omitempty"`
+	// Filter to only include scenes with performers credited with this credit type
+	CreditTypeID *int `json:"credit_type_id,omitempty"`
 	// Filter to include scenes with performer appearing as alias
 	Alias *StringCriterionInput `json:"alias,omitempty"`
 	// Filter to only include scenes with these fingerprints

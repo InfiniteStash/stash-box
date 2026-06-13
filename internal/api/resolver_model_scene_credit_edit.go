@@ -12,11 +12,20 @@ func (r *sceneCreditEditResolver) Performer(ctx context.Context, obj *models.Sce
 	return r.services.Performer().FindByID(ctx, obj.PerformerID)
 }
 
-func (r *sceneCreditEditResolver) CreditRole(ctx context.Context, obj *models.SceneCreditEdit) (*models.CreditRole, error) {
-	return r.services.CreditRole().FindByID(ctx, int(obj.CreditRoleID))
+func (r *sceneCreditEditResolver) CreditType(ctx context.Context, obj *models.SceneCreditEdit) (*models.CreditType, error) {
+	return r.services.CreditType().FindByID(ctx, int(obj.CreditTypeID))
 }
 
-func (r *sceneCreditEditResolver) Tags(ctx context.Context, obj *models.SceneCreditEdit) ([]models.Tag, error) {
-	// For edit diffs, convert TagIDs to Tag objects
-	return tagList(ctx, obj.TagIDs)
+func (r *sceneCreditEditResolver) Attributes(ctx context.Context, obj *models.SceneCreditEdit) ([]models.CreditAttribute, error) {
+	attributes := make([]models.CreditAttribute, 0, len(obj.AttributeIDs))
+	for _, id := range obj.AttributeIDs {
+		attr, err := r.services.CreditAttribute().FindByID(ctx, int(id))
+		if err != nil {
+			return nil, err
+		}
+		if attr != nil {
+			attributes = append(attributes, *attr)
+		}
+	}
+	return attributes, nil
 }

@@ -110,7 +110,7 @@ func (ns NullNotificationType) Value() (driver.Value, error) {
 	return string(ns.NotificationType), nil
 }
 
-type CreditRole struct {
+type CreditAttribute struct {
 	ID          int       `db:"id" json:"id"`
 	Name        string    `db:"name" json:"name"`
 	Description *string   `db:"description" json:"description"`
@@ -118,9 +118,17 @@ type CreditRole struct {
 	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }
 
-type CreditRoleTag struct {
-	CreditRoleID int       `db:"credit_role_id" json:"credit_role_id"`
-	TagID        uuid.UUID `db:"tag_id" json:"tag_id"`
+type CreditAttributeType struct {
+	CreditAttributeID int `db:"credit_attribute_id" json:"credit_attribute_id"`
+	CreditTypeID      int `db:"credit_type_id" json:"credit_type_id"`
+}
+
+type CreditType struct {
+	ID          int       `db:"id" json:"id"`
+	Name        string    `db:"name" json:"name"`
+	Description *string   `db:"description" json:"description"`
+	CreatedAt   time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }
 
 type DirectorPerformer struct {
@@ -310,13 +318,13 @@ type SceneCredit struct {
 	ID           int       `db:"id" json:"id"`
 	SceneID      uuid.UUID `db:"scene_id" json:"scene_id"`
 	PerformerID  uuid.UUID `db:"performer_id" json:"performer_id"`
-	CreditRoleID int       `db:"credit_role_id" json:"credit_role_id"`
+	CreditTypeID int       `db:"credit_type_id" json:"credit_type_id"`
 	As           *string   `db:"as" json:"as"`
 }
 
-type SceneCreditTag struct {
-	SceneCreditID int       `db:"scene_credit_id" json:"scene_credit_id"`
-	TagID         uuid.UUID `db:"tag_id" json:"tag_id"`
+type SceneCreditAttribute struct {
+	SceneCreditID     int `db:"scene_credit_id" json:"scene_credit_id"`
+	CreditAttributeID int `db:"credit_attribute_id" json:"credit_attribute_id"`
 }
 
 type SceneEdit struct {

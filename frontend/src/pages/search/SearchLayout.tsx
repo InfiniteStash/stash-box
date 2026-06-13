@@ -64,7 +64,7 @@ export const SearchLayout: FC = () => {
           ref={inputRef}
           defaultValue={term}
           onChange={(e) => handleSearch(e.currentTarget.value)}
-          placeholder="Search for performer or scene"
+          placeholder="Search for person or scene"
           autoFocus
         />
       </Form.Group>

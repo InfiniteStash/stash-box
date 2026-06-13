@@ -24,7 +24,7 @@ export const SearchAll: FC = () => {
   return (
     <Row>
       <Col xs={6}>
-        <h3>Performers</h3>
+        <h3>People</h3>
         <div>
           {data.searchPerformers.performers.map((p) => (
             <PerformerCard performer={p} key={p.id} />

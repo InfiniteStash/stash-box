@@ -358,7 +358,7 @@ ORDER BY p.name;
 WITH edit AS (
   SELECT * FROM edits WHERE edits.id = $1
 ), current_credits AS (
-    SELECT sc.performer_id, sc.credit_role_id, sc."as"
+    SELECT sc.performer_id, sc.credit_type_id, sc."as"
     FROM edit e
     JOIN scene_edits se ON e.id = se.edit_id
     JOIN scene_credits sc ON se.scene_id = sc.scene_id
@@ -367,26 +367,26 @@ WITH edit AS (
 removed_credits AS (
     SELECT
         (elem->>'performer_id')::uuid AS performer_id,
-        (elem->>'credit_role_id')::int AS credit_role_id,
+        (elem->>'credit_type_id')::int AS credit_type_id,
         elem->>'as' AS "as"
     FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'removed_credits', '[]'::jsonb)) AS elem
 ),
 added_credits AS (
     SELECT
         (elem->>'performer_id')::uuid AS performer_id,
-        (elem->>'credit_role_id')::int AS credit_role_id,
+        (elem->>'credit_type_id')::int AS credit_type_id,
         elem->>'as' AS "as"
     FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'added_credits', '[]'::jsonb)) AS elem
 ),
 final_credits AS (
-    SELECT performer_id, credit_role_id, "as" FROM current_credits
+    SELECT performer_id, credit_type_id, "as" FROM current_credits
     EXCEPT
-    SELECT performer_id, credit_role_id, "as" FROM removed_credits
+    SELECT performer_id, credit_type_id, "as" FROM removed_credits
     UNION
-    SELECT performer_id, credit_role_id, "as" FROM added_credits
+    SELECT performer_id, credit_type_id, "as" FROM added_credits
 )
-SELECT fc.performer_id, fc.credit_role_id, fc."as" FROM final_credits fc
-ORDER BY fc.credit_role_id, fc.performer_id;
+SELECT fc.performer_id, fc.credit_type_id, fc."as" FROM final_credits fc
+ORDER BY fc.credit_type_id, fc.performer_id;
 
 -- name: GetMergedStudioAliasesForEdit :many
 -- Gets current aliases for target studio entity and merges with edit's added_aliases/removed_aliases

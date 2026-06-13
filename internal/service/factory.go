@@ -21,7 +21,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stashapp/stash-box/internal/email"
 	"github.com/stashapp/stash-box/internal/queries"
-	"github.com/stashapp/stash-box/internal/service/credit_role"
+	creditattribute "github.com/stashapp/stash-box/internal/service/credit_attribute"
+	credittype "github.com/stashapp/stash-box/internal/service/credit_type"
 	"github.com/stashapp/stash-box/internal/service/draft"
 	"github.com/stashapp/stash-box/internal/service/edit"
 	"github.com/stashapp/stash-box/internal/service/fingerprint"
@@ -59,9 +60,14 @@ func (f *Factory) Tag() *tag.Tag {
 	return tag.NewTag(queries.New(f.db), f.withTxn)
 }
 
-// CreditRole returns a CreditRoleService instance
-func (f *Factory) CreditRole() *credit.CreditRole {
-	return credit.NewCreditRole(queries.New(f.db), f.withTxn)
+// CreditType returns a CreditTypeService instance
+func (f *Factory) CreditType() *credittype.CreditType {
+	return credittype.NewCreditType(queries.New(f.db), f.withTxn)
+}
+
+// CreditAttribute returns a CreditAttributeService instance
+func (f *Factory) CreditAttribute() *creditattribute.CreditAttribute {
+	return creditattribute.NewCreditAttribute(queries.New(f.db), f.withTxn)
 }
 
 // Performer returns a PerformerService instance

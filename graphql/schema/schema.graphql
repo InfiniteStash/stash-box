@@ -44,7 +44,8 @@ type Query {
   findSiteCategory(id: Int!): SiteCategory @hasRole(role: READ)
   querySiteCategories: QuerySiteCategoriesResultType! @hasRole(role: READ)
 
-  getCreditRoles: [CreditRole!]!
+  getCreditTypes: [CreditType!]!
+  getCreditAttributes: [CreditAttribute!]!
 
   #### Edits ####
 
@@ -221,11 +222,16 @@ type Mutation {
   """Update notification subscriptions for current user."""
   updateNotificationSubscriptions(subscriptions: [NotificationEnum!]!): Boolean! @hasRole(role: READ)
 
-  """Scene Credits"""
-  creditRoleCreate(input: CreditRoleCreateInput!): CreditRole! @hasRole(role: ADMIN)
-  creditRoleUpdate(input: CreditRoleUpdateInput!): CreditRole! @hasRole(role: ADMIN)
-  creditRoleDestroy(input: CreditRoleDestroyInput!): Boolean! @hasRole(role: ADMIN)
-  creditRoleSetTags(input: CreditRoleSetTagsInput!): CreditRole! @hasRole(role: ADMIN)
+  """Credit Types"""
+  creditTypeCreate(input: CreditTypeCreateInput!): CreditType! @hasRole(role: ADMIN)
+  creditTypeUpdate(input: CreditTypeUpdateInput!): CreditType! @hasRole(role: ADMIN)
+  creditTypeDestroy(input: CreditTypeDestroyInput!): Boolean! @hasRole(role: ADMIN)
+
+  """Credit Attributes"""
+  creditAttributeCreate(input: CreditAttributeCreateInput!): CreditAttribute! @hasRole(role: ADMIN)
+  creditAttributeUpdate(input: CreditAttributeUpdateInput!): CreditAttribute! @hasRole(role: ADMIN)
+  creditAttributeDestroy(input: CreditAttributeDestroyInput!): Boolean! @hasRole(role: ADMIN)
+  creditAttributeSetCreditTypes(input: CreditAttributeSetCreditTypesInput!): CreditAttribute! @hasRole(role: ADMIN)
 }
 
 schema {

@@ -1,0 +1,5 @@
+fragment CreditAttributeFragment on CreditAttribute {
+  id
+  name
+  description
+}

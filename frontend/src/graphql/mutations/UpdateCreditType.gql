@@ -1,0 +1,7 @@
+mutation UpdateCreditType($input: CreditTypeUpdateInput!) {
+  creditTypeUpdate(input: $input) {
+    id
+    name
+    description
+  }
+}

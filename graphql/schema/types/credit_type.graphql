@@ -1,0 +1,52 @@
+type CreditType {
+  id: Int!
+  name: String!
+  description: String!
+  created: Time!
+  updated: Time!
+}
+
+input CreditTypeCreateInput {
+  name: String!
+  description: String
+}
+
+input CreditTypeUpdateInput {
+  id: Int!
+  name: String
+  description: String
+}
+
+input CreditTypeDestroyInput {
+  id: Int!
+}
+
+type CreditAttribute {
+  id: Int!
+  name: String!
+  description: String!
+  """Credit types this attribute may be applied to"""
+  credit_types: [CreditType!]!
+  created: Time!
+  updated: Time!
+}
+
+input CreditAttributeCreateInput {
+  name: String!
+  description: String
+}
+
+input CreditAttributeUpdateInput {
+  id: Int!
+  name: String
+  description: String
+}
+
+input CreditAttributeDestroyInput {
+  id: Int!
+}
+
+input CreditAttributeSetCreditTypesInput {
+  attribute_id: Int!
+  credit_type_ids: [Int!]!
+}

@@ -22,15 +22,15 @@ type performerAppearance struct {
 	As *string `json:"as"`
 }
 
-type creditRole struct {
+type creditType struct {
 	ID int `json:"id"`
 }
 
 type sceneCredit struct {
-	Performer  *idObject   `json:"performer"`
-	CreditRole *creditRole `json:"credit_role"`
-	As         *string     `json:"as"`
-	Tags       []idObject  `json:"tags"`
+	Performer  *idObject    `json:"performer"`
+	CreditType *creditType  `json:"credit_type"`
+	As         *string      `json:"as"`
+	Attributes []creditType `json:"attributes"`
 }
 
 type fingerprint struct {

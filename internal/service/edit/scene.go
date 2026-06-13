@@ -527,9 +527,54 @@ func (m *SceneEditProcessor) getOrCreateFingerprintID(hash models.FingerprintHas
 
 // Credit-related functions
 
-type sceneCreditWithTags struct {
+type sceneCreditWithAttributes struct {
 	queries.SceneCredit
-	TagIDs []uuid.UUID
+	AttributeIDs []int32
+}
+
+func creditAsString(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
+
+// creditContentKey identifies a credit by its content (performer, type, alias).
+func creditContentKey(performerID uuid.UUID, creditTypeID int32, as *string) string {
+	return fmt.Sprintf("%s|%d|%s", performerID, creditTypeID, creditAsString(as))
+}
+
+// sameAttributeSet reports whether two attribute-id sets are equal (order-independent).
+func sameAttributeSet(a, b []int32) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	counts := make(map[int32]int, len(a))
+	for _, id := range a {
+		counts[id]++
+	}
+	for _, id := range b {
+		counts[id]--
+		if counts[id] < 0 {
+			return false
+		}
+	}
+	return true
+}
+
+func (m *SceneEditProcessor) loadCreditAttributes(creditIDs []int) (map[int][]int32, error) {
+	result := make(map[int][]int32)
+	if len(creditIDs) == 0 {
+		return result, nil
+	}
+	rows, err := m.queries.FindCreditAttributesBySceneCreditIds(m.context, creditIDs)
+	if err != nil {
+		return nil, err
+	}
+	for _, row := range rows {
+		result[row.SceneCreditID] = append(result[row.SceneCreditID], int32(row.CreditAttribute.ID))
+	}
+	return result, nil
 }
 
 func (m *SceneEditProcessor) diffCredits(sceneEdit *models.SceneEditData, sceneID uuid.UUID, newCredits []models.CreditInput) error {
@@ -538,29 +583,24 @@ func (m *SceneEditProcessor) diffCredits(sceneEdit *models.SceneEditData, sceneI
 		return err
 	}
 
-	// Get credit tags for this scene
-	creditTags, err := m.queries.FindCreditTagsBySceneIds(m.context, []uuid.UUID{sceneID})
+	var creditIDs []int
+	for _, credit := range existingCredits {
+		if credit.SceneID == sceneID {
+			creditIDs = append(creditIDs, credit.ID)
+		}
+	}
+
+	attrsByCreditID, err := m.loadCreditAttributes(creditIDs)
 	if err != nil {
 		return err
 	}
 
-	// Build a map of (performerID, roleID) -> tags
-	creditTagsMap := make(map[string][]uuid.UUID)
-	for _, ct := range creditTags {
-		if ct.SceneID == sceneID {
-			key := ct.PerformerID.String() + "|" + fmt.Sprintf("%d", ct.CreditRoleID)
-			creditTagsMap[key] = append(creditTagsMap[key], ct.Tag.ID)
-		}
-	}
-
-	// Filter credits for this scene and attach tags
-	var existingCreditInputs []sceneCreditWithTags
+	var existingCreditInputs []sceneCreditWithAttributes
 	for _, credit := range existingCredits {
 		if credit.SceneID == sceneID {
-			key := credit.PerformerID.String() + "|" + fmt.Sprintf("%d", credit.CreditRoleID)
-			existingCreditInputs = append(existingCreditInputs, sceneCreditWithTags{
-				SceneCredit: credit,
-				TagIDs:      creditTagsMap[key],
+			existingCreditInputs = append(existingCreditInputs, sceneCreditWithAttributes{
+				SceneCredit:  credit,
+				AttributeIDs: attrsByCreditID[credit.ID],
 			})
 		}
 	}
@@ -569,64 +609,19 @@ func (m *SceneEditProcessor) diffCredits(sceneEdit *models.SceneEditData, sceneI
 	return nil
 }
 
-func creditCompare(subject []models.CreditInput, against []sceneCreditWithTags) (added []models.CreditInput, missing []models.CreditInput) {
-	eq := func(s models.CreditInput, a sceneCreditWithTags) bool {
-		if s.PerformerID == a.PerformerID && s.CreditRoleID == int32(a.CreditRoleID) {
-			sAs := ""
-			if s.As != nil {
-				sAs = *s.As
-			}
-
-			aAs := ""
-			if a.As != nil {
-				aAs = *a.As
-			}
-
-			if sAs != aAs {
-				return false
-			}
-
-			// Compare tags
-			if len(s.TagIDs) != len(a.TagIDs) {
-				return false
-			}
-
-			// Create a map for efficient tag comparison
-			aTagMap := make(map[uuid.UUID]bool)
-			for _, tagID := range a.TagIDs {
-				aTagMap[tagID] = true
-			}
-
-			for _, tagID := range s.TagIDs {
-				if !aTagMap[tagID] {
-					return false
-				}
-			}
-
-			return true
-		}
-
-		return false
+func creditCompare(subject []models.CreditInput, against []sceneCreditWithAttributes) (added []models.CreditInput, missing []models.CreditInput) {
+	eq := func(s models.CreditInput, a sceneCreditWithAttributes) bool {
+		return s.PerformerID == a.PerformerID &&
+			s.CreditTypeID == int32(a.CreditTypeID) &&
+			creditAsString(s.As) == creditAsString(a.As) &&
+			sameAttributeSet(s.AttributeIDs, a.AttributeIDs)
 	}
 
 	eqI := func(s, a models.CreditInput) bool {
-		if s.PerformerID == a.PerformerID && s.CreditRoleID == a.CreditRoleID {
-			if s.As == a.As {
-				// Also check tags
-				if len(s.TagIDs) != len(a.TagIDs) {
-					return false
-				}
-				return true
-			}
-
-			if s.As == nil || a.As == nil {
-				return false
-			}
-
-			return *s.As == *a.As
-		}
-
-		return false
+		return s.PerformerID == a.PerformerID &&
+			s.CreditTypeID == a.CreditTypeID &&
+			creditAsString(s.As) == creditAsString(a.As) &&
+			sameAttributeSet(s.AttributeIDs, a.AttributeIDs)
 	}
 
 	for _, s := range subject {
@@ -656,19 +651,20 @@ func creditCompare(subject []models.CreditInput, against []sceneCreditWithTags) 
 			}
 		}
 
+		removed := models.CreditInput{
+			PerformerID:  s.PerformerID,
+			CreditTypeID: int32(s.CreditTypeID),
+			As:           s.As,
+			AttributeIDs: s.AttributeIDs,
+		}
 		for _, a := range missing {
-			if a.PerformerID == s.PerformerID && a.CreditRoleID == int32(s.CreditRoleID) {
+			if eqI(removed, a) {
 				removedMod = false
 			}
 		}
 
 		if removedMod {
-			missing = append(missing, models.CreditInput{
-				PerformerID:  s.PerformerID,
-				CreditRoleID: int32(s.CreditRoleID),
-				As:           s.As,
-				TagIDs:       s.TagIDs,
-			})
+			missing = append(missing, removed)
 		}
 	}
 	return
@@ -680,71 +676,71 @@ func (m *SceneEditProcessor) updateCreditsFromEdit(scene *models.Scene, data *mo
 		return err
 	}
 
-	// Get current credit tags before deletion (for credits that aren't being modified)
-	currentCreditTags, err := m.queries.FindCreditTagsBySceneIds(m.context, []uuid.UUID{scene.ID})
+	// Current credits + attributes, keyed by content, so unmodified credits keep their attributes.
+	existingCredits, err := m.queries.FindSceneCreditsByIds(m.context, []uuid.UUID{scene.ID})
 	if err != nil {
 		return err
 	}
-
-	// Build a map of current credit tags
-	currentTagsMap := make(map[string][]uuid.UUID)
-	for _, ct := range currentCreditTags {
-		key := ct.PerformerID.String() + "|" + fmt.Sprintf("%d", ct.CreditRoleID)
-		currentTagsMap[key] = append(currentTagsMap[key], ct.Tag.ID)
+	var existingIDs []int
+	creditKeyByID := make(map[int]string)
+	for _, credit := range existingCredits {
+		if credit.SceneID == scene.ID {
+			existingIDs = append(existingIDs, credit.ID)
+			creditKeyByID[credit.ID] = creditContentKey(credit.PerformerID, int32(credit.CreditTypeID), credit.As)
+		}
 	}
 
-	// Build a map of tags from added_credits (for new/modified credits)
-	addedTagsMap := make(map[string][]uuid.UUID)
+	attrsByCreditID, err := m.loadCreditAttributes(existingIDs)
+	if err != nil {
+		return err
+	}
+	currentAttrsMap := make(map[string][]int32)
+	for creditID, attrs := range attrsByCreditID {
+		currentAttrsMap[creditKeyByID[creditID]] = attrs
+	}
+
+	// Attributes from added_credits (new/modified credits).
+	addedAttrsMap := make(map[string][]int32)
 	for _, addedCredit := range data.New.AddedCredits {
-		key := addedCredit.PerformerID.String() + "|" + fmt.Sprintf("%d", addedCredit.CreditRoleID)
-		addedTagsMap[key] = addedCredit.TagIDs
+		key := creditContentKey(addedCredit.PerformerID, addedCredit.CreditTypeID, addedCredit.As)
+		addedAttrsMap[key] = addedCredit.AttributeIDs
 	}
 
-	// Delete existing credits (cascade will handle tags)
+	// Delete existing credits (cascade will handle attributes).
 	if err := m.queries.DeleteSceneCredits(m.context, scene.ID); err != nil {
 		return err
 	}
 
-	// Create new credits and track their IDs for tag assignment
-	creditIDMap := make(map[string]int) // key: "performerID|roleID", value: credit.ID
 	for _, credit := range credits {
 		newCredit, err := m.queries.CreateSceneCredit(m.context, queries.CreateSceneCreditParams{
 			SceneID:      scene.ID,
 			PerformerID:  credit.PerformerID,
-			CreditRoleID: int(credit.CreditRoleID),
+			CreditTypeID: int(credit.CreditTypeID),
 			As:           credit.As,
 		})
 		if err != nil {
 			return err
 		}
-		key := credit.PerformerID.String() + "|" + fmt.Sprintf("%d", credit.CreditRoleID)
-		creditIDMap[key] = newCredit.ID
-	}
 
-	// Assign tags to credits
-	var creditTags []queries.CreateSceneCreditTagsParams
-	for key, creditID := range creditIDMap {
-		// Prefer tags from added_credits (for new/modified credits)
-		// Fall back to current tags (for unmodified credits)
-		var tagIDs []uuid.UUID
-		if tags, exists := addedTagsMap[key]; exists {
-			tagIDs = tags
-		} else if tags, exists := currentTagsMap[key]; exists {
-			tagIDs = tags
+		key := creditContentKey(credit.PerformerID, int32(credit.CreditTypeID), credit.As)
+		var attrIDs []int32
+		if attrs, ok := addedAttrsMap[key]; ok {
+			attrIDs = attrs
+		} else if attrs, ok := currentAttrsMap[key]; ok {
+			attrIDs = attrs
 		}
 
-		for _, tagID := range tagIDs {
-			creditTags = append(creditTags, queries.CreateSceneCreditTagsParams{
-				SceneCreditID: creditID,
-				TagID:         tagID,
-			})
-		}
-	}
-
-	if len(creditTags) > 0 {
-		_, err = m.queries.CreateSceneCreditTags(m.context, creditTags)
-		if err != nil {
-			return err
+		if len(attrIDs) > 0 {
+			params := make([]queries.CreateSceneCreditAttributesParams, 0, len(attrIDs))
+			for _, attrID := range attrIDs {
+				params = append(params, queries.CreateSceneCreditAttributesParams{
+					SceneCreditID:     newCredit.ID,
+					CreditAttributeID: int(attrID),
+				})
+			}
+			if _, err := m.queries.CreateSceneCreditAttributes(m.context, params); err != nil {
+				return err
+			}
 		}
 	}
 

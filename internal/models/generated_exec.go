@@ -30,7 +30,8 @@ type Config = graphql.Config[ResolverRoot, DirectiveRoot, ComplexityRoot]
 
 type ResolverRoot interface {
 	ClusterSceneSubmission() ClusterSceneSubmissionResolver
-	CreditRole() CreditRoleResolver
+	CreditAttribute() CreditAttributeResolver
+	CreditType() CreditTypeResolver
 	Draft() DraftResolver
 	Edit() EditResolver
 	EditComment() EditCommentResolver
@@ -107,13 +108,21 @@ type ComplexityRoot struct {
 		Comment func(childComplexity int) int
 	}
 
-	CreditRole struct {
+	CreditAttribute struct {
+		Created     func(childComplexity int) int
+		CreditTypes func(childComplexity int) int
+		Description func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Name        func(childComplexity int) int
+		Updated     func(childComplexity int) int
+	}
+
+	CreditType struct {
 		Created     func(childComplexity int) int
 		Description func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Name        func(childComplexity int) int
 		Updated     func(childComplexity int) int
-		ValidTags   func(childComplexity int) int
 	}
 
 	DownvoteOwnEdit struct {
@@ -293,10 +302,13 @@ type ComplexityRoot struct {
 		CancelEdit                        func(childComplexity int, input CancelEditInput) int
 		ChangePassword                    func(childComplexity int, input UserChangePasswordInput) int
 		ConfirmChangeEmail                func(childComplexity int, token uuid.UUID) int
-		CreditRoleCreate                  func(childComplexity int, input CreditRoleCreateInput) int
-		CreditRoleDestroy                 func(childComplexity int, input CreditRoleDestroyInput) int
-		CreditRoleSetTags                 func(childComplexity int, input CreditRoleSetTagsInput) int
-		CreditRoleUpdate                  func(childComplexity int, input CreditRoleUpdateInput) int
+		CreditAttributeCreate             func(childComplexity int, input CreditAttributeCreateInput) int
+		CreditAttributeDestroy            func(childComplexity int, input CreditAttributeDestroyInput) int
+		CreditAttributeSetCreditTypes     func(childComplexity int, input CreditAttributeSetCreditTypesInput) int
+		CreditAttributeUpdate             func(childComplexity int, input CreditAttributeUpdateInput) int
+		CreditTypeCreate                  func(childComplexity int, input CreditTypeCreateInput) int
+		CreditTypeDestroy                 func(childComplexity int, input CreditTypeDestroyInput) int
+		CreditTypeUpdate                  func(childComplexity int, input CreditTypeUpdateInput) int
 		DeleteEdit                        func(childComplexity int, input DeleteEditInput) int
 		DestroyDraft                      func(childComplexity int, id uuid.UUID) int
 		EditComment                       func(childComplexity int, input EditCommentInput) int
@@ -377,7 +389,7 @@ type ComplexityRoot struct {
 		CareerStartYear func(childComplexity int) int
 		Country         func(childComplexity int) int
 		Created         func(childComplexity int) int
-		CreditRoles     func(childComplexity int) int
+		CreditTypes     func(childComplexity int) int
 		CupSize         func(childComplexity int) int
 		DeathDate       func(childComplexity int) int
 		Deleted         func(childComplexity int) int
@@ -411,15 +423,9 @@ type ComplexityRoot struct {
 		Performer func(childComplexity int) int
 	}
 
-	PerformerCreditRole struct {
-		Role       func(childComplexity int) int
+	PerformerCreditType struct {
+		CreditType func(childComplexity int) int
 		SceneCount func(childComplexity int) int
-		Tags       func(childComplexity int) int
-	}
-
-	PerformerCreditTag struct {
-		SceneCount func(childComplexity int) int
-		Tag        func(childComplexity int) int
 	}
 
 	PerformerDraft struct {
@@ -511,7 +517,8 @@ type ComplexityRoot struct {
 		FindUser                      func(childComplexity int, id *uuid.UUID, username *string) int
 		FingerprintClusters           func(childComplexity int, input FingerprintClustersInput) int
 		GetConfig                     func(childComplexity int) int
-		GetCreditRoles                func(childComplexity int) int
+		GetCreditAttributes           func(childComplexity int) int
+		GetCreditTypes                func(childComplexity int) int
 		GetUnreadNotificationCount    func(childComplexity int) int
 		Me                            func(childComplexity int) int
 		QueryEdits                    func(childComplexity int, input EditQueryInput) int
@@ -627,16 +634,16 @@ type ComplexityRoot struct {
 
 	SceneCredit struct {
 		As         func(childComplexity int) int
-		CreditRole func(childComplexity int) int
+		Attributes func(childComplexity int) int
+		CreditType func(childComplexity int) int
 		Performer  func(childComplexity int) int
-		Tags       func(childComplexity int) int
 	}
 
 	SceneCreditEdit struct {
 		As         func(childComplexity int) int
-		CreditRole func(childComplexity int) int
+		Attributes func(childComplexity int) int
+		CreditType func(childComplexity int) int
 		Performer  func(childComplexity int) int
-		Tags       func(childComplexity int) int
 	}
 
 	SceneDraft struct {
@@ -843,10 +850,14 @@ type ComplexityRoot struct {
 type ClusterSceneSubmissionResolver interface {
 	Scene(ctx context.Context, obj *ClusterSceneSubmission) (*Scene, error)
 }
-type CreditRoleResolver interface {
-	ValidTags(ctx context.Context, obj *CreditRole) ([]Tag, error)
-	Created(ctx context.Context, obj *CreditRole) (*time.Time, error)
-	Updated(ctx context.Context, obj *CreditRole) (*time.Time, error)
+type CreditAttributeResolver interface {
+	CreditTypes(ctx context.Context, obj *CreditAttribute) ([]CreditType, error)
+	Created(ctx context.Context, obj *CreditAttribute) (*time.Time, error)
+	Updated(ctx context.Context, obj *CreditAttribute) (*time.Time, error)
+}
+type CreditTypeResolver interface {
+	Created(ctx context.Context, obj *CreditType) (*time.Time, error)
+	Updated(ctx context.Context, obj *CreditType) (*time.Time, error)
 }
 type DraftResolver interface {
 	Created(ctx context.Context, obj *Draft) (*time.Time, error)
@@ -962,10 +973,13 @@ type MutationResolver interface {
 	FavoriteStudio(ctx context.Context, id uuid.UUID, favorite bool) (bool, error)
 	MarkNotificationsRead(ctx context.Context, notification *MarkNotificationReadInput) (bool, error)
 	UpdateNotificationSubscriptions(ctx context.Context, subscriptions []NotificationEnum) (bool, error)
-	CreditRoleCreate(ctx context.Context, input CreditRoleCreateInput) (*CreditRole, error)
-	CreditRoleUpdate(ctx context.Context, input CreditRoleUpdateInput) (*CreditRole, error)
-	CreditRoleDestroy(ctx context.Context, input CreditRoleDestroyInput) (bool, error)
-	CreditRoleSetTags(ctx context.Context, input CreditRoleSetTagsInput) (*CreditRole, error)
+	CreditTypeCreate(ctx context.Context, input CreditTypeCreateInput) (*CreditType, error)
+	CreditTypeUpdate(ctx context.Context, input CreditTypeUpdateInput) (*CreditType, error)
+	CreditTypeDestroy(ctx context.Context, input CreditTypeDestroyInput) (bool, error)
+	CreditAttributeCreate(ctx context.Context, input CreditAttributeCreateInput) (*CreditAttribute, error)
+	CreditAttributeUpdate(ctx context.Context, input CreditAttributeUpdateInput) (*CreditAttribute, error)
+	CreditAttributeDestroy(ctx context.Context, input CreditAttributeDestroyInput) (bool, error)
+	CreditAttributeSetCreditTypes(ctx context.Context, input CreditAttributeSetCreditTypesInput) (*CreditAttribute, error)
 }
 type NotificationResolver interface {
 	Created(ctx context.Context, obj *Notification) (*time.Time, error)
@@ -993,7 +1007,7 @@ type PerformerResolver interface {
 	MergedIds(ctx context.Context, obj *Performer) ([]uuid.UUID, error)
 	MergedIntoID(ctx context.Context, obj *Performer) (*uuid.UUID, error)
 	Studios(ctx context.Context, obj *Performer, studioID *uuid.UUID) ([]PerformerStudio, error)
-	CreditRoles(ctx context.Context, obj *Performer) ([]PerformerCreditRole, error)
+	CreditTypes(ctx context.Context, obj *Performer) ([]PerformerCreditType, error)
 	IsFavorite(ctx context.Context, obj *Performer) (bool, error)
 }
 type PerformerDraftResolver interface {
@@ -1035,7 +1049,8 @@ type QueryResolver interface {
 	QuerySites(ctx context.Context) (*QuerySitesResultType, error)
 	FindSiteCategory(ctx context.Context, id int) (*SiteCategory, error)
 	QuerySiteCategories(ctx context.Context) (*QuerySiteCategoriesResultType, error)
-	GetCreditRoles(ctx context.Context) ([]CreditRole, error)
+	GetCreditTypes(ctx context.Context) ([]CreditType, error)
+	GetCreditAttributes(ctx context.Context) ([]CreditAttribute, error)
 	FindEdit(ctx context.Context, id uuid.UUID) (*Edit, error)
 	QueryEdits(ctx context.Context, input EditQueryInput) (*EditQuery, error)
 	FindUser(ctx context.Context, id *uuid.UUID, username *string) (*User, error)
@@ -1104,15 +1119,15 @@ type SceneResolver interface {
 }
 type SceneCreditResolver interface {
 	Performer(ctx context.Context, obj *SceneCredit) (*Performer, error)
-	CreditRole(ctx context.Context, obj *SceneCredit) (*CreditRole, error)
+	CreditType(ctx context.Context, obj *SceneCredit) (*CreditType, error)
 
-	Tags(ctx context.Context, obj *SceneCredit) ([]Tag, error)
+	Attributes(ctx context.Context, obj *SceneCredit) ([]CreditAttribute, error)
 }
 type SceneCreditEditResolver interface {
 	Performer(ctx context.Context, obj *SceneCreditEdit) (*Performer, error)
-	CreditRole(ctx context.Context, obj *SceneCreditEdit) (*CreditRole, error)
+	CreditType(ctx context.Context, obj *SceneCreditEdit) (*CreditType, error)
 
-	Tags(ctx context.Context, obj *SceneCreditEdit) ([]Tag, error)
+	Attributes(ctx context.Context, obj *SceneCreditEdit) ([]CreditAttribute, error)
 }
 type SceneDraftResolver interface {
 	Studio(ctx context.Context, obj *SceneDraft) (SceneDraftStudio, error)
@@ -1308,42 +1323,73 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.CommentVotedEdit.Comment(childComplexity), true
 
-	case "CreditRole.created":
-		if e.ComplexityRoot.CreditRole.Created == nil {
+	case "CreditAttribute.created":
+		if e.ComplexityRoot.CreditAttribute.Created == nil {
 			break
 		}
 
-		return e.ComplexityRoot.CreditRole.Created(childComplexity), true
-	case "CreditRole.description":
-		if e.ComplexityRoot.CreditRole.Description == nil {
+		return e.ComplexityRoot.CreditAttribute.Created(childComplexity), true
+	case "CreditAttribute.credit_types":
+		if e.ComplexityRoot.CreditAttribute.CreditTypes == nil {
 			break
 		}
 
-		return e.ComplexityRoot.CreditRole.Description(childComplexity), true
-	case "CreditRole.id":
-		if e.ComplexityRoot.CreditRole.ID == nil {
+		return e.ComplexityRoot.CreditAttribute.CreditTypes(childComplexity), true
+	case "CreditAttribute.description":
+		if e.ComplexityRoot.CreditAttribute.Description == nil {
 			break
 		}
 
-		return e.ComplexityRoot.CreditRole.ID(childComplexity), true
-	case "CreditRole.name":
-		if e.ComplexityRoot.CreditRole.Name == nil {
+		return e.ComplexityRoot.CreditAttribute.Description(childComplexity), true
+	case "CreditAttribute.id":
+		if e.ComplexityRoot.CreditAttribute.ID == nil {
 			break
 		}
 
-		return e.ComplexityRoot.CreditRole.Name(childComplexity), true
-	case "CreditRole.updated":
-		if e.ComplexityRoot.CreditRole.Updated == nil {
+		return e.ComplexityRoot.CreditAttribute.ID(childComplexity), true
+	case "CreditAttribute.name":
+		if e.ComplexityRoot.CreditAttribute.Name == nil {
 			break
 		}
 
-		return e.ComplexityRoot.CreditRole.Updated(childComplexity), true
-	case "CreditRole.valid_tags":
-		if e.ComplexityRoot.CreditRole.ValidTags == nil {
+		return e.ComplexityRoot.CreditAttribute.Name(childComplexity), true
+	case "CreditAttribute.updated":
+		if e.ComplexityRoot.CreditAttribute.Updated == nil {
 			break
 		}
 
-		return e.ComplexityRoot.CreditRole.ValidTags(childComplexity), true
+		return e.ComplexityRoot.CreditAttribute.Updated(childComplexity), true
+
+	case "CreditType.created":
+		if e.ComplexityRoot.CreditType.Created == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreditType.Created(childComplexity), true
+	case "CreditType.description":
+		if e.ComplexityRoot.CreditType.Description == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreditType.Description(childComplexity), true
+	case "CreditType.id":
+		if e.ComplexityRoot.CreditType.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreditType.ID(childComplexity), true
+	case "CreditType.name":
+		if e.ComplexityRoot.CreditType.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreditType.Name(childComplexity), true
+	case "CreditType.updated":
+		if e.ComplexityRoot.CreditType.Updated == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreditType.Updated(childComplexity), true
 
 	case "DownvoteOwnEdit.edit":
 		if e.ComplexityRoot.DownvoteOwnEdit.Edit == nil {
@@ -1989,50 +2035,83 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.ConfirmChangeEmail(childComplexity, args["token"].(uuid.UUID)), true
-	case "Mutation.creditRoleCreate":
-		if e.ComplexityRoot.Mutation.CreditRoleCreate == nil {
+	case "Mutation.creditAttributeCreate":
+		if e.ComplexityRoot.Mutation.CreditAttributeCreate == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_creditRoleCreate_args(ctx, rawArgs)
+		args, err := ec.field_Mutation_creditAttributeCreate_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.CreditRoleCreate(childComplexity, args["input"].(CreditRoleCreateInput)), true
-	case "Mutation.creditRoleDestroy":
-		if e.ComplexityRoot.Mutation.CreditRoleDestroy == nil {
+		return e.ComplexityRoot.Mutation.CreditAttributeCreate(childComplexity, args["input"].(CreditAttributeCreateInput)), true
+	case "Mutation.creditAttributeDestroy":
+		if e.ComplexityRoot.Mutation.CreditAttributeDestroy == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_creditRoleDestroy_args(ctx, rawArgs)
+		args, err := ec.field_Mutation_creditAttributeDestroy_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.CreditRoleDestroy(childComplexity, args["input"].(CreditRoleDestroyInput)), true
-	case "Mutation.creditRoleSetTags":
-		if e.ComplexityRoot.Mutation.CreditRoleSetTags == nil {
+		return e.ComplexityRoot.Mutation.CreditAttributeDestroy(childComplexity, args["input"].(CreditAttributeDestroyInput)), true
+	case "Mutation.creditAttributeSetCreditTypes":
+		if e.ComplexityRoot.Mutation.CreditAttributeSetCreditTypes == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_creditRoleSetTags_args(ctx, rawArgs)
+		args, err := ec.field_Mutation_creditAttributeSetCreditTypes_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.CreditRoleSetTags(childComplexity, args["input"].(CreditRoleSetTagsInput)), true
-	case "Mutation.creditRoleUpdate":
-		if e.ComplexityRoot.Mutation.CreditRoleUpdate == nil {
+		return e.ComplexityRoot.Mutation.CreditAttributeSetCreditTypes(childComplexity, args["input"].(CreditAttributeSetCreditTypesInput)), true
+	case "Mutation.creditAttributeUpdate":
+		if e.ComplexityRoot.Mutation.CreditAttributeUpdate == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_creditRoleUpdate_args(ctx, rawArgs)
+		args, err := ec.field_Mutation_creditAttributeUpdate_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.CreditRoleUpdate(childComplexity, args["input"].(CreditRoleUpdateInput)), true
+		return e.ComplexityRoot.Mutation.CreditAttributeUpdate(childComplexity, args["input"].(CreditAttributeUpdateInput)), true
+	case "Mutation.creditTypeCreate":
+		if e.ComplexityRoot.Mutation.CreditTypeCreate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_creditTypeCreate_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreditTypeCreate(childComplexity, args["input"].(CreditTypeCreateInput)), true
+	case "Mutation.creditTypeDestroy":
+		if e.ComplexityRoot.Mutation.CreditTypeDestroy == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_creditTypeDestroy_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreditTypeDestroy(childComplexity, args["input"].(CreditTypeDestroyInput)), true
+	case "Mutation.creditTypeUpdate":
+		if e.ComplexityRoot.Mutation.CreditTypeUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_creditTypeUpdate_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreditTypeUpdate(childComplexity, args["input"].(CreditTypeUpdateInput)), true
 	case "Mutation.deleteEdit":
 		if e.ComplexityRoot.Mutation.DeleteEdit == nil {
 			break
@@ -2769,12 +2848,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Performer.Created(childComplexity), true
-	case "Performer.credit_roles":
-		if e.ComplexityRoot.Performer.CreditRoles == nil {
+	case "Performer.credit_types":
+		if e.ComplexityRoot.Performer.CreditTypes == nil {
 			break
 		}
 
-		return e.ComplexityRoot.Performer.CreditRoles(childComplexity), true
+		return e.ComplexityRoot.Performer.CreditTypes(childComplexity), true
 	case "Performer.cup_size":
 		if e.ComplexityRoot.Performer.CupSize == nil {
 			break
@@ -2955,37 +3034,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.PerformerAppearance.Performer(childComplexity), true
 
-	case "PerformerCreditRole.role":
-		if e.ComplexityRoot.PerformerCreditRole.Role == nil {
+	case "PerformerCreditType.credit_type":
+		if e.ComplexityRoot.PerformerCreditType.CreditType == nil {
 			break
 		}
 
-		return e.ComplexityRoot.PerformerCreditRole.Role(childComplexity), true
-	case "PerformerCreditRole.scene_count":
-		if e.ComplexityRoot.PerformerCreditRole.SceneCount == nil {
+		return e.ComplexityRoot.PerformerCreditType.CreditType(childComplexity), true
+	case "PerformerCreditType.scene_count":
+		if e.ComplexityRoot.PerformerCreditType.SceneCount == nil {
 			break
 		}
 
-		return e.ComplexityRoot.PerformerCreditRole.SceneCount(childComplexity), true
-	case "PerformerCreditRole.tags":
-		if e.ComplexityRoot.PerformerCreditRole.Tags == nil {
-			break
-		}
-
-		return e.ComplexityRoot.PerformerCreditRole.Tags(childComplexity), true
-
-	case "PerformerCreditTag.scene_count":
-		if e.ComplexityRoot.PerformerCreditTag.SceneCount == nil {
-			break
-		}
-
-		return e.ComplexityRoot.PerformerCreditTag.SceneCount(childComplexity), true
-	case "PerformerCreditTag.tag":
-		if e.ComplexityRoot.PerformerCreditTag.Tag == nil {
-			break
-		}
-
-		return e.ComplexityRoot.PerformerCreditTag.Tag(childComplexity), true
+		return e.ComplexityRoot.PerformerCreditType.SceneCount(childComplexity), true
 
 	case "PerformerDraft.aliases":
 		if e.ComplexityRoot.PerformerDraft.Aliases == nil {
@@ -3495,12 +3555,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.GetConfig(childComplexity), true
-	case "Query.getCreditRoles":
-		if e.ComplexityRoot.Query.GetCreditRoles == nil {
+	case "Query.getCreditAttributes":
+		if e.ComplexityRoot.Query.GetCreditAttributes == nil {
 			break
 		}
 
-		return e.ComplexityRoot.Query.GetCreditRoles(childComplexity), true
+		return e.ComplexityRoot.Query.GetCreditAttributes(childComplexity), true
+	case "Query.getCreditTypes":
+		if e.ComplexityRoot.Query.GetCreditTypes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Query.GetCreditTypes(childComplexity), true
 	case "Query.getUnreadNotificationCount":
 		if e.ComplexityRoot.Query.GetUnreadNotificationCount == nil {
 			break
@@ -4022,24 +4088,24 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.SceneCredit.As(childComplexity), true
-	case "SceneCredit.credit_role":
-		if e.ComplexityRoot.SceneCredit.CreditRole == nil {
+	case "SceneCredit.attributes":
+		if e.ComplexityRoot.SceneCredit.Attributes == nil {
 			break
 		}
 
-		return e.ComplexityRoot.SceneCredit.CreditRole(childComplexity), true
+		return e.ComplexityRoot.SceneCredit.Attributes(childComplexity), true
+	case "SceneCredit.credit_type":
+		if e.ComplexityRoot.SceneCredit.CreditType == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SceneCredit.CreditType(childComplexity), true
 	case "SceneCredit.performer":
 		if e.ComplexityRoot.SceneCredit.Performer == nil {
 			break
 		}
 
 		return e.ComplexityRoot.SceneCredit.Performer(childComplexity), true
-	case "SceneCredit.tags":
-		if e.ComplexityRoot.SceneCredit.Tags == nil {
-			break
-		}
-
-		return e.ComplexityRoot.SceneCredit.Tags(childComplexity), true
 
 	case "SceneCreditEdit.as":
 		if e.ComplexityRoot.SceneCreditEdit.As == nil {
@@ -4047,24 +4113,24 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.SceneCreditEdit.As(childComplexity), true
-	case "SceneCreditEdit.credit_role":
-		if e.ComplexityRoot.SceneCreditEdit.CreditRole == nil {
+	case "SceneCreditEdit.attributes":
+		if e.ComplexityRoot.SceneCreditEdit.Attributes == nil {
 			break
 		}
 
-		return e.ComplexityRoot.SceneCreditEdit.CreditRole(childComplexity), true
+		return e.ComplexityRoot.SceneCreditEdit.Attributes(childComplexity), true
+	case "SceneCreditEdit.credit_type":
+		if e.ComplexityRoot.SceneCreditEdit.CreditType == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SceneCreditEdit.CreditType(childComplexity), true
 	case "SceneCreditEdit.performer":
 		if e.ComplexityRoot.SceneCreditEdit.Performer == nil {
 			break
 		}
 
 		return e.ComplexityRoot.SceneCreditEdit.Performer(childComplexity), true
-	case "SceneCreditEdit.tags":
-		if e.ComplexityRoot.SceneCreditEdit.Tags == nil {
-			break
-		}
-
-		return e.ComplexityRoot.SceneCreditEdit.Tags(childComplexity), true
 
 	case "SceneDraft.code":
 		if e.ComplexityRoot.SceneDraft.Code == nil {
@@ -5003,11 +5069,14 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputBodyModificationInput,
 		ec.unmarshalInputBreastTypeCriterionInput,
 		ec.unmarshalInputCancelEditInput,
+		ec.unmarshalInputCreditAttributeCreateInput,
+		ec.unmarshalInputCreditAttributeDestroyInput,
+		ec.unmarshalInputCreditAttributeSetCreditTypesInput,
+		ec.unmarshalInputCreditAttributeUpdateInput,
 		ec.unmarshalInputCreditInput,
-		ec.unmarshalInputCreditRoleCreateInput,
-		ec.unmarshalInputCreditRoleDestroyInput,
-		ec.unmarshalInputCreditRoleSetTagsInput,
-		ec.unmarshalInputCreditRoleUpdateInput,
+		ec.unmarshalInputCreditTypeCreateInput,
+		ec.unmarshalInputCreditTypeDestroyInput,
+		ec.unmarshalInputCreditTypeUpdateInput,
 		ec.unmarshalInputDateCriterionInput,
 		ec.unmarshalInputDeleteEditInput,
 		ec.unmarshalInputDeleteFingerprintSubmissionsInput,
@@ -5181,33 +5250,57 @@ var sources = []*ast.Source{
   require_tag_role: Boolean!
 }
 `, BuiltIn: false},
-	{Name: "../../graphql/schema/types/credit_role.graphql", Input: `type CreditRole {
+	{Name: "../../graphql/schema/types/credit_type.graphql", Input: `type CreditType {
   id: Int!
   name: String!
   description: String!
-  valid_tags: [Tag!]!
   created: Time!
   updated: Time!
 }
 
-input CreditRoleCreateInput {
+input CreditTypeCreateInput {
   name: String!
   description: String
 }
 
-input CreditRoleUpdateInput {
+input CreditTypeUpdateInput {
   id: Int!
   name: String
   description: String
 }
 
-input CreditRoleDestroyInput {
+input CreditTypeDestroyInput {
   id: Int!
 }
 
-input CreditRoleSetTagsInput {
-  role_id: Int!
-  tag_ids: [ID!]!
+type CreditAttribute {
+  id: Int!
+  name: String!
+  description: String!
+  """Credit types this attribute may be applied to"""
+  credit_types: [CreditType!]!
+  created: Time!
+  updated: Time!
+}
+
+input CreditAttributeCreateInput {
+  name: String!
+  description: String
+}
+
+input CreditAttributeUpdateInput {
+  id: Int!
+  name: String
+  description: String
+}
+
+input CreditAttributeDestroyInput {
+  id: Int!
+}
+
+input CreditAttributeSetCreditTypesInput {
+  attribute_id: Int!
+  credit_type_ids: [Int!]!
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/types/draft.graphql", Input: `type DraftSubmissionStatus {
@@ -5844,7 +5937,7 @@ type Performer {
   """ID of performer that replaces this one"""
   merged_into_id: ID
   studios(studio_id: ID): [PerformerStudio!]!
-  credit_roles: [PerformerCreditRole!]!
+  credit_types: [PerformerCreditType!]!
   is_favorite: Boolean!
   created: Time!
   updated: Time!
@@ -5866,14 +5959,8 @@ type PerformerStudio {
   scene_count: Int!
 }
 
-type PerformerCreditRole {
-  role: CreditRole!
-  scene_count: Int!
-  tags: [PerformerCreditTag!]!
-}
-
-type PerformerCreditTag {
-  tag: Tag!
+type PerformerCreditType {
+  credit_type: CreditType!
   scene_count: Int!
 }
 
@@ -6193,23 +6280,23 @@ type QueryExistingPerformerResult {
 
 type SceneCredit {
   performer: Performer!
-  credit_role: CreditRole!
+  credit_type: CreditType!
   as: String
-  tags: [Tag!]!
+  attributes: [CreditAttribute!]!
 }
 
 type SceneCreditEdit {
   performer: Performer!
-  credit_role: CreditRole!
+  credit_type: CreditType!
   as: String
-  tags: [Tag!]!
+  attributes: [CreditAttribute!]!
 }
 
 input CreditInput {
   performer_id: ID!
-  credit_role_id: Int!
+  credit_type_id: Int!
   as: String
-  tag_ids: [ID!]
+  attribute_ids: [Int!]
 }
 
 enum FingerprintAlgorithm {
@@ -6454,8 +6541,8 @@ input SceneQueryInput {
   tags: MultiIDCriterionInput
   """Filter to only include scenes with these performers"""
   performers: MultiIDCriterionInput
-  """Filter to only include scenes with performers in this credit role"""
-  credit_role_id: Int
+  """Filter to only include scenes with performers credited with this credit type"""
+  credit_type_id: Int
   """Filter to include scenes with performer appearing as alias"""
   alias: StringCriterionInput
   """Filter to only include scenes with these fingerprints"""
@@ -7053,7 +7140,8 @@ type Query {
   findSiteCategory(id: Int!): SiteCategory @hasRole(role: READ)
   querySiteCategories: QuerySiteCategoriesResultType! @hasRole(role: READ)
 
-  getCreditRoles: [CreditRole!]!
+  getCreditTypes: [CreditType!]!
+  getCreditAttributes: [CreditAttribute!]!
 
   #### Edits ####
 
@@ -7230,11 +7318,16 @@ type Mutation {
   """Update notification subscriptions for current user."""
   updateNotificationSubscriptions(subscriptions: [NotificationEnum!]!): Boolean! @hasRole(role: READ)
 
-  """Scene Credits"""
-  creditRoleCreate(input: CreditRoleCreateInput!): CreditRole! @hasRole(role: ADMIN)
-  creditRoleUpdate(input: CreditRoleUpdateInput!): CreditRole! @hasRole(role: ADMIN)
-  creditRoleDestroy(input: CreditRoleDestroyInput!): Boolean! @hasRole(role: ADMIN)
-  creditRoleSetTags(input: CreditRoleSetTagsInput!): CreditRole! @hasRole(role: ADMIN)
+  """Credit Types"""
+  creditTypeCreate(input: CreditTypeCreateInput!): CreditType! @hasRole(role: ADMIN)
+  creditTypeUpdate(input: CreditTypeUpdateInput!): CreditType! @hasRole(role: ADMIN)
+  creditTypeDestroy(input: CreditTypeDestroyInput!): Boolean! @hasRole(role: ADMIN)
+
+  """Credit Attributes"""
+  creditAttributeCreate(input: CreditAttributeCreateInput!): CreditAttribute! @hasRole(role: ADMIN)
+  creditAttributeUpdate(input: CreditAttributeUpdateInput!): CreditAttribute! @hasRole(role: ADMIN)
+  creditAttributeDestroy(input: CreditAttributeDestroyInput!): Boolean! @hasRole(role: ADMIN)
+  creditAttributeSetCreditTypes(input: CreditAttributeSetCreditTypesInput!): CreditAttribute! @hasRole(role: ADMIN)
 }
 
 schema {
@@ -7297,22 +7390,38 @@ func (ec *executionContext) childFields_ClusterSceneSubmission(ctx context.Conte
 	return nil, fmt.Errorf("no field named %q was found under type ClusterSceneSubmission", field.Name)
 }
 
-func (ec *executionContext) childFields_CreditRole(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+func (ec *executionContext) childFields_CreditAttribute(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "id":
-		return ec.fieldContext_CreditRole_id(ctx, field)
+		return ec.fieldContext_CreditAttribute_id(ctx, field)
 	case "name":
-		return ec.fieldContext_CreditRole_name(ctx, field)
+		return ec.fieldContext_CreditAttribute_name(ctx, field)
 	case "description":
-		return ec.fieldContext_CreditRole_description(ctx, field)
-	case "valid_tags":
-		return ec.fieldContext_CreditRole_valid_tags(ctx, field)
+		return ec.fieldContext_CreditAttribute_description(ctx, field)
+	case "credit_types":
+		return ec.fieldContext_CreditAttribute_credit_types(ctx, field)
 	case "created":
-		return ec.fieldContext_CreditRole_created(ctx, field)
+		return ec.fieldContext_CreditAttribute_created(ctx, field)
 	case "updated":
-		return ec.fieldContext_CreditRole_updated(ctx, field)
+		return ec.fieldContext_CreditAttribute_updated(ctx, field)
 	}
-	return nil, fmt.Errorf("no field named %q was found under type CreditRole", field.Name)
+	return nil, fmt.Errorf("no field named %q was found under type CreditAttribute", field.Name)
+}
+
+func (ec *executionContext) childFields_CreditType(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_CreditType_id(ctx, field)
+	case "name":
+		return ec.fieldContext_CreditType_name(ctx, field)
+	case "description":
+		return ec.fieldContext_CreditType_description(ctx, field)
+	case "created":
+		return ec.fieldContext_CreditType_created(ctx, field)
+	case "updated":
+		return ec.fieldContext_CreditType_updated(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreditType", field.Name)
 }
 
 func (ec *executionContext) childFields_Draft(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -7659,8 +7768,8 @@ func (ec *executionContext) childFields_Performer(ctx context.Context, field gra
 		return ec.fieldContext_Performer_merged_into_id(ctx, field)
 	case "studios":
 		return ec.fieldContext_Performer_studios(ctx, field)
-	case "credit_roles":
-		return ec.fieldContext_Performer_credit_roles(ctx, field)
+	case "credit_types":
+		return ec.fieldContext_Performer_credit_types(ctx, field)
 	case "is_favorite":
 		return ec.fieldContext_Performer_is_favorite(ctx, field)
 	case "created":
@@ -7681,26 +7790,14 @@ func (ec *executionContext) childFields_PerformerAppearance(ctx context.Context,
 	return nil, fmt.Errorf("no field named %q was found under type PerformerAppearance", field.Name)
 }
 
-func (ec *executionContext) childFields_PerformerCreditRole(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+func (ec *executionContext) childFields_PerformerCreditType(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
-	case "role":
-		return ec.fieldContext_PerformerCreditRole_role(ctx, field)
+	case "credit_type":
+		return ec.fieldContext_PerformerCreditType_credit_type(ctx, field)
 	case "scene_count":
-		return ec.fieldContext_PerformerCreditRole_scene_count(ctx, field)
-	case "tags":
-		return ec.fieldContext_PerformerCreditRole_tags(ctx, field)
+		return ec.fieldContext_PerformerCreditType_scene_count(ctx, field)
 	}
-	return nil, fmt.Errorf("no field named %q was found under type PerformerCreditRole", field.Name)
-}
-
-func (ec *executionContext) childFields_PerformerCreditTag(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-	switch field.Name {
-	case "tag":
-		return ec.fieldContext_PerformerCreditTag_tag(ctx, field)
-	case "scene_count":
-		return ec.fieldContext_PerformerCreditTag_scene_count(ctx, field)
-	}
-	return nil, fmt.Errorf("no field named %q was found under type PerformerCreditTag", field.Name)
+	return nil, fmt.Errorf("no field named %q was found under type PerformerCreditType", field.Name)
 }
 
 func (ec *executionContext) childFields_PerformerEditOptions(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -7913,12 +8010,12 @@ func (ec *executionContext) childFields_SceneCredit(ctx context.Context, field g
 	switch field.Name {
 	case "performer":
 		return ec.fieldContext_SceneCredit_performer(ctx, field)
-	case "credit_role":
-		return ec.fieldContext_SceneCredit_credit_role(ctx, field)
+	case "credit_type":
+		return ec.fieldContext_SceneCredit_credit_type(ctx, field)
 	case "as":
 		return ec.fieldContext_SceneCredit_as(ctx, field)
-	case "tags":
-		return ec.fieldContext_SceneCredit_tags(ctx, field)
+	case "attributes":
+		return ec.fieldContext_SceneCredit_attributes(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type SceneCredit", field.Name)
 }
@@ -7927,12 +8024,12 @@ func (ec *executionContext) childFields_SceneCreditEdit(ctx context.Context, fie
 	switch field.Name {
 	case "performer":
 		return ec.fieldContext_SceneCreditEdit_performer(ctx, field)
-	case "credit_role":
-		return ec.fieldContext_SceneCreditEdit_credit_role(ctx, field)
+	case "credit_type":
+		return ec.fieldContext_SceneCreditEdit_credit_type(ctx, field)
 	case "as":
 		return ec.fieldContext_SceneCreditEdit_as(ctx, field)
-	case "tags":
-		return ec.fieldContext_SceneCreditEdit_tags(ctx, field)
+	case "attributes":
+		return ec.fieldContext_SceneCreditEdit_attributes(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type SceneCreditEdit", field.Name)
 }
@@ -8411,12 +8508,12 @@ func (ec *executionContext) field_Mutation_confirmChangeEmail_args(ctx context.C
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_creditRoleCreate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Mutation_creditAttributeCreate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
-		func(ctx context.Context, v any) (CreditRoleCreateInput, error) {
-			return ec.unmarshalNCreditRoleCreateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditRoleCreateInput(ctx, v)
+		func(ctx context.Context, v any) (CreditAttributeCreateInput, error) {
+			return ec.unmarshalNCreditAttributeCreateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditAttributeCreateInput(ctx, v)
 		})
 	if err != nil {
 		return nil, err
@@ -8425,12 +8522,12 @@ func (ec *executionContext) field_Mutation_creditRoleCreate_args(ctx context.Con
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_creditRoleDestroy_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Mutation_creditAttributeDestroy_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
-		func(ctx context.Context, v any) (CreditRoleDestroyInput, error) {
-			return ec.unmarshalNCreditRoleDestroyInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditRoleDestroyInput(ctx, v)
+		func(ctx context.Context, v any) (CreditAttributeDestroyInput, error) {
+			return ec.unmarshalNCreditAttributeDestroyInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditAttributeDestroyInput(ctx, v)
 		})
 	if err != nil {
 		return nil, err
@@ -8439,12 +8536,12 @@ func (ec *executionContext) field_Mutation_creditRoleDestroy_args(ctx context.Co
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_creditRoleSetTags_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Mutation_creditAttributeSetCreditTypes_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
-		func(ctx context.Context, v any) (CreditRoleSetTagsInput, error) {
-			return ec.unmarshalNCreditRoleSetTagsInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditRoleSetTagsInput(ctx, v)
+		func(ctx context.Context, v any) (CreditAttributeSetCreditTypesInput, error) {
+			return ec.unmarshalNCreditAttributeSetCreditTypesInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditAttributeSetCreditTypesInput(ctx, v)
 		})
 	if err != nil {
 		return nil, err
@@ -8453,12 +8550,54 @@ func (ec *executionContext) field_Mutation_creditRoleSetTags_args(ctx context.Co
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_creditRoleUpdate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Mutation_creditAttributeUpdate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
-		func(ctx context.Context, v any) (CreditRoleUpdateInput, error) {
-			return ec.unmarshalNCreditRoleUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditRoleUpdateInput(ctx, v)
+		func(ctx context.Context, v any) (CreditAttributeUpdateInput, error) {
+			return ec.unmarshalNCreditAttributeUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditAttributeUpdateInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_creditTypeCreate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (CreditTypeCreateInput, error) {
+			return ec.unmarshalNCreditTypeCreateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditTypeCreateInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_creditTypeDestroy_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (CreditTypeDestroyInput, error) {
+			return ec.unmarshalNCreditTypeDestroyInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditTypeDestroyInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_creditTypeUpdate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (CreditTypeUpdateInput, error) {
+			return ec.unmarshalNCreditTypeUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditTypeUpdateInput(ctx, v)
 		})
 	if err != nil {
 		return nil, err
@@ -10409,13 +10548,13 @@ func (ec *executionContext) fieldContext_CommentVotedEdit_comment(_ context.Cont
 	return fc, nil
 }
 
-func (ec *executionContext) _CreditRole_id(ctx context.Context, field graphql.CollectedField, obj *CreditRole) (ret graphql.Marshaler) {
+func (ec *executionContext) _CreditAttribute_id(ctx context.Context, field graphql.CollectedField, obj *CreditAttribute) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_CreditRole_id(ctx, field)
+			return ec.fieldContext_CreditAttribute_id(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
 			return obj.ID, nil
@@ -10428,17 +10567,17 @@ func (ec *executionContext) _CreditRole_id(ctx context.Context, field graphql.Co
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_CreditRole_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("CreditRole", field, false, false, errors.New("field of type Int does not have child fields"))
+func (ec *executionContext) fieldContext_CreditAttribute_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CreditAttribute", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
-func (ec *executionContext) _CreditRole_name(ctx context.Context, field graphql.CollectedField, obj *CreditRole) (ret graphql.Marshaler) {
+func (ec *executionContext) _CreditAttribute_name(ctx context.Context, field graphql.CollectedField, obj *CreditAttribute) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_CreditRole_name(ctx, field)
+			return ec.fieldContext_CreditAttribute_name(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
 			return obj.Name, nil
@@ -10451,17 +10590,17 @@ func (ec *executionContext) _CreditRole_name(ctx context.Context, field graphql.
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_CreditRole_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("CreditRole", field, false, false, errors.New("field of type String does not have child fields"))
+func (ec *executionContext) fieldContext_CreditAttribute_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CreditAttribute", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
-func (ec *executionContext) _CreditRole_description(ctx context.Context, field graphql.CollectedField, obj *CreditRole) (ret graphql.Marshaler) {
+func (ec *executionContext) _CreditAttribute_description(ctx context.Context, field graphql.CollectedField, obj *CreditAttribute) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_CreditRole_description(ctx, field)
+			return ec.fieldContext_CreditAttribute_description(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
 			return obj.Description, nil
@@ -10474,52 +10613,52 @@ func (ec *executionContext) _CreditRole_description(ctx context.Context, field g
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_CreditRole_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("CreditRole", field, false, false, errors.New("field of type String does not have child fields"))
+func (ec *executionContext) fieldContext_CreditAttribute_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CreditAttribute", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
-func (ec *executionContext) _CreditRole_valid_tags(ctx context.Context, field graphql.CollectedField, obj *CreditRole) (ret graphql.Marshaler) {
+func (ec *executionContext) _CreditAttribute_credit_types(ctx context.Context, field graphql.CollectedField, obj *CreditAttribute) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_CreditRole_valid_tags(ctx, field)
+			return ec.fieldContext_CreditAttribute_credit_types(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.CreditRole().ValidTags(ctx, obj)
+			return ec.Resolvers.CreditAttribute().CreditTypes(ctx, obj)
 		},
 		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v []Tag) graphql.Marshaler {
-			return ec.marshalNTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐTagᚄ(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v []CreditType) graphql.Marshaler {
+			return ec.marshalNCreditType2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditTypeᚄ(ctx, selections, v)
 		},
 		true,
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_CreditRole_valid_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_CreditAttribute_credit_types(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "CreditRole",
+		Object:     "CreditAttribute",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Tag(ctx, field)
+			return ec.childFields_CreditType(ctx, field)
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _CreditRole_created(ctx context.Context, field graphql.CollectedField, obj *CreditRole) (ret graphql.Marshaler) {
+func (ec *executionContext) _CreditAttribute_created(ctx context.Context, field graphql.CollectedField, obj *CreditAttribute) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_CreditRole_created(ctx, field)
+			return ec.fieldContext_CreditAttribute_created(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.CreditRole().Created(ctx, obj)
+			return ec.Resolvers.CreditAttribute().Created(ctx, obj)
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *time.Time) graphql.Marshaler {
@@ -10529,20 +10668,20 @@ func (ec *executionContext) _CreditRole_created(ctx context.Context, field graph
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_CreditRole_created(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("CreditRole", field, true, true, errors.New("field of type Time does not have child fields"))
+func (ec *executionContext) fieldContext_CreditAttribute_created(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CreditAttribute", field, true, true, errors.New("field of type Time does not have child fields"))
 }
 
-func (ec *executionContext) _CreditRole_updated(ctx context.Context, field graphql.CollectedField, obj *CreditRole) (ret graphql.Marshaler) {
+func (ec *executionContext) _CreditAttribute_updated(ctx context.Context, field graphql.CollectedField, obj *CreditAttribute) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_CreditRole_updated(ctx, field)
+			return ec.fieldContext_CreditAttribute_updated(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.CreditRole().Updated(ctx, obj)
+			return ec.Resolvers.CreditAttribute().Updated(ctx, obj)
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *time.Time) graphql.Marshaler {
@@ -10552,8 +10691,123 @@ func (ec *executionContext) _CreditRole_updated(ctx context.Context, field graph
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_CreditRole_updated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("CreditRole", field, true, true, errors.New("field of type Time does not have child fields"))
+func (ec *executionContext) fieldContext_CreditAttribute_updated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CreditAttribute", field, true, true, errors.New("field of type Time does not have child fields"))
+}
+
+func (ec *executionContext) _CreditType_id(ctx context.Context, field graphql.CollectedField, obj *CreditType) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CreditType_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int32) graphql.Marshaler {
+			return ec.marshalNInt2int32(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CreditType_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CreditType", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _CreditType_name(ctx context.Context, field graphql.CollectedField, obj *CreditType) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CreditType_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CreditType_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CreditType", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _CreditType_description(ctx context.Context, field graphql.CollectedField, obj *CreditType) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CreditType_description(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Description, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalNString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CreditType_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CreditType", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _CreditType_created(ctx context.Context, field graphql.CollectedField, obj *CreditType) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CreditType_created(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.CreditType().Created(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *time.Time) graphql.Marshaler {
+			return ec.marshalNTime2ᚖtimeᚐTime(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CreditType_created(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CreditType", field, true, true, errors.New("field of type Time does not have child fields"))
+}
+
+func (ec *executionContext) _CreditType_updated(ctx context.Context, field graphql.CollectedField, obj *CreditType) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CreditType_updated(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.CreditType().Updated(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *time.Time) graphql.Marshaler {
+			return ec.marshalNTime2ᚖtimeᚐTime(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CreditType_updated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CreditType", field, true, true, errors.New("field of type Time does not have child fields"))
 }
 
 func (ec *executionContext) _DownvoteOwnEdit_edit(ctx context.Context, field graphql.CollectedField, obj *DownvoteOwnEdit) (ret graphql.Marshaler) {
@@ -16749,17 +17003,17 @@ func (ec *executionContext) fieldContext_Mutation_updateNotificationSubscription
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_creditRoleCreate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Mutation_creditTypeCreate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Mutation_creditRoleCreate(ctx, field)
+			return ec.fieldContext_Mutation_creditTypeCreate(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().CreditRoleCreate(ctx, fc.Args["input"].(CreditRoleCreateInput))
+			return ec.Resolvers.Mutation().CreditTypeCreate(ctx, fc.Args["input"].(CreditTypeCreateInput))
 		},
 		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
 			directive0 := next
@@ -16767,11 +17021,11 @@ func (ec *executionContext) _Mutation_creditRoleCreate(ctx context.Context, fiel
 			directive1 := func(ctx context.Context) (any, error) {
 				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "ADMIN")
 				if err != nil {
-					var zeroVal *CreditRole
+					var zeroVal *CreditType
 					return zeroVal, err
 				}
 				if ec.Directives.HasRole == nil {
-					var zeroVal *CreditRole
+					var zeroVal *CreditType
 					return zeroVal, errors.New("directive hasRole is not implemented")
 				}
 				return ec.Directives.HasRole(ctx, nil, directive0, role)
@@ -16780,21 +17034,21 @@ func (ec *executionContext) _Mutation_creditRoleCreate(ctx context.Context, fiel
 			next = directive1
 			return next
 		},
-		func(ctx context.Context, selections ast.SelectionSet, v *CreditRole) graphql.Marshaler {
-			return ec.marshalNCreditRole2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditRole(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v *CreditType) graphql.Marshaler {
+			return ec.marshalNCreditType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditType(ctx, selections, v)
 		},
 		true,
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_Mutation_creditRoleCreate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_creditTypeCreate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_CreditRole(ctx, field)
+			return ec.childFields_CreditType(ctx, field)
 		},
 	}
 	defer func() {
@@ -16804,24 +17058,24 @@ func (ec *executionContext) fieldContext_Mutation_creditRoleCreate(ctx context.C
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_creditRoleCreate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_creditTypeCreate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_creditRoleUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Mutation_creditTypeUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Mutation_creditRoleUpdate(ctx, field)
+			return ec.fieldContext_Mutation_creditTypeUpdate(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().CreditRoleUpdate(ctx, fc.Args["input"].(CreditRoleUpdateInput))
+			return ec.Resolvers.Mutation().CreditTypeUpdate(ctx, fc.Args["input"].(CreditTypeUpdateInput))
 		},
 		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
 			directive0 := next
@@ -16829,11 +17083,11 @@ func (ec *executionContext) _Mutation_creditRoleUpdate(ctx context.Context, fiel
 			directive1 := func(ctx context.Context) (any, error) {
 				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "ADMIN")
 				if err != nil {
-					var zeroVal *CreditRole
+					var zeroVal *CreditType
 					return zeroVal, err
 				}
 				if ec.Directives.HasRole == nil {
-					var zeroVal *CreditRole
+					var zeroVal *CreditType
 					return zeroVal, errors.New("directive hasRole is not implemented")
 				}
 				return ec.Directives.HasRole(ctx, nil, directive0, role)
@@ -16842,21 +17096,21 @@ func (ec *executionContext) _Mutation_creditRoleUpdate(ctx context.Context, fiel
 			next = directive1
 			return next
 		},
-		func(ctx context.Context, selections ast.SelectionSet, v *CreditRole) graphql.Marshaler {
-			return ec.marshalNCreditRole2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditRole(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v *CreditType) graphql.Marshaler {
+			return ec.marshalNCreditType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditType(ctx, selections, v)
 		},
 		true,
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_Mutation_creditRoleUpdate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_creditTypeUpdate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_CreditRole(ctx, field)
+			return ec.childFields_CreditType(ctx, field)
 		},
 	}
 	defer func() {
@@ -16866,24 +17120,24 @@ func (ec *executionContext) fieldContext_Mutation_creditRoleUpdate(ctx context.C
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_creditRoleUpdate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_creditTypeUpdate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_creditRoleDestroy(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Mutation_creditTypeDestroy(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Mutation_creditRoleDestroy(ctx, field)
+			return ec.fieldContext_Mutation_creditTypeDestroy(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().CreditRoleDestroy(ctx, fc.Args["input"].(CreditRoleDestroyInput))
+			return ec.Resolvers.Mutation().CreditTypeDestroy(ctx, fc.Args["input"].(CreditTypeDestroyInput))
 		},
 		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
 			directive0 := next
@@ -16911,7 +17165,7 @@ func (ec *executionContext) _Mutation_creditRoleDestroy(ctx context.Context, fie
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_Mutation_creditRoleDestroy(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_creditTypeDestroy(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -16928,24 +17182,24 @@ func (ec *executionContext) fieldContext_Mutation_creditRoleDestroy(ctx context.
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_creditRoleDestroy_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_creditTypeDestroy_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_creditRoleSetTags(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Mutation_creditAttributeCreate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Mutation_creditRoleSetTags(ctx, field)
+			return ec.fieldContext_Mutation_creditAttributeCreate(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().CreditRoleSetTags(ctx, fc.Args["input"].(CreditRoleSetTagsInput))
+			return ec.Resolvers.Mutation().CreditAttributeCreate(ctx, fc.Args["input"].(CreditAttributeCreateInput))
 		},
 		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
 			directive0 := next
@@ -16953,11 +17207,11 @@ func (ec *executionContext) _Mutation_creditRoleSetTags(ctx context.Context, fie
 			directive1 := func(ctx context.Context) (any, error) {
 				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "ADMIN")
 				if err != nil {
-					var zeroVal *CreditRole
+					var zeroVal *CreditAttribute
 					return zeroVal, err
 				}
 				if ec.Directives.HasRole == nil {
-					var zeroVal *CreditRole
+					var zeroVal *CreditAttribute
 					return zeroVal, errors.New("directive hasRole is not implemented")
 				}
 				return ec.Directives.HasRole(ctx, nil, directive0, role)
@@ -16966,21 +17220,21 @@ func (ec *executionContext) _Mutation_creditRoleSetTags(ctx context.Context, fie
 			next = directive1
 			return next
 		},
-		func(ctx context.Context, selections ast.SelectionSet, v *CreditRole) graphql.Marshaler {
-			return ec.marshalNCreditRole2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditRole(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v *CreditAttribute) graphql.Marshaler {
+			return ec.marshalNCreditAttribute2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditAttribute(ctx, selections, v)
 		},
 		true,
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_Mutation_creditRoleSetTags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_creditAttributeCreate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_CreditRole(ctx, field)
+			return ec.childFields_CreditAttribute(ctx, field)
 		},
 	}
 	defer func() {
@@ -16990,7 +17244,193 @@ func (ec *executionContext) fieldContext_Mutation_creditRoleSetTags(ctx context.
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_creditRoleSetTags_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_creditAttributeCreate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_creditAttributeUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_creditAttributeUpdate(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().CreditAttributeUpdate(ctx, fc.Args["input"].(CreditAttributeUpdateInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+				if err != nil {
+					var zeroVal *CreditAttribute
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal *CreditAttribute
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v *CreditAttribute) graphql.Marshaler {
+			return ec.marshalNCreditAttribute2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditAttribute(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_creditAttributeUpdate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_CreditAttribute(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_creditAttributeUpdate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_creditAttributeDestroy(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_creditAttributeDestroy(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().CreditAttributeDestroy(ctx, fc.Args["input"].(CreditAttributeDestroyInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+				if err != nil {
+					var zeroVal bool
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal bool
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_creditAttributeDestroy(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_creditAttributeDestroy_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_creditAttributeSetCreditTypes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_creditAttributeSetCreditTypes(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().CreditAttributeSetCreditTypes(ctx, fc.Args["input"].(CreditAttributeSetCreditTypesInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				role, err := ec.unmarshalNRoleEnum2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐRoleEnum(ctx, "ADMIN")
+				if err != nil {
+					var zeroVal *CreditAttribute
+					return zeroVal, err
+				}
+				if ec.Directives.HasRole == nil {
+					var zeroVal *CreditAttribute
+					return zeroVal, errors.New("directive hasRole is not implemented")
+				}
+				return ec.Directives.HasRole(ctx, nil, directive0, role)
+			}
+
+			next = directive1
+			return next
+		},
+		func(ctx context.Context, selections ast.SelectionSet, v *CreditAttribute) graphql.Marshaler {
+			return ec.marshalNCreditAttribute2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditAttribute(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_creditAttributeSetCreditTypes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_CreditAttribute(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_creditAttributeSetCreditTypes_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -17953,33 +18393,33 @@ func (ec *executionContext) fieldContext_Performer_studios(ctx context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _Performer_credit_roles(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
+func (ec *executionContext) _Performer_credit_types(ctx context.Context, field graphql.CollectedField, obj *Performer) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Performer_credit_roles(ctx, field)
+			return ec.fieldContext_Performer_credit_types(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.Performer().CreditRoles(ctx, obj)
+			return ec.Resolvers.Performer().CreditTypes(ctx, obj)
 		},
 		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v []PerformerCreditRole) graphql.Marshaler {
-			return ec.marshalNPerformerCreditRole2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerCreditRoleᚄ(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v []PerformerCreditType) graphql.Marshaler {
+			return ec.marshalNPerformerCreditType2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerCreditTypeᚄ(ctx, selections, v)
 		},
 		true,
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_Performer_credit_roles(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Performer_credit_types(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Performer",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_PerformerCreditRole(ctx, field)
+			return ec.childFields_PerformerCreditType(ctx, field)
 		},
 	}
 	return fc, nil
@@ -18109,45 +18549,45 @@ func (ec *executionContext) fieldContext_PerformerAppearance_as(_ context.Contex
 	return graphql.NewScalarFieldContext("PerformerAppearance", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
-func (ec *executionContext) _PerformerCreditRole_role(ctx context.Context, field graphql.CollectedField, obj *PerformerCreditRole) (ret graphql.Marshaler) {
+func (ec *executionContext) _PerformerCreditType_credit_type(ctx context.Context, field graphql.CollectedField, obj *PerformerCreditType) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_PerformerCreditRole_role(ctx, field)
+			return ec.fieldContext_PerformerCreditType_credit_type(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return obj.Role, nil
+			return obj.CreditType, nil
 		},
 		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *CreditRole) graphql.Marshaler {
-			return ec.marshalNCreditRole2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditRole(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v *CreditType) graphql.Marshaler {
+			return ec.marshalNCreditType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditType(ctx, selections, v)
 		},
 		true,
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_PerformerCreditRole_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_PerformerCreditType_credit_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "PerformerCreditRole",
+		Object:     "PerformerCreditType",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_CreditRole(ctx, field)
+			return ec.childFields_CreditType(ctx, field)
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _PerformerCreditRole_scene_count(ctx context.Context, field graphql.CollectedField, obj *PerformerCreditRole) (ret graphql.Marshaler) {
+func (ec *executionContext) _PerformerCreditType_scene_count(ctx context.Context, field graphql.CollectedField, obj *PerformerCreditType) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_PerformerCreditRole_scene_count(ctx, field)
+			return ec.fieldContext_PerformerCreditType_scene_count(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
 			return obj.SceneCount, nil
@@ -18160,95 +18600,8 @@ func (ec *executionContext) _PerformerCreditRole_scene_count(ctx context.Context
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_PerformerCreditRole_scene_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("PerformerCreditRole", field, false, false, errors.New("field of type Int does not have child fields"))
-}
-
-func (ec *executionContext) _PerformerCreditRole_tags(ctx context.Context, field graphql.CollectedField, obj *PerformerCreditRole) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_PerformerCreditRole_tags(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.Tags, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v []PerformerCreditTag) graphql.Marshaler {
-			return ec.marshalNPerformerCreditTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerCreditTagᚄ(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_PerformerCreditRole_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PerformerCreditRole",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_PerformerCreditTag(ctx, field)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PerformerCreditTag_tag(ctx context.Context, field graphql.CollectedField, obj *PerformerCreditTag) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_PerformerCreditTag_tag(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.Tag, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *Tag) graphql.Marshaler {
-			return ec.marshalNTag2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐTag(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_PerformerCreditTag_tag(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PerformerCreditTag",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Tag(ctx, field)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PerformerCreditTag_scene_count(ctx context.Context, field graphql.CollectedField, obj *PerformerCreditTag) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_PerformerCreditTag_scene_count(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			return obj.SceneCount, nil
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
-			return ec.marshalNInt2int(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_PerformerCreditTag_scene_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	return graphql.NewScalarFieldContext("PerformerCreditTag", field, false, false, errors.New("field of type Int does not have child fields"))
+func (ec *executionContext) fieldContext_PerformerCreditType_scene_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("PerformerCreditType", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
 func (ec *executionContext) _PerformerDraft_id(ctx context.Context, field graphql.CollectedField, obj *PerformerDraft) (ret graphql.Marshaler) {
@@ -20676,33 +21029,65 @@ func (ec *executionContext) fieldContext_Query_querySiteCategories(_ context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getCreditRoles(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_getCreditTypes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Query_getCreditRoles(ctx, field)
+			return ec.fieldContext_Query_getCreditTypes(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.Query().GetCreditRoles(ctx)
+			return ec.Resolvers.Query().GetCreditTypes(ctx)
 		},
 		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v []CreditRole) graphql.Marshaler {
-			return ec.marshalNCreditRole2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditRoleᚄ(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v []CreditType) graphql.Marshaler {
+			return ec.marshalNCreditType2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditTypeᚄ(ctx, selections, v)
 		},
 		true,
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_Query_getCreditRoles(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_getCreditTypes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_CreditRole(ctx, field)
+			return ec.childFields_CreditType(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getCreditAttributes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_getCreditAttributes(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Query().GetCreditAttributes(ctx)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []CreditAttribute) graphql.Marshaler {
+			return ec.marshalNCreditAttribute2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditAttributeᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_getCreditAttributes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_CreditAttribute(ctx, field)
 		},
 	}
 	return fc, nil
@@ -23331,33 +23716,33 @@ func (ec *executionContext) fieldContext_SceneCredit_performer(_ context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _SceneCredit_credit_role(ctx context.Context, field graphql.CollectedField, obj *SceneCredit) (ret graphql.Marshaler) {
+func (ec *executionContext) _SceneCredit_credit_type(ctx context.Context, field graphql.CollectedField, obj *SceneCredit) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_SceneCredit_credit_role(ctx, field)
+			return ec.fieldContext_SceneCredit_credit_type(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.SceneCredit().CreditRole(ctx, obj)
+			return ec.Resolvers.SceneCredit().CreditType(ctx, obj)
 		},
 		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *CreditRole) graphql.Marshaler {
-			return ec.marshalNCreditRole2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditRole(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v *CreditType) graphql.Marshaler {
+			return ec.marshalNCreditType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditType(ctx, selections, v)
 		},
 		true,
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_SceneCredit_credit_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_SceneCredit_credit_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "SceneCredit",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_CreditRole(ctx, field)
+			return ec.childFields_CreditType(ctx, field)
 		},
 	}
 	return fc, nil
@@ -23386,33 +23771,33 @@ func (ec *executionContext) fieldContext_SceneCredit_as(_ context.Context, field
 	return graphql.NewScalarFieldContext("SceneCredit", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
-func (ec *executionContext) _SceneCredit_tags(ctx context.Context, field graphql.CollectedField, obj *SceneCredit) (ret graphql.Marshaler) {
+func (ec *executionContext) _SceneCredit_attributes(ctx context.Context, field graphql.CollectedField, obj *SceneCredit) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_SceneCredit_tags(ctx, field)
+			return ec.fieldContext_SceneCredit_attributes(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.SceneCredit().Tags(ctx, obj)
+			return ec.Resolvers.SceneCredit().Attributes(ctx, obj)
 		},
 		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v []Tag) graphql.Marshaler {
-			return ec.marshalNTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐTagᚄ(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v []CreditAttribute) graphql.Marshaler {
+			return ec.marshalNCreditAttribute2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditAttributeᚄ(ctx, selections, v)
 		},
 		true,
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_SceneCredit_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_SceneCredit_attributes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "SceneCredit",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Tag(ctx, field)
+			return ec.childFields_CreditAttribute(ctx, field)
 		},
 	}
 	return fc, nil
@@ -23450,33 +23835,33 @@ func (ec *executionContext) fieldContext_SceneCreditEdit_performer(_ context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _SceneCreditEdit_credit_role(ctx context.Context, field graphql.CollectedField, obj *SceneCreditEdit) (ret graphql.Marshaler) {
+func (ec *executionContext) _SceneCreditEdit_credit_type(ctx context.Context, field graphql.CollectedField, obj *SceneCreditEdit) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_SceneCreditEdit_credit_role(ctx, field)
+			return ec.fieldContext_SceneCreditEdit_credit_type(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.SceneCreditEdit().CreditRole(ctx, obj)
+			return ec.Resolvers.SceneCreditEdit().CreditType(ctx, obj)
 		},
 		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *CreditRole) graphql.Marshaler {
-			return ec.marshalNCreditRole2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditRole(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v *CreditType) graphql.Marshaler {
+			return ec.marshalNCreditType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditType(ctx, selections, v)
 		},
 		true,
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_SceneCreditEdit_credit_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_SceneCreditEdit_credit_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "SceneCreditEdit",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_CreditRole(ctx, field)
+			return ec.childFields_CreditType(ctx, field)
 		},
 	}
 	return fc, nil
@@ -23505,33 +23890,33 @@ func (ec *executionContext) fieldContext_SceneCreditEdit_as(_ context.Context, f
 	return graphql.NewScalarFieldContext("SceneCreditEdit", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
-func (ec *executionContext) _SceneCreditEdit_tags(ctx context.Context, field graphql.CollectedField, obj *SceneCreditEdit) (ret graphql.Marshaler) {
+func (ec *executionContext) _SceneCreditEdit_attributes(ctx context.Context, field graphql.CollectedField, obj *SceneCreditEdit) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_SceneCreditEdit_tags(ctx, field)
+			return ec.fieldContext_SceneCreditEdit_attributes(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.SceneCreditEdit().Tags(ctx, obj)
+			return ec.Resolvers.SceneCreditEdit().Attributes(ctx, obj)
 		},
 		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v []Tag) graphql.Marshaler {
-			return ec.marshalNTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐTagᚄ(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v []CreditAttribute) graphql.Marshaler {
+			return ec.marshalNCreditAttribute2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditAttributeᚄ(ctx, selections, v)
 		},
 		true,
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_SceneCreditEdit_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_SceneCreditEdit_attributes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "SceneCreditEdit",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Tag(ctx, field)
+			return ec.childFields_CreditAttribute(ctx, field)
 		},
 	}
 	return fc, nil
@@ -28859,59 +29244,8 @@ func (ec *executionContext) unmarshalInputCancelEditInput(ctx context.Context, o
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputCreditInput(ctx context.Context, obj any) (CreditInput, error) {
-	var it CreditInput
-	if obj == nil {
-		return it, nil
-	}
-
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"performer_id", "credit_role_id", "as", "tag_ids"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "performer_id":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performer_id"))
-			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PerformerID = data
-		case "credit_role_id":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("credit_role_id"))
-			data, err := ec.unmarshalNInt2int32(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreditRoleID = data
-		case "as":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("as"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.As = data
-		case "tag_ids":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tag_ids"))
-			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TagIDs = data
-		}
-	}
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputCreditRoleCreateInput(ctx context.Context, obj any) (CreditRoleCreateInput, error) {
-	var it CreditRoleCreateInput
+func (ec *executionContext) unmarshalInputCreditAttributeCreateInput(ctx context.Context, obj any) (CreditAttributeCreateInput, error) {
+	var it CreditAttributeCreateInput
 	if obj == nil {
 		return it, nil
 	}
@@ -28947,8 +29281,8 @@ func (ec *executionContext) unmarshalInputCreditRoleCreateInput(ctx context.Cont
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputCreditRoleDestroyInput(ctx context.Context, obj any) (CreditRoleDestroyInput, error) {
-	var it CreditRoleDestroyInput
+func (ec *executionContext) unmarshalInputCreditAttributeDestroyInput(ctx context.Context, obj any) (CreditAttributeDestroyInput, error) {
+	var it CreditAttributeDestroyInput
 	if obj == nil {
 		return it, nil
 	}
@@ -28977,8 +29311,8 @@ func (ec *executionContext) unmarshalInputCreditRoleDestroyInput(ctx context.Con
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputCreditRoleSetTagsInput(ctx context.Context, obj any) (CreditRoleSetTagsInput, error) {
-	var it CreditRoleSetTagsInput
+func (ec *executionContext) unmarshalInputCreditAttributeSetCreditTypesInput(ctx context.Context, obj any) (CreditAttributeSetCreditTypesInput, error) {
+	var it CreditAttributeSetCreditTypesInput
 	if obj == nil {
 		return it, nil
 	}
@@ -28988,34 +29322,196 @@ func (ec *executionContext) unmarshalInputCreditRoleSetTagsInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"role_id", "tag_ids"}
+	fieldsInOrder := [...]string{"attribute_id", "credit_type_ids"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "role_id":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role_id"))
+		case "attribute_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("attribute_id"))
 			data, err := ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.RoleID = data
-		case "tag_ids":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tag_ids"))
-			data, err := ec.unmarshalNID2ᚕgithubᚗcomᚋgofrsᚋuuidᚐUUIDᚄ(ctx, v)
+			it.AttributeID = data
+		case "credit_type_ids":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("credit_type_ids"))
+			data, err := ec.unmarshalNInt2ᚕintᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.TagIds = data
+			it.CreditTypeIds = data
 		}
 	}
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputCreditRoleUpdateInput(ctx context.Context, obj any) (CreditRoleUpdateInput, error) {
-	var it CreditRoleUpdateInput
+func (ec *executionContext) unmarshalInputCreditAttributeUpdateInput(ctx context.Context, obj any) (CreditAttributeUpdateInput, error) {
+	var it CreditAttributeUpdateInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "name", "description"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreditInput(ctx context.Context, obj any) (CreditInput, error) {
+	var it CreditInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"performer_id", "credit_type_id", "as", "attribute_ids"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "performer_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("performer_id"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgofrsᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PerformerID = data
+		case "credit_type_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("credit_type_id"))
+			data, err := ec.unmarshalNInt2int32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreditTypeID = data
+		case "as":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("as"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.As = data
+		case "attribute_ids":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("attribute_ids"))
+			data, err := ec.unmarshalOInt2ᚕint32ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AttributeIDs = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreditTypeCreateInput(ctx context.Context, obj any) (CreditTypeCreateInput, error) {
+	var it CreditTypeCreateInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "description"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreditTypeDestroyInput(ctx context.Context, obj any) (CreditTypeDestroyInput, error) {
+	var it CreditTypeDestroyInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreditTypeUpdateInput(ctx context.Context, obj any) (CreditTypeUpdateInput, error) {
+	var it CreditTypeUpdateInput
 	if obj == nil {
 		return it, nil
 	}
@@ -32255,7 +32751,7 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 		asMap["sort"] = "DATE"
 	}
 
-	fieldsInOrder := [...]string{"text", "title", "url", "date", "production_date", "studios", "parentStudio", "tags", "performers", "credit_role_id", "alias", "fingerprints", "favorites", "has_fingerprint_submissions", "page", "per_page", "direction", "sort"}
+	fieldsInOrder := [...]string{"text", "title", "url", "date", "production_date", "studios", "parentStudio", "tags", "performers", "credit_type_id", "alias", "fingerprints", "favorites", "has_fingerprint_submissions", "page", "per_page", "direction", "sort"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -32325,13 +32821,13 @@ func (ec *executionContext) unmarshalInputSceneQueryInput(ctx context.Context, o
 				return it, err
 			}
 			it.Performers = data
-		case "credit_role_id":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("credit_role_id"))
+		case "credit_type_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("credit_type_id"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.CreditRoleID = data
+			it.CreditTypeID = data
 		case "alias":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("alias"))
 			data, err := ec.unmarshalOStringCriterionInput2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐStringCriterionInput(ctx, v)
@@ -34705,33 +35201,33 @@ func (ec *executionContext) _CommentVotedEdit(ctx context.Context, sel ast.Selec
 	return out
 }
 
-var creditRoleImplementors = []string{"CreditRole"}
+var creditAttributeImplementors = []string{"CreditAttribute"}
 
-func (ec *executionContext) _CreditRole(ctx context.Context, sel ast.SelectionSet, obj *CreditRole) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, creditRoleImplementors)
+func (ec *executionContext) _CreditAttribute(ctx context.Context, sel ast.SelectionSet, obj *CreditAttribute) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, creditAttributeImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("CreditRole")
+			out.Values[i] = graphql.MarshalString("CreditAttribute")
 		case "id":
-			out.Values[i] = ec._CreditRole_id(ctx, field, obj)
+			out.Values[i] = ec._CreditAttribute_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "name":
-			out.Values[i] = ec._CreditRole_name(ctx, field, obj)
+			out.Values[i] = ec._CreditAttribute_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "description":
-			out.Values[i] = ec._CreditRole_description(ctx, field, obj)
+			out.Values[i] = ec._CreditAttribute_description(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "valid_tags":
+		case "credit_types":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -34740,7 +35236,7 @@ func (ec *executionContext) _CreditRole(ctx context.Context, sel ast.SelectionSe
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._CreditRole_valid_tags(ctx, field, obj)
+				res = ec._CreditAttribute_credit_types(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -34776,7 +35272,7 @@ func (ec *executionContext) _CreditRole(ctx context.Context, sel ast.SelectionSe
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._CreditRole_created(ctx, field, obj)
+				res = ec._CreditAttribute_created(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -34812,7 +35308,128 @@ func (ec *executionContext) _CreditRole(ctx context.Context, sel ast.SelectionSe
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._CreditRole_updated(ctx, field, obj)
+				res = ec._CreditAttribute_updated(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var creditTypeImplementors = []string{"CreditType"}
+
+func (ec *executionContext) _CreditType(ctx context.Context, sel ast.SelectionSet, obj *CreditType) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, creditTypeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CreditType")
+		case "id":
+			out.Values[i] = ec._CreditType_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "name":
+			out.Values[i] = ec._CreditType_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "description":
+			out.Values[i] = ec._CreditType_description(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "created":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CreditType_created(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "updated":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CreditType_updated(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -37553,30 +38170,51 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "creditRoleCreate":
+		case "creditTypeCreate":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_creditRoleCreate(ctx, field)
+				return ec._Mutation_creditTypeCreate(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "creditRoleUpdate":
+		case "creditTypeUpdate":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_creditRoleUpdate(ctx, field)
+				return ec._Mutation_creditTypeUpdate(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "creditRoleDestroy":
+		case "creditTypeDestroy":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_creditRoleDestroy(ctx, field)
+				return ec._Mutation_creditTypeDestroy(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "creditRoleSetTags":
+		case "creditAttributeCreate":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_creditRoleSetTags(ctx, field)
+				return ec._Mutation_creditAttributeCreate(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "creditAttributeUpdate":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_creditAttributeUpdate(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "creditAttributeDestroy":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_creditAttributeDestroy(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "creditAttributeSetCreditTypes":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_creditAttributeSetCreditTypes(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -38329,7 +38967,7 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "credit_roles":
+		case "credit_types":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -38338,7 +38976,7 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Performer_credit_roles(ctx, field, obj)
+				res = ec._Performer_credit_types(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -38475,73 +39113,24 @@ func (ec *executionContext) _PerformerAppearance(ctx context.Context, sel ast.Se
 	return out
 }
 
-var performerCreditRoleImplementors = []string{"PerformerCreditRole"}
+var performerCreditTypeImplementors = []string{"PerformerCreditType"}
 
-func (ec *executionContext) _PerformerCreditRole(ctx context.Context, sel ast.SelectionSet, obj *PerformerCreditRole) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, performerCreditRoleImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("PerformerCreditRole")
-		case "role":
-			out.Values[i] = ec._PerformerCreditRole_role(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "scene_count":
-			out.Values[i] = ec._PerformerCreditRole_scene_count(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "tags":
-			out.Values[i] = ec._PerformerCreditRole_tags(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
-
-	for label, dfs := range deferred {
-		ec.ProcessDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var performerCreditTagImplementors = []string{"PerformerCreditTag"}
-
-func (ec *executionContext) _PerformerCreditTag(ctx context.Context, sel ast.SelectionSet, obj *PerformerCreditTag) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, performerCreditTagImplementors)
+func (ec *executionContext) _PerformerCreditType(ctx context.Context, sel ast.SelectionSet, obj *PerformerCreditType) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, performerCreditTypeImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("PerformerCreditTag")
-		case "tag":
-			out.Values[i] = ec._PerformerCreditTag_tag(ctx, field, obj)
+			out.Values[i] = graphql.MarshalString("PerformerCreditType")
+		case "credit_type":
+			out.Values[i] = ec._PerformerCreditType_credit_type(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
 		case "scene_count":
-			out.Values[i] = ec._PerformerCreditTag_scene_count(ctx, field, obj)
+			out.Values[i] = ec._PerformerCreditType_scene_count(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -39637,7 +40226,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "getCreditRoles":
+		case "getCreditTypes":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -39646,7 +40235,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getCreditRoles(ctx, field)
+				res = ec._Query_getCreditTypes(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getCreditAttributes":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getCreditAttributes(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -41674,7 +42285,7 @@ func (ec *executionContext) _SceneCredit(ctx context.Context, sel ast.SelectionS
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "credit_role":
+		case "credit_type":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -41683,7 +42294,7 @@ func (ec *executionContext) _SceneCredit(ctx context.Context, sel ast.SelectionS
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._SceneCredit_credit_role(ctx, field, obj)
+				res = ec._SceneCredit_credit_type(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -41712,7 +42323,7 @@ func (ec *executionContext) _SceneCredit(ctx context.Context, sel ast.SelectionS
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "as":
 			out.Values[i] = ec._SceneCredit_as(ctx, field, obj)
-		case "tags":
+		case "attributes":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -41721,7 +42332,7 @@ func (ec *executionContext) _SceneCredit(ctx context.Context, sel ast.SelectionS
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._SceneCredit_tags(ctx, field, obj)
+				res = ec._SceneCredit_attributes(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -41818,7 +42429,7 @@ func (ec *executionContext) _SceneCreditEdit(ctx context.Context, sel ast.Select
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "credit_role":
+		case "credit_type":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -41827,7 +42438,7 @@ func (ec *executionContext) _SceneCreditEdit(ctx context.Context, sel ast.Select
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._SceneCreditEdit_credit_role(ctx, field, obj)
+				res = ec._SceneCreditEdit_credit_type(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -41856,7 +42467,7 @@ func (ec *executionContext) _SceneCreditEdit(ctx context.Context, sel ast.Select
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "as":
 			out.Values[i] = ec._SceneCreditEdit_as(ctx, field, obj)
-		case "tags":
+		case "attributes":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -41865,7 +42476,7 @@ func (ec *executionContext) _SceneCreditEdit(ctx context.Context, sel ast.Select
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._SceneCreditEdit_tags(ctx, field, obj)
+				res = ec._SceneCreditEdit_attributes(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -45193,20 +45804,15 @@ func (ec *executionContext) marshalNClusterSceneSubmission2ᚕgithubᚗcomᚋsta
 	return ret
 }
 
-func (ec *executionContext) unmarshalNCreditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditInput(ctx context.Context, v any) (CreditInput, error) {
-	res, err := ec.unmarshalInputCreditInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
+func (ec *executionContext) marshalNCreditAttribute2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditAttribute(ctx context.Context, sel ast.SelectionSet, v CreditAttribute) graphql.Marshaler {
+	return ec._CreditAttribute(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNCreditRole2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditRole(ctx context.Context, sel ast.SelectionSet, v CreditRole) graphql.Marshaler {
-	return ec._CreditRole(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNCreditRole2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditRoleᚄ(ctx context.Context, sel ast.SelectionSet, v []CreditRole) graphql.Marshaler {
+func (ec *executionContext) marshalNCreditAttribute2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditAttributeᚄ(ctx context.Context, sel ast.SelectionSet, v []CreditAttribute) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNCreditRole2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditRole(ctx, sel, v[i])
+		return ec.marshalNCreditAttribute2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditAttribute(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -45218,33 +45824,83 @@ func (ec *executionContext) marshalNCreditRole2ᚕgithubᚗcomᚋstashappᚋstas
 	return ret
 }
 
-func (ec *executionContext) marshalNCreditRole2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditRole(ctx context.Context, sel ast.SelectionSet, v *CreditRole) graphql.Marshaler {
+func (ec *executionContext) marshalNCreditAttribute2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditAttribute(ctx context.Context, sel ast.SelectionSet, v *CreditAttribute) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
-	return ec._CreditRole(ctx, sel, v)
+	return ec._CreditAttribute(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNCreditRoleCreateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditRoleCreateInput(ctx context.Context, v any) (CreditRoleCreateInput, error) {
-	res, err := ec.unmarshalInputCreditRoleCreateInput(ctx, v)
+func (ec *executionContext) unmarshalNCreditAttributeCreateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditAttributeCreateInput(ctx context.Context, v any) (CreditAttributeCreateInput, error) {
+	res, err := ec.unmarshalInputCreditAttributeCreateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNCreditRoleDestroyInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditRoleDestroyInput(ctx context.Context, v any) (CreditRoleDestroyInput, error) {
-	res, err := ec.unmarshalInputCreditRoleDestroyInput(ctx, v)
+func (ec *executionContext) unmarshalNCreditAttributeDestroyInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditAttributeDestroyInput(ctx context.Context, v any) (CreditAttributeDestroyInput, error) {
+	res, err := ec.unmarshalInputCreditAttributeDestroyInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNCreditRoleSetTagsInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditRoleSetTagsInput(ctx context.Context, v any) (CreditRoleSetTagsInput, error) {
-	res, err := ec.unmarshalInputCreditRoleSetTagsInput(ctx, v)
+func (ec *executionContext) unmarshalNCreditAttributeSetCreditTypesInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditAttributeSetCreditTypesInput(ctx context.Context, v any) (CreditAttributeSetCreditTypesInput, error) {
+	res, err := ec.unmarshalInputCreditAttributeSetCreditTypesInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNCreditRoleUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditRoleUpdateInput(ctx context.Context, v any) (CreditRoleUpdateInput, error) {
-	res, err := ec.unmarshalInputCreditRoleUpdateInput(ctx, v)
+func (ec *executionContext) unmarshalNCreditAttributeUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditAttributeUpdateInput(ctx context.Context, v any) (CreditAttributeUpdateInput, error) {
+	res, err := ec.unmarshalInputCreditAttributeUpdateInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreditInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditInput(ctx context.Context, v any) (CreditInput, error) {
+	res, err := ec.unmarshalInputCreditInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNCreditType2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditType(ctx context.Context, sel ast.SelectionSet, v CreditType) graphql.Marshaler {
+	return ec._CreditType(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNCreditType2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []CreditType) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNCreditType2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditType(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNCreditType2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditType(ctx context.Context, sel ast.SelectionSet, v *CreditType) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._CreditType(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNCreditTypeCreateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditTypeCreateInput(ctx context.Context, v any) (CreditTypeCreateInput, error) {
+	res, err := ec.unmarshalInputCreditTypeCreateInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreditTypeDestroyInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditTypeDestroyInput(ctx context.Context, v any) (CreditTypeDestroyInput, error) {
+	res, err := ec.unmarshalInputCreditTypeDestroyInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreditTypeUpdateInput2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐCreditTypeUpdateInput(ctx context.Context, v any) (CreditTypeUpdateInput, error) {
+	res, err := ec.unmarshalInputCreditTypeUpdateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -46131,35 +46787,15 @@ func (ec *executionContext) unmarshalNPerformerCreateInput2githubᚗcomᚋstasha
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNPerformerCreditRole2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerCreditRole(ctx context.Context, sel ast.SelectionSet, v PerformerCreditRole) graphql.Marshaler {
-	return ec._PerformerCreditRole(ctx, sel, &v)
+func (ec *executionContext) marshalNPerformerCreditType2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerCreditType(ctx context.Context, sel ast.SelectionSet, v PerformerCreditType) graphql.Marshaler {
+	return ec._PerformerCreditType(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNPerformerCreditRole2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerCreditRoleᚄ(ctx context.Context, sel ast.SelectionSet, v []PerformerCreditRole) graphql.Marshaler {
+func (ec *executionContext) marshalNPerformerCreditType2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerCreditTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []PerformerCreditType) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNPerformerCreditRole2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerCreditRole(ctx, sel, v[i])
-	})
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalNPerformerCreditTag2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerCreditTag(ctx context.Context, sel ast.SelectionSet, v PerformerCreditTag) graphql.Marshaler {
-	return ec._PerformerCreditTag(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNPerformerCreditTag2ᚕgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerCreditTagᚄ(ctx context.Context, sel ast.SelectionSet, v []PerformerCreditTag) graphql.Marshaler {
-	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
-		fc := graphql.GetFieldContext(ctx)
-		fc.Result = &v[i]
-		return ec.marshalNPerformerCreditTag2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerCreditTag(ctx, sel, v[i])
+		return ec.marshalNPerformerCreditType2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐPerformerCreditType(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -46885,16 +47521,6 @@ func (ec *executionContext) marshalNTag2ᚕgithubᚗcomᚋstashappᚋstashᚑbox
 	}
 
 	return ret
-}
-
-func (ec *executionContext) marshalNTag2ᚖgithubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐTag(ctx context.Context, sel ast.SelectionSet, v *Tag) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Tag(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNTagCategory2githubᚗcomᚋstashappᚋstashᚑboxᚋinternalᚋmodelsᚐTagCategory(ctx context.Context, sel ast.SelectionSet, v TagCategory) graphql.Marshaler {
@@ -47877,6 +48503,42 @@ func (ec *executionContext) marshalOInt2int(ctx context.Context, sel ast.Selecti
 	_ = ctx
 	res := graphql.MarshalInt(v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOInt2ᚕint32ᚄ(ctx context.Context, v any) ([]int32, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]int32, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNInt2int32(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOInt2ᚕint32ᚄ(ctx context.Context, sel ast.SelectionSet, v []int32) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNInt2int32(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v any) (*int, error) {

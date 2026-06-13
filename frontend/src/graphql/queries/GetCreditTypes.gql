@@ -1,0 +1,7 @@
+query GetCreditTypes {
+  getCreditTypes {
+    id
+    name
+    description
+  }
+}

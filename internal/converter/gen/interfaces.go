@@ -36,7 +36,11 @@ type ModelConverter interface {
 
 	// goverter:map CreatedAt CreatedAt
 	// goverter:map UpdatedAt UpdatedAt
-	ConvertCreditRole(source queries.CreditRole) models.CreditRole
+	ConvertCreditType(source queries.CreditType) models.CreditType
+
+	// goverter:map CreatedAt CreatedAt
+	// goverter:map UpdatedAt UpdatedAt
+	ConvertCreditAttribute(source queries.CreditAttribute) models.CreditAttribute
 
 	// goverter:map CreatedAt CreatedAt
 	// goverter:map UpdatedAt UpdatedAt
@@ -86,7 +90,8 @@ type ModelConverter interface {
 	ConvertSiteCategories(source []queries.SiteCategory) []models.SiteCategory
 	ConvertTagCategories(source []queries.TagCategory) []models.TagCategory
 	ConvertTags(source []queries.Tag) []models.Tag
-	ConvertCreditRoles(source []queries.CreditRole) []models.CreditRole
+	ConvertCreditTypes(source []queries.CreditType) []models.CreditType
+	ConvertCreditAttributes(source []queries.CreditAttribute) []models.CreditAttribute
 	ConvertInviteKeys(source []queries.InviteKey) []models.InviteKey
 	ConvertNotifications(source []queries.Notification) []models.Notification
 }

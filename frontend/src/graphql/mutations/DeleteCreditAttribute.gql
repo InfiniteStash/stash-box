@@ -1,0 +1,3 @@
+mutation DeleteCreditAttribute($input: CreditAttributeDestroyInput!) {
+  creditAttributeDestroy(input: $input)
+}

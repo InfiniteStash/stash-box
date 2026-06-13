@@ -358,13 +358,13 @@ type SceneCredit = {
     PerformerFragment,
     "name" | "id" | "gender" | "disambiguation" | "deleted"
   >;
-  credit_role: {
+  credit_type: {
     id: number;
     name: string;
     description: string;
   };
-  tags: Array<{
-    id: string;
+  attributes: Array<{
+    id: number;
     name: string;
     description?: string | null;
   }>;
@@ -452,9 +452,9 @@ export const renderSceneDetails = (
       removed={sceneDetails.removed_credits}
       renderItem={renderPerformer}
       getKey={(o) =>
-        `${o.performer.id}|${o.credit_role?.id ?? ""}|${o.as ?? ""}|${o.tags
-          .map((t) => t.id)
-          .sort()
+        `${o.performer.id}|${o.credit_type?.id ?? ""}|${o.as ?? ""}|${o.attributes
+          .map((a) => a.id)
+          .sort((x, y) => x - y)
           .join(",")}`
       }
       showDiff={showDiff}

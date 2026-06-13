@@ -144,13 +144,13 @@ func (s *sceneEditTestRunner) verifySceneEdit(input models.SceneEditDetailsInput
 	var creditObjs []sceneCredit
 	for _, c := range credits {
 		performer, _ := creditResolver.Performer(s.ctx, &c)
-		role, _ := creditResolver.CreditRole(s.ctx, &c)
+		ct, _ := creditResolver.CreditType(s.ctx, &c)
 		creditObjs = append(creditObjs, sceneCredit{
 			Performer: &idObject{
 				ID: performer.ID.String(),
 			},
-			CreditRole: &creditRole{
-				ID: int(role.ID),
+			CreditType: &creditType{
+				ID: int(ct.ID),
 			},
 			As: c.As,
 		})

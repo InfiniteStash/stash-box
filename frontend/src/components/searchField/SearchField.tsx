@@ -165,8 +165,8 @@ const SearchField: FC<SearchFieldProps> = ({
         placeholder={
           placeholder ??
           (searchType === SearchType.Performer
-            ? "Search for performer..."
-            : "Search for performer or scene...")
+            ? "Search for person..."
+            : "Search for person or scene...")
         }
         formatOptionLabel={formatOptionLabel}
         components={{

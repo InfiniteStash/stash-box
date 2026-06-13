@@ -1,4 +1,3 @@
-export { default as CreditRoleLink } from "./CreditRoleLink";
 export { default as ErrorMessage } from "./ErrorMessage";
 export { FavoriteStar } from "./Favorite";
 export { default as GenderIcon } from "./GenderIcon";

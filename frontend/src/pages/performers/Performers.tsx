@@ -82,7 +82,7 @@ const PerformersComponent: FC = () => {
       <Form.Control
         id="performer-name"
         onChange={(e) => debouncedHandler("query", e.currentTarget.value)}
-        placeholder="Filter performer name"
+        placeholder="Filter person name"
         defaultValue={params.query}
         className="w-auto"
       />
@@ -146,7 +146,7 @@ const PerformersComponent: FC = () => {
   return (
     <>
       <div className="d-flex">
-        <h3 className="me-4">Performers</h3>
+        <h3 className="me-4">People</h3>
         {isEditor && (
           <Link to={ROUTE_PERFORMER_ADD} className="ms-auto">
             <Button>Create</Button>

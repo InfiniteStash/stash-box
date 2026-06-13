@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/stashapp/stash-box/internal/models"
-	"github.com/stashapp/stash-box/internal/service/scene"
 )
 
 type sceneCreditResolver struct{ *Resolver }
@@ -13,25 +12,18 @@ func (r *sceneCreditResolver) Performer(ctx context.Context, obj *models.SceneCr
 	return r.services.Performer().FindByID(ctx, obj.PerformerID)
 }
 
-func (r *sceneCreditResolver) CreditRole(ctx context.Context, obj *models.SceneCredit) (*models.CreditRole, error) {
-	return r.services.CreditRole().FindByID(ctx, int(obj.CreditRoleID))
+func (r *sceneCreditResolver) CreditType(ctx context.Context, obj *models.SceneCredit) (*models.CreditType, error) {
+	return r.services.CreditType().FindByID(ctx, int(obj.CreditTypeID))
 }
 
-func (r *sceneCreditResolver) Tags(ctx context.Context, obj *models.SceneCredit) ([]models.Tag, error) {
-	// Use the LoadCreditTagsByCompositeIDs function with a single key
-	key := scene.CreditCompositeKey{
-		SceneID:      obj.SceneID,
-		PerformerID:  obj.PerformerID,
-		CreditRoleID: int(obj.CreditRoleID),
-	}
-
-	results, errs := r.services.Scene().LoadCreditTagsByCompositeIDs(ctx, []scene.CreditCompositeKey{key})
+func (r *sceneCreditResolver) Attributes(ctx context.Context, obj *models.SceneCredit) ([]models.CreditAttribute, error) {
+	results, errs := r.services.Scene().LoadCreditAttributesBySceneCreditIDs(ctx, []int32{obj.ID})
 	if len(errs) > 0 && errs[0] != nil {
 		return nil, errs[0]
 	}
 
 	if len(results) == 0 {
-		return []models.Tag{}, nil
+		return []models.CreditAttribute{}, nil
 	}
 
 	return results[0], nil

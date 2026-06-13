@@ -1,0 +1,5 @@
+fragment CreditTypeFragment on CreditType {
+  id
+  name
+  description
+}

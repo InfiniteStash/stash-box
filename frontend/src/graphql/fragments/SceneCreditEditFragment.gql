@@ -1,15 +1,15 @@
 #import "./PerformerFragment.gql"
-#import "./CreditRoleFragment.gql"
-#import "./TagFragment.gql"
+#import "./CreditTypeFragment.gql"
+#import "./CreditAttributeFragment.gql"
 fragment SceneCreditEditFragment on SceneCreditEdit {
   performer {
     ...PerformerFragment
   }
-  credit_role {
-    ...CreditRoleFragment
+  credit_type {
+    ...CreditTypeFragment
   }
   as
-  tags {
-    ...TagFragment
+  attributes {
+    ...CreditAttributeFragment
   }
 }

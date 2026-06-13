@@ -33,7 +33,7 @@ import {
   type SceneEditDetailsInput,
   ValidSiteTypeEnum,
 } from "src/graphql";
-import { useGetCreditRoles } from "src/graphql/queries";
+import { useGetCreditAttributes, useGetCreditTypes } from "src/graphql/queries";
 import { useBeforeUnload } from "src/hooks/useBeforeUnload";
 import { formatDuration, parseDuration, performerHref } from "src/utils";
 import DiffScene from "./diff";
@@ -65,8 +65,10 @@ const SceneForm: FC<SceneProps> = ({
   draftFingerprints,
 }) => {
   useBeforeUnload();
-  const { data: creditRolesData } = useGetCreditRoles();
-  const creditRoles = creditRolesData?.getCreditRoles ?? [];
+  const { data: creditTypesData } = useGetCreditTypes();
+  const creditTypes = creditTypesData?.getCreditTypes ?? [];
+  const { data: creditAttributesData } = useGetCreditAttributes();
+  const creditAttributes = creditAttributesData?.getCreditAttributes ?? [];
 
   const {
     register,
@@ -92,10 +94,10 @@ const SceneForm: FC<SceneProps> = ({
       credits: (initial?.credits ?? scene?.credits ?? []).map((c) => ({
         performerId: c.performer.id,
         name: c.performer.name,
-        creditRoleId: c.credit_role.id,
-        creditRoleName: c.credit_role.name,
+        creditTypeId: c.credit_type.id,
+        creditTypeName: c.credit_type.name,
         alias: c.as ?? "",
-        tags: c.tags ?? [],
+        attributes: c.attributes ?? [],
         aliases: c.performer.aliases,
         gender: c.performer.gender,
         disambiguation: c.performer.disambiguation,
@@ -143,9 +145,9 @@ const SceneForm: FC<SceneProps> = ({
       studio_id: data.studio?.id,
       credits: data.credits?.map((c) => ({
         performer_id: c.performerId,
-        credit_role_id: c.creditRoleId,
+        credit_type_id: c.creditTypeId,
         as: c.alias || null,
-        tag_ids: c.tags?.map((t) => t.id) ?? [],
+        attribute_ids: c.attributes?.map((a) => a.id) ?? [],
       })),
       image_ids: data.images.map((i) => i.id),
       tag_ids: data.tags?.map((t) => t.id),
@@ -163,10 +165,10 @@ const SceneForm: FC<SceneProps> = ({
       name: result.name,
       performerId: result.id,
       gender: result.gender,
-      creditRoleId: 1, // Default to PERFORMANCE
-      creditRoleName: "PERFORMANCE",
+      creditTypeId: 1, // Default to Performer
+      creditTypeName: "Performer",
       alias: "",
-      tags: [],
+      attributes: [],
       aliases: result.aliases,
       disambiguation: result.disambiguation ?? undefined,
       deleted: result.deleted,
@@ -187,10 +189,10 @@ const SceneForm: FC<SceneProps> = ({
       name: result.name,
       performerId: result.id,
       gender: result.gender,
-      creditRoleId: currentCredit.creditRoleId,
-      creditRoleName: currentCredit.creditRoleName,
+      creditTypeId: currentCredit.creditTypeId,
+      creditTypeName: currentCredit.creditTypeName,
       alias: alias === result.name ? "" : alias,
-      tags: currentCredit.tags,
+      attributes: currentCredit.attributes,
       aliases: result.aliases,
       disambiguation: result.disambiguation ?? undefined,
       deleted: result.deleted,
@@ -200,24 +202,20 @@ const SceneForm: FC<SceneProps> = ({
   const currentPerformerIds = creditFields.map((c) => c.performerId);
 
   const creditList = creditFields.map((c, index) => {
-    const currentRole = creditRoles.find(
-      (r: { id: number }) => r.id === c.creditRoleId,
-    );
-    const roleOptions = creditRoles.map(
-      (role: { id: number; name: string }) => ({
-        value: role.id,
-        label: role.name,
-      }),
-    );
-    const tagOptions =
-      currentRole?.valid_tags.map((tag: { id: string; name: string }) => ({
-        value: tag.id,
-        label: tag.name,
-      })) ?? [];
+    const typeOptions = creditTypes.map((t) => ({
+      value: t.id,
+      label: t.name,
+    }));
+    const attributeOptions = creditAttributes
+      .filter((a) => a.credit_types.some((t) => t.id === c.creditTypeId))
+      .map((a) => ({
+        value: a.id,
+        label: a.name,
+      }));
 
     return (
-      <div>
-        <Row key={c.key}>
+      <div key={c.key}>
+        <Row>
           <Form.Control
             type="hidden"
             defaultValue={c.performerId}
@@ -225,13 +223,13 @@ const SceneForm: FC<SceneProps> = ({
           />
           <Form.Control
             type="hidden"
-            defaultValue={c.creditRoleId}
-            {...register(`credits.${index}.creditRoleId`)}
+            defaultValue={c.creditTypeId}
+            {...register(`credits.${index}.creditTypeId`)}
           />
           <Form.Control
             type="hidden"
-            defaultValue={c.creditRoleName}
-            {...register(`credits.${index}.creditRoleName`)}
+            defaultValue={c.creditTypeName}
+            {...register(`credits.${index}.creditTypeName`)}
           />
 
           <Col xs={6} className="mb-2">
@@ -354,28 +352,28 @@ const SceneForm: FC<SceneProps> = ({
         <Row>
           <Col xs={3} className="mb-2">
             <Controller
-              name={`credits.${index}.creditRoleId`}
+              name={`credits.${index}.creditTypeId`}
               control={control}
               render={({ field: { onChange, value } }) => (
                 <Select
                   classNamePrefix="react-select"
-                  options={roleOptions}
-                  value={roleOptions.find(
+                  options={typeOptions}
+                  value={typeOptions.find(
                     (opt: { value: number }) => opt.value === value,
                   )}
                   onChange={(selected) => {
                     if (selected) {
                       onChange(selected.value);
-                      const role = creditRoles.find(
-                        (r: { id: number }) => r.id === selected.value,
+                      const type = creditTypes.find(
+                        (t) => t.id === selected.value,
                       );
-                      if (role) {
-                        // Update role name and clear tags when role changes
+                      if (type) {
+                        // Update type name and clear attributes when type changes
                         updateCredit(index, {
                           ...creditFields[index],
-                          creditRoleId: selected.value,
-                          creditRoleName: role.name,
-                          tags: [],
+                          creditTypeId: selected.value,
+                          creditTypeName: type.name,
+                          attributes: [],
                         });
                       }
                     }
@@ -394,39 +392,41 @@ const SceneForm: FC<SceneProps> = ({
 
           <Col xs={{ span: 6, offset: 3 }}>
             <InputGroup>
-              <InputGroup.Text>Tags</InputGroup.Text>
+              <InputGroup.Text>Attributes</InputGroup.Text>
               <Controller
-                name={`credits.${index}.tags`}
+                name={`credits.${index}.attributes`}
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <Select
                     classNamePrefix="react-select"
                     className="flex-grow-1"
-                    options={tagOptions}
-                    value={tagOptions.filter((opt: { value: string }) =>
-                      value?.some((t: { id: string }) => t.id === opt.value),
+                    options={attributeOptions}
+                    value={attributeOptions.filter((opt: { value: number }) =>
+                      value?.some((a: { id: number }) => a.id === opt.value),
                     )}
                     onChange={(selected) => {
-                      const selectedTags = selected.map(
-                        (s: { value: string; label: string }) => {
-                          const tag = currentRole?.valid_tags.find(
-                            (t: { id: string }) => t.id === s.value,
+                      const selectedAttributes = selected.map(
+                        (s: { value: number; label: string }) => {
+                          const attr = creditAttributes.find(
+                            (a) => a.id === s.value,
                           );
                           return {
                             id: s.value,
                             name: s.label,
-                            description: tag?.description ?? null,
+                            description: attr?.description ?? null,
                           };
                         },
                       );
-                      onChange(selectedTags);
+                      onChange(selectedAttributes);
                     }}
                     isMulti
-                    isDisabled={isChanging === index || tagOptions.length === 0}
+                    isDisabled={
+                      isChanging === index || attributeOptions.length === 0
+                    }
                     placeholder={
-                      tagOptions.length === 0
-                        ? "No tags available for this role"
-                        : "Select tags..."
+                      attributeOptions.length === 0
+                        ? "No attributes available for this credit type"
+                        : "Select attributes..."
                     }
                   />
                 )}

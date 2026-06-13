@@ -15,7 +15,8 @@ import {
   FingerprintClustersDocument,
   type FingerprintClustersQueryVariables,
   FullPerformerDocument,
-  GetCreditRolesDocument,
+  GetCreditAttributesDocument,
+  GetCreditTypesDocument,
   MeDocument,
   type MeQuery,
   type MeQueryVariables,
@@ -352,4 +353,7 @@ export const useModAudits = (variables: ModAuditsQueryVariables) =>
     variables,
   });
 
-export const useGetCreditRoles = () => useQuery(GetCreditRolesDocument);
+export const useGetCreditTypes = () => useQuery(GetCreditTypesDocument);
+
+export const useGetCreditAttributes = () =>
+  useQuery(GetCreditAttributesDocument);

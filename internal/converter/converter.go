@@ -105,19 +105,34 @@ func TagToModelPtr(t queries.Tag) *models.Tag {
 	return &tag
 }
 
-// CreditRoleToModel converts a queries.CreditRole to a models.CreditRole
-func CreditRoleToModel(ct queries.CreditRole) models.CreditRole {
-	return modelConverter.ConvertCreditRole(ct)
+// CreditTypeToModel converts a queries.CreditType to a models.CreditType
+func CreditTypeToModel(ct queries.CreditType) models.CreditType {
+	return modelConverter.ConvertCreditType(ct)
 }
 
-func CreditRoleToModelPtr(ct queries.CreditRole) *models.CreditRole {
-	creditRole := CreditRoleToModel(ct)
-	return &creditRole
+func CreditTypeToModelPtr(ct queries.CreditType) *models.CreditType {
+	creditType := CreditTypeToModel(ct)
+	return &creditType
 }
 
-// CreditRolesToModels converts a slice of queries.CreditRole to a slice of models.CreditRole
-func CreditRolesToModels(creditRoles []queries.CreditRole) []models.CreditRole {
-	return modelConverter.ConvertCreditRoles(creditRoles)
+// CreditTypesToModels converts a slice of queries.CreditType to a slice of models.CreditType
+func CreditTypesToModels(creditTypes []queries.CreditType) []models.CreditType {
+	return modelConverter.ConvertCreditTypes(creditTypes)
+}
+
+// CreditAttributeToModel converts a queries.CreditAttribute to a models.CreditAttribute
+func CreditAttributeToModel(ca queries.CreditAttribute) models.CreditAttribute {
+	return modelConverter.ConvertCreditAttribute(ca)
+}
+
+func CreditAttributeToModelPtr(ca queries.CreditAttribute) *models.CreditAttribute {
+	creditAttribute := CreditAttributeToModel(ca)
+	return &creditAttribute
+}
+
+// CreditAttributesToModels converts a slice of queries.CreditAttribute to a slice of models.CreditAttribute
+func CreditAttributesToModels(creditAttributes []queries.CreditAttribute) []models.CreditAttribute {
+	return modelConverter.ConvertCreditAttributes(creditAttributes)
 }
 
 // MergedCreditsToModels converts GetMergedCreditsForEditRow to models.SceneCredit
@@ -126,7 +141,7 @@ func MergedCreditsToModels(creditRows []queries.GetMergedCreditsForEditRow) []mo
 	for _, row := range creditRows {
 		result = append(result, models.SceneCredit{
 			PerformerID:  row.PerformerID,
-			CreditRoleID: int32(row.CreditRoleID),
+			CreditTypeID: int32(row.CreditTypeID),
 			As:           row.As,
 		})
 	}

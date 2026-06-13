@@ -436,9 +436,9 @@ const renderAmendableSceneDetails = (
       removed={sceneDetails.removed_credits}
       renderItem={renderPerformer}
       getKey={(o) =>
-        `${o.performer.id}|${o.credit_role?.id ?? ""}|${o.as ?? ""}|${o.tags
-          .map((t) => t.id)
-          .sort()
+        `${o.performer.id}|${o.credit_type?.id ?? ""}|${o.as ?? ""}|${o.attributes
+          .map((a) => a.id)
+          .sort((x, y) => x - y)
           .join(",")}`
       }
       showDiff={showDiff}

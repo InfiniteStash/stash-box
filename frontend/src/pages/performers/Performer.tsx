@@ -3,7 +3,7 @@ import type { FC } from "react";
 import { Tab, Tabs } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import CheckboxSelect from "src/components/checkboxSelect";
-import CreditRoleSelect from "src/components/creditRoleSelect";
+import CreditTypeSelect from "src/components/creditTypeSelect";
 import { EditList, SceneList, URLList } from "src/components/list";
 import {
   CriterionModifier,
@@ -27,9 +27,9 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const activeTab = location.hash?.slice(1) || DEFAULT_TAB;
-  const [{ studioFilter, creditRoleFilter }, setParams] = useQueryParams({
+  const [{ studioFilter, creditTypeFilter }, setParams] = useQueryParams({
     studioFilter: { name: "studios", type: "string[]" },
-    creditRoleFilter: { name: "role", type: "number" },
+    creditTypeFilter: { name: "type", type: "number" },
   });
 
   const { data: editData } = usePendingEditsCount({
@@ -40,13 +40,6 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
 
   const setTab = (tab: string | null) =>
     navigate({ hash: tab === DEFAULT_TAB ? "" : `#${tab}` });
-
-  // Build role/tag data for the selector
-  const roleTagData = performer.credit_roles.map((cr) => ({
-    role: cr.role,
-    scene_count: cr.scene_count,
-    tags: cr.tags,
-  }));
 
   const studios = keyBy(performer.studios, (s) => s.studio.id);
   const studioGroups = groupBy(
@@ -103,13 +96,12 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
       >
         <Tab eventKey="scenes" title="Scenes" className="PerformerScenes">
           <div className="mb-2">
-            <CreditRoleSelect
-              value={creditRoleFilter ?? 1}
-              onChange={(roleId) =>
-                setParams("creditRoleFilter", roleId ?? undefined)
+            <CreditTypeSelect
+              value={creditTypeFilter ?? 1}
+              onChange={(typeId) =>
+                setParams("creditTypeFilter", typeId ?? undefined)
               }
-              placeholder="Filter by role"
-              roleTagData={roleTagData}
+              placeholder="Filter by credit type"
             />
           </div>
           <CheckboxSelect
@@ -127,7 +119,7 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
                 value: [performer.id],
                 modifier: CriterionModifier.INCLUDES,
               },
-              credit_role_id: creditRoleFilter ?? 1,
+              credit_type_id: creditTypeFilter ?? 1,
               ...(studioFilter
                 ? {
                     studios: {

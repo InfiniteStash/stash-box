@@ -15,12 +15,12 @@ const PerformerLoader: FC = () => {
   const { id } = useParams();
   const { loading, data } = useFullPerformer({ id: id ?? "" }, !id);
 
-  if (loading) return <LoadingIndicator message="Loading performer..." />;
+  if (loading) return <LoadingIndicator message="Loading person..." />;
 
-  if (!id) return <ErrorMessage error="Performer ID is missing" />;
+  if (!id) return <ErrorMessage error="Person ID is missing" />;
 
   const performer = data?.findPerformer;
-  if (!performer) return <ErrorMessage error="Performer not found." />;
+  if (!performer) return <ErrorMessage error="Person not found." />;
 
   return (
     <Routes>
@@ -70,7 +70,7 @@ const PerformerRoutes: FC = () => (
       path="/"
       element={
         <>
-          <Title page="Performers" />
+          <Title page="People" />
           <Performers />
         </>
       }
@@ -79,7 +79,7 @@ const PerformerRoutes: FC = () => (
       path="/add"
       element={
         <>
-          <Title page="Add Performer" />
+          <Title page="Add Person" />
           <PerformerAdd />
         </>
       }

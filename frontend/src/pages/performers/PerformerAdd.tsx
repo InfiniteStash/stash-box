@@ -40,7 +40,7 @@ const PerformerAdd: FC = () => {
 
   return (
     <div>
-      <h3>Add new performer</h3>
+      <h3>Add new person</h3>
       <hr />
       <PerformerForm callback={doInsert} saving={saving} isCreate />
       {submissionError && (

@@ -3,22 +3,11 @@ package api
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash-box/internal/dataloader"
 	"github.com/stashapp/stash-box/internal/models"
 )
 
 type sceneEditResolver struct{ *Resolver }
-
-// Context key for storing credit tag IDs during edit diff resolution
-type creditTagsContextKey struct{}
-
-// creditTagsMap maps a credit composite key to its tag IDs
-type creditTagsMap map[string][]uuid.UUID
-
-func creditKey(performerID uuid.UUID, roleID int32) string {
-	return performerID.String() + "|" + string(rune(roleID))
-}
 
 func (r *sceneEditResolver) Studio(ctx context.Context, obj *models.SceneEdit) (*models.Studio, error) {
 	if obj.StudioID == nil {
@@ -100,12 +89,8 @@ func (r *sceneEditResolver) Urls(ctx context.Context, obj *models.SceneEdit) ([]
 func (r *sceneEditResolver) creditList(ctx context.Context, credits []models.CreditInput) ([]models.SceneCreditEdit, error) {
 	var ret []models.SceneCreditEdit
 	for _, c := range credits {
-		ret = append(ret, models.SceneCreditEdit{
-			PerformerID:  c.PerformerID,
-			CreditRoleID: c.CreditRoleID,
-			As:           c.As,
-			TagIDs:       c.TagIDs, // Preserve tag IDs for edit diffs
-		})
+		// CreditInput and SceneCreditEdit share the same fields.
+		ret = append(ret, models.SceneCreditEdit(c))
 	}
 	return ret, nil
 }
