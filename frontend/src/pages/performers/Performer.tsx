@@ -29,7 +29,7 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
   const activeTab = location.hash?.slice(1) || DEFAULT_TAB;
   const [{ studioFilter, creditTypeFilter }, setParams] = useQueryParams({
     studioFilter: { name: "studios", type: "string[]" },
-    creditTypeFilter: { name: "type", type: "number" },
+    creditTypeFilter: { name: "type", type: "number", default: 1 },
   });
 
   const { data: editData } = usePendingEditsCount({
@@ -97,7 +97,7 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
         <Tab eventKey="scenes" title="Scenes" className="PerformerScenes">
           <div className="mb-2">
             <CreditTypeSelect
-              value={creditTypeFilter ?? 1}
+              value={creditTypeFilter}
               onChange={(typeId) =>
                 setParams("creditTypeFilter", typeId ?? undefined)
               }
@@ -119,7 +119,7 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
                 value: [performer.id],
                 modifier: CriterionModifier.INCLUDES,
               },
-              credit_type_id: creditTypeFilter ?? 1,
+              credit_type_id: creditTypeFilter,
               ...(studioFilter
                 ? {
                     studios: {

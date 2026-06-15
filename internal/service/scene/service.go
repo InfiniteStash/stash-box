@@ -374,6 +374,12 @@ func (s *Scene) Create(ctx context.Context, input models.SceneCreateInput) (*mod
 	newScene := converter.SceneCreateInputToScene(input)
 	newScene.ID = id
 
+	for _, credit := range input.Credits {
+		if err := s.ValidateCreditInput(ctx, credit); err != nil {
+			return nil, err
+		}
+	}
+
 	var scene models.Scene
 	err = s.withTxn(func(tx *queries.Queries) error {
 		dbScene, err := tx.CreateScene(ctx, converter.SceneToCreateParams(newScene))
@@ -419,6 +425,12 @@ func (s *Scene) Update(ctx context.Context, input models.SceneUpdateInput) (*mod
 
 	// Populate scene from the input
 	converter.UpdateSceneFromUpdateInput(&updatedScene, input)
+
+	for _, credit := range input.Credits {
+		if err := s.ValidateCreditInput(ctx, credit); err != nil {
+			return nil, err
+		}
+	}
 
 	if err := s.withTxn(func(tx *queries.Queries) error {
 		scene, err := tx.UpdateScene(ctx, converter.SceneToUpdateParams(updatedScene))

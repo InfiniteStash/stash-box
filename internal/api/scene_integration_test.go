@@ -635,9 +635,24 @@ func (s *sceneTestRunner) testQueryScenesByPerformer() {
 	scene3, err := s.createTestScene(&input)
 	assert.NoError(s.t, err)
 
+	// scene4: performer1 credited as a Director (type 2) rather than a performer.
+	scene4Title := prefix + "scene4Title"
+	scene4, err := s.createTestScene(&models.SceneCreateInput{
+		Credits: []models.CreditInput{
+			{
+				PerformerID:  performer1ID,
+				CreditTypeID: int32(2), // DIRECTOR role ID
+			},
+		},
+		Title: &scene4Title,
+		Date:  "2020-03-02",
+	})
+	assert.NoError(s.t, err)
+
 	scene1ID := scene1.UUID()
 	scene2ID := scene2.UUID()
 	scene3ID := scene3.UUID()
+	scene4ID := scene4.UUID()
 
 	titleSearch := prefix
 	filter := models.SceneQueryInput{
@@ -648,7 +663,8 @@ func (s *sceneTestRunner) testQueryScenesByPerformer() {
 		Title: &titleSearch,
 	}
 
-	s.verifyQueryScenesResult(filter, []uuid.UUID{scene1ID, scene3ID})
+	// performer1 is credited on scene1/scene3 (performer) and scene4 (director).
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene1ID, scene3ID, scene4ID})
 
 	filter.Performers.Modifier = models.CriterionModifierExcludes
 	s.verifyQueryScenesResult(filter, []uuid.UUID{scene2ID})
@@ -660,7 +676,19 @@ func (s *sceneTestRunner) testQueryScenesByPerformer() {
 	// test INCLUDES with multiple performers - scene3 has both performers and should appear only once
 	filter.Performers.Modifier = models.CriterionModifierIncludes
 	filter.Performers.Value = []uuid.UUID{performer1ID, performer2ID}
-	s.verifyQueryScenesResult(filter, []uuid.UUID{scene1ID, scene2ID, scene3ID})
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene1ID, scene2ID, scene3ID, scene4ID})
+
+	// filter by credit type: performer1 performs on scene1/scene3 and directs scene4
+	filter.Performers.Value = []uuid.UUID{performer1ID}
+	performanceType := 1
+	filter.CreditTypeID = &performanceType
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene1ID, scene3ID})
+
+	directorType := 2
+	filter.CreditTypeID = &directorType
+	s.verifyQueryScenesResult(filter, []uuid.UUID{scene4ID})
+
+	filter.CreditTypeID = nil
 
 	// test invalid modifiers
 	filter.Performers.Modifier = models.CriterionModifierGreaterThan

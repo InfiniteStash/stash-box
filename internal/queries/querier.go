@@ -270,6 +270,9 @@ type Querier interface {
 	GetChildStudios(ctx context.Context, parentStudioID uuid.NullUUID) ([]Studio, error)
 	GetCreditTypeIDsForAttribute(ctx context.Context, creditAttributeID int) ([]int, error)
 	GetCreditTypesByPerformer(ctx context.Context, performerID uuid.UUID) ([]GetCreditTypesByPerformerRow, error)
+	// Attributes of the edit's target scene credits, identified by credit content
+	// (performer, credit type, alias) so merged credits can be matched without a credit id.
+	GetCurrentCreditAttributesForEdit(ctx context.Context, id uuid.UUID) ([]GetCurrentCreditAttributesForEditRow, error)
 	GetEditComments(ctx context.Context, editID uuid.UUID) ([]EditComment, error)
 	GetEditCommentsByIds(ctx context.Context, dollar_1 []uuid.UUID) ([]EditComment, error)
 	GetEditPerformerAliases(ctx context.Context, id uuid.UUID) ([]string, error)
@@ -342,6 +345,11 @@ type Querier interface {
 	// Prepare a fingerprint move by dropping reports and dupe fingerprint submissions
 	PruneSceneFingerprintsForMove(ctx context.Context, arg PruneSceneFingerprintsForMoveParams) ([]PruneSceneFingerprintsForMoveRow, error)
 	QueryModAudits(ctx context.Context, arg QueryModAuditsParams) ([]ModAudit, error)
+	// Reassign the old performer's credits to the new performer. Skip a credit if the new
+	// performer already has one of the same type on that scene (the merge keeps a single
+	// credit per performer/scene/type, regardless of alias); skipped rows are removed by
+	// DeletePerformerScenes. Matching on credit_type_id preserves distinct-type credits
+	// (e.g. a Director credit is not collapsed into a Performer credit).
 	ReassignPerformerAliases(ctx context.Context, arg ReassignPerformerAliasesParams) error
 	ReassignPerformerFavorites(ctx context.Context, arg ReassignPerformerFavoritesParams) error
 	ReassignStudioFavorites(ctx context.Context, arg ReassignStudioFavoritesParams) error

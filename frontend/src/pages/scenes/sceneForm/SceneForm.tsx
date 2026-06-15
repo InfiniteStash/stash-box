@@ -75,6 +75,7 @@ const SceneForm: FC<SceneProps> = ({
     control,
     handleSubmit,
     watch,
+    getValues,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(SceneSchema),
@@ -221,11 +222,7 @@ const SceneForm: FC<SceneProps> = ({
             defaultValue={c.performerId}
             {...register(`credits.${index}.performerId`)}
           />
-          <Form.Control
-            type="hidden"
-            defaultValue={c.creditTypeId}
-            {...register(`credits.${index}.creditTypeId`)}
-          />
+          {/* creditTypeId is managed by the Select Controller below */}
           <Form.Control
             type="hidden"
             defaultValue={c.creditTypeName}
@@ -363,18 +360,22 @@ const SceneForm: FC<SceneProps> = ({
                   )}
                   onChange={(selected) => {
                     if (selected) {
-                      onChange(selected.value);
                       const type = creditTypes.find(
                         (t) => t.id === selected.value,
                       );
                       if (type) {
-                        // Update type name and clear attributes when type changes
+                        // Update type name and clear attributes when type changes.
+                        // Read the live alias so an unsaved edit to it isn't reverted
+                        // to the field-array snapshot value.
                         updateCredit(index, {
-                          ...creditFields[index],
+                          ...c,
+                          alias: getValues(`credits.${index}.alias`),
                           creditTypeId: selected.value,
                           creditTypeName: type.name,
                           attributes: [],
                         });
+                      } else {
+                        onChange(selected.value);
                       }
                     }
                   }}

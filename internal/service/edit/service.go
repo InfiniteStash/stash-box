@@ -616,12 +616,48 @@ func (s *Edit) GetMergedPerformers(ctx context.Context, id uuid.UUID) ([]models.
 	return result, nil
 }
 
-func (s *Edit) GetMergedCredits(ctx context.Context, id uuid.UUID) ([]models.SceneCredit, error) {
+// GetMergedCredits returns the edit's merged scene credits with their attributes attached.
+// addedCredits is the edit's new_data.added_credits (carrying the new attribute ids);
+// unchanged credits keep the attributes currently on the target scene. The resulting
+// SceneCredits are synthetic (ID == 0) and carry attributes inline via AttributeIDs.
+func (s *Edit) GetMergedCredits(ctx context.Context, id uuid.UUID, addedCredits []models.CreditInput) ([]models.SceneCredit, error) {
 	credits, err := s.queries.GetMergedCreditsForEdit(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return converter.MergedCreditsToModels(credits), nil
+
+	addedAttrsMap := make(map[string][]int32, len(addedCredits))
+	for _, c := range addedCredits {
+		addedAttrsMap[creditContentKey(c.PerformerID, c.CreditTypeID, c.As)] = c.AttributeIDs
+	}
+
+	currentRows, err := s.queries.GetCurrentCreditAttributesForEdit(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	currentAttrsMap := make(map[string][]int32)
+	for _, row := range currentRows {
+		key := creditContentKey(row.PerformerID, int32(row.CreditTypeID), row.As)
+		currentAttrsMap[key] = append(currentAttrsMap[key], int32(row.CreditAttributeID))
+	}
+
+	result := make([]models.SceneCredit, 0, len(credits))
+	for _, row := range credits {
+		key := creditContentKey(row.PerformerID, int32(row.CreditTypeID), row.As)
+		var attrIDs []int32
+		if attrs, ok := addedAttrsMap[key]; ok {
+			attrIDs = attrs
+		} else if attrs, ok := currentAttrsMap[key]; ok {
+			attrIDs = attrs
+		}
+		result = append(result, models.SceneCredit{
+			PerformerID:  row.PerformerID,
+			CreditTypeID: int32(row.CreditTypeID),
+			As:           row.As,
+			AttributeIDs: attrIDs,
+		})
+	}
+	return result, nil
 }
 
 func (s *Edit) FindByPerformerID(ctx context.Context, performerID uuid.UUID) ([]models.Edit, error) {

@@ -23,9 +23,40 @@ var ErrInvalidStudio = errors.New("invalid studio id")
 var ErrInvalidPerformer = errors.New("invalid performer id")
 var ErrInvalidTag = errors.New("invalid tag id")
 var ErrInvalidSite = errors.New("invalid url site id")
+var ErrInvalidCreditAttribute = errors.New("invalid credit attribute for credit type")
 
 type editEntity interface {
 	IsDeleted() bool
+}
+
+// validateCreditAttributes ensures every attribute on each credit is applicable to that
+// credit's type. Mirrors the check in the direct scene create/update path so both write
+// paths reject inapplicable (or non-existent) attributes consistently.
+func validateCreditAttributes(ctx context.Context, q *queries.Queries, credits []models.CreditInput) error {
+	for _, credit := range credits {
+		if len(credit.AttributeIDs) == 0 {
+			continue
+		}
+		seen := make(map[int32]bool)
+		attrIDs := make([]int, 0, len(credit.AttributeIDs))
+		for _, id := range credit.AttributeIDs {
+			if !seen[id] {
+				seen[id] = true
+				attrIDs = append(attrIDs, int(id))
+			}
+		}
+		validIDs, err := q.GetValidAttributeIDsForType(ctx, queries.GetValidAttributeIDsForTypeParams{
+			AttributeIds: attrIDs,
+			CreditTypeID: int(credit.CreditTypeID),
+		})
+		if err != nil {
+			return err
+		}
+		if len(validIDs) != len(attrIDs) {
+			return fmt.Errorf("%w (credit type %d)", ErrInvalidCreditAttribute, credit.CreditTypeID)
+		}
+	}
+	return nil
 }
 
 func validateEditEntity(entity *editEntity, id uuid.UUID, typeName string) error {
@@ -98,6 +129,9 @@ func validateSceneEditInput(ctx context.Context, queries *queries.Queries, input
 		performers, err := queries.FindPerformersByIds(ctx, performerIds)
 		if err != nil || len(performers) < len(performerIds) {
 			return fmt.Errorf("%w: %w", ErrInvalidPerformer, err)
+		}
+		if err := validateCreditAttributes(ctx, queries, input.Details.Credits); err != nil {
+			return err
 		}
 	}
 

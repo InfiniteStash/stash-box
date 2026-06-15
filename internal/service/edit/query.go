@@ -101,7 +101,7 @@ func (s *Edit) buildEditQuery(psql sq.StatementBuilderType, filter models.EditQu
 					SELECT edit_id FROM %s_edits WHERE %s_id = ?
 					UNION
 					SELECT id FROM edits E
-					WHERE jsonb_path_query_array(data, '$.new_data.added_performers[*].performer_id') @> ?
+					WHERE jsonb_path_query_array(data, '$.new_data.added_credits[*].performer_id') @> ?
 					AND E.status = 'PENDING' AND E.target_type = 'SCENE'
 				)`, targetType, targetType)
 			query = query.Where(sq.Expr(subquery, string(jsonID), *filter.TargetID, string(jsonID)))
@@ -156,8 +156,8 @@ func (s *Edit) buildEditQuery(psql sq.StatementBuilderType, filter models.EditQu
 				 WHERE E.target_type = 'PERFORMER' AND E.operation = 'MERGE' AND PF.user_id = ?)
 				UNION
 				(SELECT E.id FROM performer_favorites PF JOIN edits E
-				 ON jsonb_path_query_array(E.data, '$.new_data.added_performers[*].performer_id') @> to_jsonb(PF.performer_id::TEXT)
-				 OR jsonb_path_query_array(E.data, '$.new_data.removed_performers[*].performer_id') @> to_jsonb(PF.performer_id::TEXT)
+				 ON jsonb_path_query_array(E.data, '$.new_data.added_credits[*].performer_id') @> to_jsonb(PF.performer_id::TEXT)
+				 OR jsonb_path_query_array(E.data, '$.new_data.removed_credits[*].performer_id') @> to_jsonb(PF.performer_id::TEXT)
 				 WHERE E.target_type = 'SCENE' AND PF.user_id = ?)
 				UNION
 				(SELECT E.id FROM studio_favorites TF JOIN edits E

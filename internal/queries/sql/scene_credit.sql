@@ -41,3 +41,13 @@ FROM scene_credit_attributes sca
 JOIN credit_attributes ca ON sca.credit_attribute_id = ca.id
 WHERE sca.scene_credit_id = ANY(sqlc.arg(scene_credit_ids)::INT[])
 ORDER BY sca.scene_credit_id, ca.name;
+
+-- name: GetCurrentCreditAttributesForEdit :many
+-- Attributes of the edit's target scene credits, identified by credit content
+-- (performer, credit type, alias) so merged credits can be matched without a credit id.
+SELECT sc.performer_id, sc.credit_type_id, sc."as", sca.credit_attribute_id
+FROM edits e
+JOIN scene_edits se ON e.id = se.edit_id
+JOIN scene_credits sc ON sc.scene_id = se.scene_id
+JOIN scene_credit_attributes sca ON sca.scene_credit_id = sc.id
+WHERE e.id = $1;

@@ -43,7 +43,10 @@ export const SceneCredits: FC<Props> = ({ scene }) => {
           <div className="scene-credits-role-performers">
             {credits.map((credit) => (
               <div
-                key={`${credit.performer.id}-${credit.as ?? ""}`}
+                key={`${credit.performer.id}-${credit.as ?? ""}-${credit.attributes
+                  .map((a) => a.id)
+                  .sort((x, y) => x - y)
+                  .join(",")}`}
                 className="scene-credits-role-performer card"
               >
                 <PerformerCard performer={credit.performer} hideFooter />

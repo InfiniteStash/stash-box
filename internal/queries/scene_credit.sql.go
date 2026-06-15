@@ -150,6 +150,49 @@ func (q *Queries) FindSceneCreditsByIds(ctx context.Context, sceneIds []uuid.UUI
 	return items, nil
 }
 
+const getCurrentCreditAttributesForEdit = `-- name: GetCurrentCreditAttributesForEdit :many
+SELECT sc.performer_id, sc.credit_type_id, sc."as", sca.credit_attribute_id
+FROM edits e
+JOIN scene_edits se ON e.id = se.edit_id
+JOIN scene_credits sc ON sc.scene_id = se.scene_id
+JOIN scene_credit_attributes sca ON sca.scene_credit_id = sc.id
+WHERE e.id = $1
+`
+
+type GetCurrentCreditAttributesForEditRow struct {
+	PerformerID       uuid.UUID `db:"performer_id" json:"performer_id"`
+	CreditTypeID      int       `db:"credit_type_id" json:"credit_type_id"`
+	As                *string   `db:"as" json:"as"`
+	CreditAttributeID int       `db:"credit_attribute_id" json:"credit_attribute_id"`
+}
+
+// Attributes of the edit's target scene credits, identified by credit content
+// (performer, credit type, alias) so merged credits can be matched without a credit id.
+func (q *Queries) GetCurrentCreditAttributesForEdit(ctx context.Context, id uuid.UUID) ([]GetCurrentCreditAttributesForEditRow, error) {
+	rows, err := q.db.Query(ctx, getCurrentCreditAttributesForEdit, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetCurrentCreditAttributesForEditRow{}
+	for rows.Next() {
+		var i GetCurrentCreditAttributesForEditRow
+		if err := rows.Scan(
+			&i.PerformerID,
+			&i.CreditTypeID,
+			&i.As,
+			&i.CreditAttributeID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSceneCredits = `-- name: GetSceneCredits :many
 SELECT id, scene_id, performer_id, credit_type_id, "as" FROM scene_credits WHERE scene_id = $1
 `

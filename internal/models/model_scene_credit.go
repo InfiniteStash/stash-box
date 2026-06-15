@@ -10,6 +10,11 @@ type SceneCredit struct {
 	PerformerID  uuid.UUID `json:"performer_id"`
 	CreditTypeID int32     `json:"credit_type_id"`
 	As           *string   `json:"as"`
+
+	// AttributeIDs carries attributes for synthetic credits that have no row in
+	// scene_credits (ID == 0), e.g. the merged credits of an edit. For persisted
+	// credits (ID != 0) it is nil and attributes are loaded by ID instead.
+	AttributeIDs []int32 `json:"-"`
 }
 
 type CreditInput struct {

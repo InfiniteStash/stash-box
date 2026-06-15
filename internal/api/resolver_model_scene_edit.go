@@ -104,5 +104,5 @@ func (r *sceneEditResolver) RemovedCredits(ctx context.Context, obj *models.Scen
 }
 
 func (r *sceneEditResolver) Credits(ctx context.Context, obj *models.SceneEdit) ([]models.SceneCredit, error) {
-	return r.services.Edit().GetMergedCredits(ctx, obj.EditID)
+	return r.services.Edit().GetMergedCredits(ctx, obj.EditID, obj.AddedCredits)
 }

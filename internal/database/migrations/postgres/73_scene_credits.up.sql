@@ -288,7 +288,7 @@ BEGIN
            COALESCE(ARRAY_AGG(DISTINCT PS."as") FILTER (WHERE PS."as" IS NOT NULL), '{}'),
            S.code
     FROM scenes S
-    LEFT JOIN scene_credits PS ON PS.scene_id = S.id
+    LEFT JOIN scene_credits PS ON PS.scene_id = S.id AND PS.credit_type_id = 1
     LEFT JOIN performers P ON PS.performer_id = P.id
     LEFT JOIN studios T ON T.id = S.studio_id
     LEFT JOIN studio_aliases SA ON SA.studio_id = T.id

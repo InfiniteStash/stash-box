@@ -252,10 +252,20 @@ WHERE performer_id = $1
 AND "as" = $2;
 
 -- name: ReassignPerformerAliases :exec
-UPDATE scene_credits
+-- Reassign the old performer's credits to the new performer. Skip a credit if the new
+-- performer already has one of the same type on that scene (the merge keeps a single
+-- credit per performer/scene/type, regardless of alias); skipped rows are removed by
+-- DeletePerformerScenes. Matching on credit_type_id preserves distinct-type credits
+-- (e.g. a Director credit is not collapsed into a Performer credit).
+UPDATE scene_credits sc
 SET performer_id = @new_performer_id
-WHERE scene_credits.performer_id = @old_performer_id
-AND scene_id NOT IN (SELECT scene_id from scene_credits sc WHERE sc.performer_id = @new_performer_id);
+WHERE sc.performer_id = @old_performer_id
+AND NOT EXISTS (
+    SELECT 1 FROM scene_credits existing
+    WHERE existing.performer_id = @new_performer_id
+    AND existing.scene_id = sc.scene_id
+    AND existing.credit_type_id = sc.credit_type_id
+);
 
 -- name: DeletePerformerScenes :exec
 DELETE FROM scene_credits WHERE performer_id = $1;

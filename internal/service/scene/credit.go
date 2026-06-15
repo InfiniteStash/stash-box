@@ -46,40 +46,6 @@ func (s *Scene) LoadCreditsBySceneIDs(ctx context.Context, sceneIDs []uuid.UUID)
 	return result, nil
 }
 
-// LoadPerformancesBySceneIDs loads scene performances (credits with the Performer type) for backward compatibility
-func (s *Scene) LoadPerformancesBySceneIDs(ctx context.Context, sceneIDs []uuid.UUID) ([][]models.PerformerAppearance, []error) {
-	if len(sceneIDs) == 0 {
-		return make([][]models.PerformerAppearance, 0), nil
-	}
-
-	// Get all credits for these scenes
-	credits, err := s.queries.FindSceneCreditsByIds(ctx, sceneIDs)
-	if err != nil {
-		return nil, errutil.DuplicateError(err, len(sceneIDs))
-	}
-
-	// Filter to only the Performer type (id = 1) and group by scene ID
-	const performanceTypeID = 1
-	m := make(map[uuid.UUID][]models.PerformerAppearance)
-	for _, credit := range credits {
-		if credit.CreditTypeID == performanceTypeID {
-			// The Performer field will be populated by the resolver
-			m[credit.SceneID] = append(m[credit.SceneID], models.PerformerAppearance{
-				Performer: nil, // Will be loaded by resolver
-				As:        credit.As,
-			})
-		}
-	}
-
-	// Build result in the same order as input IDs
-	result := make([][]models.PerformerAppearance, len(sceneIDs))
-	for i, id := range sceneIDs {
-		result[i] = m[id]
-	}
-
-	return result, nil
-}
-
 // LoadCreditAttributesBySceneCreditIDs loads attributes for scene credits, keyed by scene_credit id (for DataLoader)
 func (s *Scene) LoadCreditAttributesBySceneCreditIDs(ctx context.Context, creditIDs []int32) ([][]models.CreditAttribute, []error) {
 	if len(creditIDs) == 0 {

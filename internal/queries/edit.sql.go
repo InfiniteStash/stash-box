@@ -1006,19 +1006,21 @@ WITH edit AS (
     SELECT sc.performer_id, sc."as" FROM edit e
     JOIN scene_edits se ON e.id = se.edit_id
     JOIN scene_credits sc ON se.scene_id = sc.scene_id
-    WHERE e.target_type = 'SCENE'
+    WHERE e.target_type = 'SCENE' AND sc.credit_type_id = 1
 ),
 removed_performers AS (
     SELECT
         (elem->>'performer_id')::uuid AS performer_id,
         elem->>'as' AS "as"
-    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'removed_performers', '[]'::jsonb)) AS elem
+    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'removed_credits', '[]'::jsonb)) AS elem
+    WHERE (elem->>'credit_type_id')::int = 1
 ),
 added_performers AS (
     SELECT
         (elem->>'performer_id')::uuid AS performer_id,
         elem->>'as' AS "as"
-    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'added_performers', '[]'::jsonb)) AS elem
+    FROM edit, jsonb_array_elements(COALESCE(data->'new_data'->'added_credits', '[]'::jsonb)) AS elem
+    WHERE (elem->>'credit_type_id')::int = 1
 ),
 final_performers AS (
     SELECT performer_id, "as" FROM current_performers

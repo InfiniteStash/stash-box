@@ -63,12 +63,14 @@ func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.Scene
 
 	// Filter by performers
 	if input.Performers != nil && len(input.Performers.Value) > 0 {
-		if err := queryhelper.ApplyMultiIDCriterion(&query, "scenes", "scene_credits", "scene_id", "performer_id", input.Performers); err != nil {
-			return query, err
-		}
-		// Filter by credit type if specified
+		// Constrain to a credit type inside the join subquery; scene_credits is only
+		// in scope there, not in the outer query.
+		var extra []sq.Sqlizer
 		if input.CreditTypeID != nil {
-			query = query.Where(sq.Eq{"scene_credits.credit_type_id": *input.CreditTypeID})
+			extra = append(extra, sq.Eq{"scene_credits.credit_type_id": *input.CreditTypeID})
+		}
+		if err := queryhelper.ApplyMultiIDCriterion(&query, "scenes", "scene_credits", "scene_id", "performer_id", input.Performers, extra...); err != nil {
+			return query, err
 		}
 	}
 

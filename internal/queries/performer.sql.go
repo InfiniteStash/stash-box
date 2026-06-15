@@ -1001,10 +1001,15 @@ func (q *Queries) GetPerformerURLs(ctx context.Context, performerID uuid.UUID) (
 }
 
 const reassignPerformerAliases = `-- name: ReassignPerformerAliases :exec
-UPDATE scene_credits
+UPDATE scene_credits sc
 SET performer_id = $1
-WHERE scene_credits.performer_id = $2
-AND scene_id NOT IN (SELECT scene_id from scene_credits sc WHERE sc.performer_id = $1)
+WHERE sc.performer_id = $2
+AND NOT EXISTS (
+    SELECT 1 FROM scene_credits existing
+    WHERE existing.performer_id = $1
+    AND existing.scene_id = sc.scene_id
+    AND existing.credit_type_id = sc.credit_type_id
+)
 `
 
 type ReassignPerformerAliasesParams struct {
@@ -1012,6 +1017,11 @@ type ReassignPerformerAliasesParams struct {
 	OldPerformerID uuid.UUID `db:"old_performer_id" json:"old_performer_id"`
 }
 
+// Reassign the old performer's credits to the new performer. Skip a credit if the new
+// performer already has one of the same type on that scene (the merge keeps a single
+// credit per performer/scene/type, regardless of alias); skipped rows are removed by
+// DeletePerformerScenes. Matching on credit_type_id preserves distinct-type credits
+// (e.g. a Director credit is not collapsed into a Performer credit).
 func (q *Queries) ReassignPerformerAliases(ctx context.Context, arg ReassignPerformerAliasesParams) error {
 	_, err := q.db.Exec(ctx, reassignPerformerAliases, arg.NewPerformerID, arg.OldPerformerID)
 	return err

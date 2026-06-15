@@ -135,19 +135,6 @@ func CreditAttributesToModels(creditAttributes []queries.CreditAttribute) []mode
 	return modelConverter.ConvertCreditAttributes(creditAttributes)
 }
 
-// MergedCreditsToModels converts GetMergedCreditsForEditRow to models.SceneCredit
-func MergedCreditsToModels(creditRows []queries.GetMergedCreditsForEditRow) []models.SceneCredit {
-	var result []models.SceneCredit
-	for _, row := range creditRows {
-		result = append(result, models.SceneCredit{
-			PerformerID:  row.PerformerID,
-			CreditTypeID: int32(row.CreditTypeID),
-			As:           row.As,
-		})
-	}
-	return result
-}
-
 // UserTokenToModel converts a queries.UserToken to a models.UserToken
 func UserTokenToModel(ut queries.UserToken) models.UserToken {
 	return modelConverter.ConvertUserToken(ut)

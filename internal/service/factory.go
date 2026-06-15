@@ -44,14 +44,24 @@ type Factory struct {
 	db       *pgxpool.Pool
 	withTxn  queries.WithTxnFunc
 	emailMgr *email.Manager
+
+	// Credit types/attributes are small, admin-managed, rarely-changing tables, so their
+	// services keep an in-memory cache. They are memoized here (the Factory is copied by
+	// value, but these shared pointers give a single process-wide cache) — otherwise a
+	// fresh empty cache would be built on every call and the cache would be useless.
+	creditType      *credittype.CreditType
+	creditAttribute *creditattribute.CreditAttribute
 }
 
 // NewFactory creates a new service factory with the given database pool and email manager
 func NewFactory(pool *pgxpool.Pool, emailMgr *email.Manager) *Factory {
+	withTxn := createWithTxnFunc(pool)
 	return &Factory{
-		db:       pool,
-		withTxn:  createWithTxnFunc(pool),
-		emailMgr: emailMgr,
+		db:              pool,
+		withTxn:         withTxn,
+		emailMgr:        emailMgr,
+		creditType:      credittype.NewCreditType(queries.New(pool), withTxn),
+		creditAttribute: creditattribute.NewCreditAttribute(queries.New(pool), withTxn),
 	}
 }
 
@@ -60,14 +70,14 @@ func (f *Factory) Tag() *tag.Tag {
 	return tag.NewTag(queries.New(f.db), f.withTxn)
 }
 
-// CreditType returns a CreditTypeService instance
+// CreditType returns the shared, cache-backed CreditTypeService instance
 func (f *Factory) CreditType() *credittype.CreditType {
-	return credittype.NewCreditType(queries.New(f.db), f.withTxn)
+	return f.creditType
 }
 
-// CreditAttribute returns a CreditAttributeService instance
+// CreditAttribute returns the shared, cache-backed CreditAttributeService instance
 func (f *Factory) CreditAttribute() *creditattribute.CreditAttribute {
-	return creditattribute.NewCreditAttribute(queries.New(f.db), f.withTxn)
+	return f.creditAttribute
 }
 
 // Performer returns a PerformerService instance
