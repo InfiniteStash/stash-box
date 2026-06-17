@@ -5,6 +5,7 @@
     "includes": ["src/**", "!src/graphql/types.ts"]
   },
   "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2 },
+  "css": { "parser": { "tailwindDirectives": true } },
   "javascript": { "formatter": { "quoteStyle": "double" }, "globals": [] },
   "linter": {
     "rules": {

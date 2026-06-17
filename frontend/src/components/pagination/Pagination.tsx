@@ -1,5 +1,12 @@
-import type { FC, MouseEvent } from "react";
-import { Pagination } from "react-bootstrap";
+import {
+  faAngleLeft,
+  faAngleRight,
+  faAnglesLeft,
+  faAnglesRight,
+} from "@fortawesome/free-solid-svg-icons";
+import type { FC, ReactNode } from "react";
+import { Icon } from "src/components/fragments";
+import { cn } from "src/lib/utils";
 
 interface PaginationProps {
   active: number;
@@ -8,6 +15,40 @@ interface PaginationProps {
   perPage: number;
   showCount?: boolean;
 }
+
+interface PageButtonProps {
+  page: number;
+  active?: boolean;
+  disabled?: boolean;
+  onClick: (page: number) => void;
+  children: ReactNode;
+  label?: string;
+}
+
+const PageButton: FC<PageButtonProps> = ({
+  page,
+  active = false,
+  disabled = false,
+  onClick,
+  children,
+  label,
+}) => (
+  <button
+    type="button"
+    disabled={disabled}
+    aria-label={label}
+    aria-current={active ? "page" : undefined}
+    onClick={() => onClick(page)}
+    className={cn(
+      "inline-flex h-9 min-w-9 items-center justify-center rounded-md border-0 px-3 text-sm transition-colors disabled:pointer-events-none disabled:opacity-40",
+      active
+        ? "bg-primary text-primary-foreground"
+        : "bg-secondary text-foreground hover:bg-accent",
+    )}
+  >
+    {children}
+  </button>
+);
 
 const PaginationComponent: FC<PaginationProps> = ({
   active,
@@ -28,42 +69,54 @@ const PaginationComponent: FC<PaginationProps> = ({
   const minVal = Math.max(maxVal - 4, 1);
   const totalItems = maxVal - minVal + 1;
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const paginationItems = [...Array(totalItems)].map((_, arrayIndex) => {
+  const pageNumbers = [...Array(totalItems)].map((_, arrayIndex) => {
     const index = arrayIndex + minVal;
-    const isActive = active === index;
     return (
-      <Pagination.Item key={index} data-page={index} active={isActive}>
+      <PageButton
+        key={index}
+        page={index}
+        active={active === index}
+        onClick={onClick}
+      >
         {index}
-      </Pagination.Item>
+      </PageButton>
     );
   });
 
-  const handleClick = (e: MouseEvent<HTMLUListElement>): void => {
-    const page = (e.target as HTMLElement).closest("a")?.dataset.page;
-    if (!page) return;
-
-    const pageNumber = page ? Number.parseInt(page, 10) : 1;
-    if (pageNumber !== active) onClick(pageNumber);
-  };
-
   return (
-    <div className="ms-auto mt-auto d-flex">
+    <div className="ml-auto mt-auto flex flex-wrap items-center justify-end gap-2">
       {showCount && count > 0 && (
-        <b className="me-4 mt-2">
-          {new Intl.NumberFormat().format(count)} results
-        </b>
+        <b className="mr-2">{new Intl.NumberFormat().format(count)} results</b>
       )}
-      <Pagination onClick={handleClick}>
-        {showFirst && <Pagination.First data-page={1} />}
-        <Pagination.Prev disabled={active === 1} data-page={active - 1} />
-        {paginationItems}
-        <Pagination.Next
+      <div className="flex flex-wrap items-center justify-end gap-1">
+        {showFirst && (
+          <PageButton page={1} onClick={onClick} label="First page">
+            <Icon icon={faAnglesLeft} />
+          </PageButton>
+        )}
+        <PageButton
+          page={active - 1}
+          disabled={active === 1}
+          onClick={onClick}
+          label="Previous page"
+        >
+          <Icon icon={faAngleLeft} />
+        </PageButton>
+        {pageNumbers}
+        <PageButton
+          page={active + 1}
           disabled={active === totalPages}
-          data-page={active + 1}
-        />
-        {showLast && <Pagination.Last data-page={totalPages} />}
-      </Pagination>
+          onClick={onClick}
+          label="Next page"
+        >
+          <Icon icon={faAngleRight} />
+        </PageButton>
+        {showLast && (
+          <PageButton page={totalPages} onClick={onClick} label="Last page">
+            <Icon icon={faAnglesRight} />
+          </PageButton>
+        )}
+      </div>
     </div>
   );
 };

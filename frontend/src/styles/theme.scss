@@ -33,45 +33,10 @@ $textfield-bg: rgba(16 22 26 / 30%);
 @import "bootstrap/scss/maps";
 @import "bootstrap/scss/mixins";
 
-// 4. Include any optional Bootstrap components as you like
-@import "bootstrap/scss/root";
-@import "bootstrap/scss/reboot";
-@import "bootstrap/scss/type";
-@import "bootstrap/scss/containers";
-@import "bootstrap/scss/grid";
-@import "bootstrap/scss/helpers";
-@import "bootstrap/scss/utilities";
-@import "bootstrap/scss/utilities/api";
-
-// Layout & components
-@import "bootstrap/scss/tables";
-@import "bootstrap/scss/forms";
-@import "bootstrap/scss/buttons";
-@import "bootstrap/scss/nav";
-@import "bootstrap/scss/navbar";
-@import "bootstrap/scss/card";
-@import "bootstrap/scss/pagination";
-@import "bootstrap/scss/badge";
-@import "bootstrap/scss/modal";
-@import "bootstrap/scss/tooltip";
-@import "bootstrap/scss/popover";
-@import "bootstrap/scss/spinners";
-@import "bootstrap/scss/close";
-@import "bootstrap/scss/toasts";
-@import "bootstrap/scss/alert";
-@import "bootstrap/scss/dropdown";
-
-/*
-@import "bootstrap/scss/images";
-@import "bootstrap/scss/transitions";
-@import "bootstrap/scss/button-group";
-@import "bootstrap/scss/accordion";
-@import "bootstrap/scss/breadcrumb";
-@import "bootstrap/scss/progress";
-@import "bootstrap/scss/list-group";
-@import "bootstrap/scss/carousel";
-@import "bootstrap/scss/offcanvas";
-*/
+// Bootstrap component/reboot/grid/utility stylesheets removed during the
+// Tailwind migration — only the no-output functions/variables/maps/mixins above
+// are kept so legacy SCSS that references $vars/mixins still compiles. The reset
+// now comes from Tailwind preflight (see styles/tailwind.css).
 
 :root {
   --bs-primary: #{$primary};
@@ -88,7 +53,6 @@ body {
   color: $text-color;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  min-width: 1210px;
 }
 
 .table {

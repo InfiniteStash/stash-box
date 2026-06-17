@@ -1,8 +1,6 @@
 import { useApolloClient } from "@apollo/client/react";
-import debounce from "p-debounce";
 import type { FC } from "react";
-import type { MenuPlacement, OnChangeValue } from "react-select";
-import Async from "react-select/async";
+import { AsyncSelect, type ComboboxOption } from "src/components/ui/combobox";
 import {
   type SearchTagsQuery,
   type SearchTagsQueryVariables,
@@ -16,121 +14,95 @@ interface TagFilterProps {
   tag: string;
   onChange: (tag: Tag | undefined) => void;
   excludeTags?: string[];
-  menuPlacement?: MenuPlacement;
   allowDeleted?: boolean;
 }
 
-interface SearchResult {
-  value: Tag;
-  label: string;
+interface TagOption extends ComboboxOption {
+  tag: Tag;
   sublabel: string;
 }
-
-const CLASSNAME = "TagFilter";
-const CLASSNAME_SELECT = `${CLASSNAME}-select`;
 
 const TagFilter: FC<TagFilterProps> = ({
   tag: tagId,
   onChange,
   excludeTags = [],
-  menuPlacement = "auto",
   allowDeleted = false,
 }) => {
   const client = useApolloClient();
   const { data: tagData } = useTag({ id: tagId }, !tagId);
   const selectedTag = tagData?.findTag;
 
-  const handleChange = (result: OnChangeValue<SearchResult, false>) => {
-    onChange(result?.value);
-  };
-
-  const handleSearch = async (term: string) => {
+  const handleSearch = async (term: string): Promise<TagOption[]> => {
     const { data } = await client.query<
       SearchTagsQuery,
       SearchTagsQueryVariables
     >({
       query: SearchTagsGQL,
-      variables: {
-        term,
-        limit: 25,
-      },
+      variables: { term, limit: 25 },
     });
 
     const { exact, query } = data ?? {};
 
-    const exactResult =
+    const exactResult: TagOption[] =
       exact &&
       (allowDeleted || !exact.deleted) &&
       !excludeTags.includes(exact.id)
-        ? {
-            label: exact.name,
-            value: exact,
-            sublabel: exact.description ?? "",
-          }
-        : undefined;
+        ? [
+            {
+              value: exact.id,
+              label: exact.name,
+              sublabel: exact.description ?? "",
+              tag: exact,
+            },
+          ]
+        : [];
 
-    const queryResult = query
-      ?.filter(
+    const queryResults: TagOption[] = (query ?? [])
+      .filter(
         (tag) =>
           !excludeTags.includes(tag.id) &&
           (allowDeleted || !tag.deleted) &&
           tag.id !== exact?.id,
       )
       .map((tag) => ({
+        value: tag.id,
         label: tag.name,
-        value: tag,
         sublabel: tag.description ?? "",
+        tag,
       }));
 
-    return [
-      ...(exactResult
-        ? [
-            {
-              label:
-                exactResult.label.toLowerCase() === term.toLowerCase()
-                  ? "Exact Match"
-                  : "Alias Match",
-              options: [exactResult],
-            },
-          ]
-        : []),
-      ...(queryResult ? [{ label: "Tags", options: queryResult }] : []),
-    ];
+    return [...exactResult, ...queryResults];
   };
 
-  const debouncedLoadOptions = debounce(handleSearch, 400);
-
-  const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => {
-    return (
-      <div title={value.aliases.map((a) => `\u{2022} ${a}`).join("\n")}>
-        <div className={`${CLASSNAME_SELECT}-value`}>
-          {value.deleted ? <del>{label}</del> : label}
-        </div>
-        <div className={`${CLASSNAME_SELECT}-subvalue`}>{sublabel}</div>
-      </div>
-    );
-  };
+  const renderOption = (opt: TagOption) => (
+    <div title={opt.tag.aliases.map((a) => `• ${a}`).join("\n")}>
+      <div>{opt.tag.deleted ? <del>{opt.label}</del> : opt.label}</div>
+      {opt.sublabel && (
+        <div className="text-xs text-muted-foreground">{opt.sublabel}</div>
+      )}
+    </div>
+  );
 
   return (
-    <Async
-      classNamePrefix="react-select"
-      className={`react-select ${CLASSNAME_SELECT}`}
-      onChange={handleChange}
-      loadOptions={debouncedLoadOptions}
+    <AsyncSelect<TagOption>
+      onChange={(opt) => onChange(opt?.tag)}
+      loadOptions={handleSearch}
       placeholder="Filter by tag"
-      noOptionsMessage={({ inputValue }) =>
-        inputValue === "" ? null : `No tags found for "${inputValue}"`
-      }
       value={
-        selectedTag && {
-          label: selectedTag.name,
-          value: selectedTag,
-          sublabel: "",
-        }
+        selectedTag
+          ? {
+              value: selectedTag.id,
+              label: selectedTag.name,
+              sublabel: "",
+              tag: selectedTag as Tag,
+            }
+          : null
       }
       isClearable
-      menuPlacement={menuPlacement}
-      formatOptionLabel={formatOptionLabel}
+      renderOption={renderOption}
+      noOptionsMessage={(term) =>
+        term === "" ? null : `No tags found for "${term}"`
+      }
     />
   );
 };

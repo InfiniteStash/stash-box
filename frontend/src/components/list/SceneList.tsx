@@ -3,11 +3,11 @@ import {
   faSortAmountUp,
 } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
-import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
-import Select from "react-select";
+import { Button, Form, InputGroup } from "react-bootstrap";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import SceneCard from "src/components/sceneCard";
 import TagFilter from "src/components/tagFilter";
+import { SelectCombobox } from "src/components/ui/combobox";
 import {
   CriterionModifier,
   FavoriteFilter,
@@ -161,17 +161,12 @@ const SceneList: FC<Props> = ({
           />
         </Form.Group>
       ) : favoriteFilter === "all" ? (
-        <Select
-          className="FavoriteFilter ms-4"
-          classNamePrefix="react-select"
-          onChange={(val) => setParams("favorite", val ? val.value : "NONE")}
+        <SelectCombobox
+          className="ms-4 w-44"
+          onChange={(v) => setParams("favorite", v ?? "NONE")}
           placeholder="Favorite filter"
           isClearable
-          defaultValue={
-            favorite
-              ? favoriteOptions.find((fav) => fav.value === favorite)
-              : undefined
-          }
+          value={favorite || undefined}
           options={favoriteOptions}
         />
       ) : null}
@@ -179,9 +174,7 @@ const SceneList: FC<Props> = ({
   );
 
   const sceneCards = (scenes ?? []).map((scene) => (
-    <Col xs={3} key={scene.id}>
-      <SceneCard scene={scene} />
-    </Col>
+    <SceneCard scene={scene} key={scene.id} />
   ));
 
   return (
@@ -194,7 +187,9 @@ const SceneList: FC<Props> = ({
       filters={filters}
       entityName="scenes"
     >
-      <Row>{sceneCards}</Row>
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {sceneCards}
+      </div>
     </List>
   );
 };

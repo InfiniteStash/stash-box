@@ -9,7 +9,6 @@ import { type FC, useEffect, useMemo, useState, type WheelEvent } from "react";
 import { Col, Form, Row, Tab, Tabs } from "react-bootstrap";
 import { Controller, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
-import Select from "react-select";
 import { renderPerformerDetails } from "src/components/editCard/ModifyEdit";
 import EditImages from "src/components/editImages";
 import {
@@ -21,6 +20,7 @@ import {
 import { Help, Icon } from "src/components/fragments";
 import MergeConflicts from "src/components/mergeConflicts";
 import MultiSelect from "src/components/multiSelect";
+import { SelectCombobox } from "src/components/ui/combobox";
 import URLInput from "src/components/urlInput";
 import { GenderTypes } from "src/constants";
 import {
@@ -578,14 +578,13 @@ const PerformerForm: FC<PerformerProps> = ({
                 control={control}
                 name="country"
                 render={({ field: { onChange, value } }) => (
-                  <Select
-                    classNamePrefix="react-select"
-                    onChange={(option) => onChange(option?.value)}
-                    options={countryObj}
-                    value={
-                      countryObj.find((country) => country.value === value) ??
-                      null
-                    }
+                  <SelectCombobox
+                    onChange={(v) => onChange(v)}
+                    options={countryObj.filter(
+                      (c): c is { label: string; value: string } =>
+                        c.value != null,
+                    )}
+                    value={value ?? undefined}
                   />
                 )}
               />

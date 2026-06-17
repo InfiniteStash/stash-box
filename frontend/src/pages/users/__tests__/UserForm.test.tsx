@@ -1,7 +1,7 @@
 import { screen, waitFor } from "@testing-library/react";
 import { RoleEnum, type UserUpdateInput } from "src/graphql/types";
 import { renderForm } from "src/test/renderForm";
-import { selectReactSelect } from "src/test/selectors";
+import { selectComboboxOption } from "src/test/selectors";
 import { describe, expect, it, vi } from "vitest";
 import UserForm from "../UserForm";
 
@@ -41,8 +41,8 @@ describe("UserForm (create)", () => {
       email: "bob@example.com",
       password: "Secret!12",
     });
-    await selectReactSelect(user, RoleEnum.READ);
-    await selectReactSelect(user, RoleEnum.VOTE);
+    await selectComboboxOption(user, RoleEnum.READ, RoleEnum.READ);
+    await selectComboboxOption(user, RoleEnum.VOTE, RoleEnum.VOTE);
     await user.click(screen.getByRole("button", { name: "Create" }));
 
     await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));

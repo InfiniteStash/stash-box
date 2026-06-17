@@ -1,9 +1,6 @@
 import { useApolloClient } from "@apollo/client/react";
-import debounce from "p-debounce";
 import type { FC } from "react";
-import { components } from "react-select";
-import Async from "react-select/async";
-import { SearchHint, SearchInput } from "src/components/fragments";
+import { AsyncSelect } from "src/components/ui/combobox";
 import {
   SortDirectionEnum,
   type StudioQuery,
@@ -36,16 +33,6 @@ interface StudioSelectProps {
   isClearable?: boolean;
   inputId?: string;
 }
-
-const ValueContainer: typeof components.ValueContainer = (props) => (
-  <>
-    <SearchHint />
-    <components.ValueContainer {...props} />
-  </>
-);
-
-const CLASSNAME = "StudioSelect";
-const CLASSNAME_SELECT = `${CLASSNAME}-select`;
 
 const StudioSelect: FC<StudioSelectProps> = ({
   initialStudio,
@@ -111,51 +98,42 @@ const StudioSelect: FC<StudioSelectProps> = ({
       .filter((s) => s.value !== excludeStudio);
   };
 
-  const debouncedLoad = debounce(fetchStudios, 200);
-
-  const defaultValue = initialStudio
+  const defaultValue: IOptionType | null = initialStudio
     ? {
         value: initialStudio.id,
         label: initialStudio.name,
         sublabel: initialStudio.parent?.name,
         parent: initialStudio.parent ?? null,
       }
-    : undefined;
+    : null;
 
   const formatStudioName = (opt: IOptionType) => (
     <>
       <span>{opt.label}</span>
       {opt.sublabel && (
-        <small className="bullet-separator parent-studio">{opt.sublabel}</small>
+        <small className="ml-2 text-muted-foreground">
+          &bull; {opt.sublabel}
+        </small>
       )}
     </>
   );
 
   return (
-    <div className={CLASSNAME}>
-      <Async
-        isMulti={false}
-        inputId={inputId}
-        classNamePrefix="react-select"
-        className={`react-select ${CLASSNAME_SELECT}`}
-        onChange={(s) =>
-          onChange(s ? { id: s.value, name: s.label, parent: s.parent } : null)
-        }
-        onBlur={onBlur}
-        defaultValue={defaultValue}
-        loadOptions={debouncedLoad}
-        placeholder="Search for studio"
-        noOptionsMessage={({ inputValue }) =>
-          inputValue === "" ? null : `No studios found for "${inputValue}"`
-        }
-        isClearable={isClearable}
-        formatOptionLabel={formatStudioName}
-        components={{
-          ValueContainer,
-          Input: SearchInput,
-        }}
-      />
-    </div>
+    <AsyncSelect<IOptionType>
+      inputId={inputId}
+      onChange={(s) =>
+        onChange(s ? { id: s.value, name: s.label, parent: s.parent } : null)
+      }
+      onBlur={onBlur}
+      defaultValue={defaultValue}
+      loadOptions={fetchStudios}
+      placeholder="Search for studio"
+      noOptionsMessage={(term) =>
+        term === "" ? null : `No studios found for "${term}"`
+      }
+      isClearable={isClearable}
+      renderOption={formatStudioName}
+    />
   );
 };
 

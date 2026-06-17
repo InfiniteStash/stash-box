@@ -7,7 +7,6 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
 import { type FC, useMemo, useState } from "react";
 import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
-import { Menu, MenuItem, Typeahead } from "react-bootstrap-typeahead";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
@@ -20,6 +19,7 @@ import SearchField, {
 } from "src/components/searchField";
 import StudioSelect from "src/components/studioSelect";
 import TagSelect from "src/components/tagSelect";
+import { Input } from "src/components/ui/input";
 import URLInput from "src/components/urlInput";
 import {
   type FingerprintAlgorithm,
@@ -259,45 +259,20 @@ const SceneForm: FC<SceneProps> = ({
             name={`performers.${index}.alias`}
             control={control}
             render={({ field: { onChange } }) => (
-              <Typeahead
-                id={`performers.${index}.alias`}
-                onInputChange={onChange}
-                onChange={(selected) =>
-                  selected.length && onChange(selected[0])
-                }
-                options={p.aliases ?? []}
-                defaultInputValue={p.alias ?? ""}
-                emptyLabel={""}
-                renderMenu={(options, { id }) => {
-                  if (!options.length) {
-                    // biome-ignore lint/complexity/noUselessFragments: Necessary for return type
-                    return <></>;
-                  }
-                  const results = options as string[];
-                  return (
-                    <Menu id={id}>
-                      <MenuItem
-                        option="aliases"
-                        position={0}
-                        key={"header"}
-                        disabled
-                      >
-                        <b className="text-dark">{`${p.name}'s Aliases`}</b>
-                      </MenuItem>
-                      {results.map((result, idx) => (
-                        <MenuItem
-                          option={result}
-                          position={idx + 1}
-                          key={result}
-                        >
-                          {result}
-                        </MenuItem>
-                      ))}
-                    </Menu>
-                  );
-                }}
-                placeholder={p.name}
-              />
+              <>
+                <Input
+                  id={`performers.${index}.alias`}
+                  list={`performers.${index}.alias-list`}
+                  defaultValue={p.alias ?? ""}
+                  onChange={(e) => onChange(e.currentTarget.value)}
+                  placeholder={p.name}
+                />
+                <datalist id={`performers.${index}.alias-list`}>
+                  {(p.aliases ?? []).map((alias) => (
+                    <option key={alias} value={alias} />
+                  ))}
+                </datalist>
+              </>
             )}
           />
         </InputGroup>
@@ -483,11 +458,7 @@ const SceneForm: FC<SceneProps> = ({
               name="tags"
               control={control}
               render={({ field: { onChange, value } }) => (
-                <TagSelect
-                  tags={value}
-                  onChange={onChange}
-                  menuPlacement="top"
-                />
+                <TagSelect tags={value} onChange={onChange} />
               )}
             />
           </Form.Group>

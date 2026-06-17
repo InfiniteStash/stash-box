@@ -1,9 +1,10 @@
 import { useApolloClient } from "@apollo/client/react";
-import debounce from "p-debounce";
 import { type FC, useState } from "react";
-import type { MenuPlacement, OnChangeValue } from "react-select";
-import Async from "react-select/async";
-import { SearchInput, TagLink } from "src/components/fragments";
+import { TagLink } from "src/components/fragments";
+import {
+  AsyncSearchAdd,
+  type ComboboxOption,
+} from "src/components/ui/combobox";
 
 import type { SearchTagsQuery, SearchTagsQueryVariables } from "src/graphql";
 import SearchTagsGQL from "src/graphql/queries/SearchTags.gql";
@@ -24,28 +25,20 @@ interface TagSelectProps {
   onChange: (tags: TagSlim[]) => void;
   message?: string;
   excludeTags?: string[];
-  menuPlacement?: MenuPlacement;
   allowDeleted?: boolean;
   inputId?: string;
 }
 
-interface SearchResult {
-  value: Tag;
-  label: string;
+interface TagOption extends ComboboxOption {
+  tag: Tag;
   sublabel: string;
 }
-
-const CLASSNAME = "TagSelect";
-const CLASSNAME_LIST = `${CLASSNAME}-list`;
-const CLASSNAME_SELECT = `${CLASSNAME}-select`;
-const CLASSNAME_CONTAINER = `${CLASSNAME}-container`;
 
 const TagSelect: FC<TagSelectProps> = ({
   tags: initialTags = [],
   onChange,
   message = "Add tag:",
   excludeTags = [],
-  menuPlacement = "auto",
   allowDeleted = false,
   inputId,
 }) => {
@@ -53,12 +46,10 @@ const TagSelect: FC<TagSelectProps> = ({
   const [tags, setTags] = useState(initialTags);
   const excluded = [...excludeTags, ...tags.map((t) => t.id)];
 
-  const handleChange = (result: OnChangeValue<SearchResult, false>) => {
-    if (result?.value) {
-      const newTags = [...tags, result.value];
-      setTags(newTags);
-      onChange(newTags);
-    }
+  const handleSelect = (option: TagOption) => {
+    const newTags = [...tags, option.tag];
+    setTags(newTags);
+    onChange(newTags);
   };
 
   const removeTag = (id: string) => {
@@ -80,92 +71,76 @@ const TagSelect: FC<TagSelectProps> = ({
       />
     ));
 
-  const handleSearch = async (term: string) => {
+  const handleSearch = async (term: string): Promise<TagOption[]> => {
     const { data } = await client.query<
       SearchTagsQuery,
       SearchTagsQueryVariables
     >({
       query: SearchTagsGQL,
-      variables: {
-        term,
-        limit: 25,
-      },
+      variables: { term, limit: 25 },
     });
 
     const { exact, query } = data ?? {};
 
-    const exactResult =
+    const exactResult: TagOption[] =
       exact && !excluded.includes(exact.id) && (allowDeleted || !exact.deleted)
-        ? {
-            label: exact.name,
-            value: exact,
-            sublabel: exact.description ?? "",
-          }
-        : undefined;
+        ? [
+            {
+              value: exact.id,
+              label: exact.name,
+              sublabel: exact.description ?? "",
+              tag: exact,
+            },
+          ]
+        : [];
 
-    const queryResult = query
-      ?.filter(
+    const queryResults: TagOption[] = (query ?? [])
+      .filter(
         (tag) =>
           !excluded.includes(tag.id) &&
           (allowDeleted || !tag.deleted) &&
           tag.id !== exact?.id,
       )
       .map((tag) => ({
+        value: tag.id,
         label: tag.name,
-        value: tag,
         sublabel: tag.description ?? "",
+        tag,
       }));
 
-    return [
-      ...(exactResult
-        ? [
-            {
-              label:
-                exactResult.label.toLowerCase() === term.toLowerCase()
-                  ? "Exact Match"
-                  : "Alias Match",
-              options: [exactResult],
-            },
-          ]
-        : []),
-      ...(queryResult ? [{ label: "Tags", options: queryResult }] : []),
-    ];
+    return [...exactResult, ...queryResults];
   };
 
-  const debouncedLoadOptions = debounce(handleSearch, 400);
-
-  const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => {
-    return (
-      <div title={value.aliases.map((a) => `\u{2022} ${a}`).join("\n")}>
-        <div className={`${CLASSNAME_SELECT}-value`}>
-          {value.deleted ? <del>{label}</del> : label}
-        </div>
-        <div className={`${CLASSNAME_SELECT}-subvalue`}>{sublabel}</div>
-      </div>
-    );
-  };
+  const renderOption = (opt: TagOption) => (
+    <div title={opt.tag.aliases.map((a) => `• ${a}`).join("\n")}>
+      <div>{opt.tag.deleted ? <del>{opt.label}</del> : opt.label}</div>
+      {opt.sublabel && (
+        <div className="text-xs text-muted-foreground">{opt.sublabel}</div>
+      )}
+    </div>
+  );
 
   return (
-    <div className={CLASSNAME}>
-      <div className={CLASSNAME_LIST}>{tagList}</div>
-      <div className={CLASSNAME_CONTAINER}>
-        <span>{message}</span>
-        <Async
-          isMulti={false}
-          inputId={inputId}
-          classNamePrefix="react-select"
-          className={`react-select ${CLASSNAME_SELECT}`}
-          onChange={handleChange}
-          loadOptions={debouncedLoadOptions}
-          placeholder="Search for tag"
-          noOptionsMessage={({ inputValue }) =>
-            inputValue === "" ? null : `No tags found for "${inputValue}"`
-          }
-          menuPlacement={menuPlacement}
-          controlShouldRenderValue={false}
-          formatOptionLabel={formatOptionLabel}
-          components={{ Input: SearchInput }}
-        />
+    <div className="space-y-2">
+      {tagList.length > 0 && (
+        <div className="flex flex-wrap gap-2">{tagList}</div>
+      )}
+      <div className="flex items-center gap-2">
+        <span className="whitespace-nowrap text-sm text-muted-foreground">
+          {message}
+        </span>
+        <div className="flex-1">
+          <AsyncSearchAdd<TagOption>
+            inputId={inputId}
+            onSelect={handleSelect}
+            loadOptions={handleSearch}
+            placeholder="Search for tag"
+            renderOption={renderOption}
+            noOptionsMessage={(term) =>
+              term === "" ? null : `No tags found for "${term}"`
+            }
+          />
+        </div>
       </div>
     </div>
   );

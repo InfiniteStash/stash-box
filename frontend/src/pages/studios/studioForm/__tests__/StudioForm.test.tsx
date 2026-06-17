@@ -2,7 +2,12 @@ import { screen, waitFor } from "@testing-library/react";
 import type { StudioFragment } from "src/graphql";
 import { configMock, sitesMock, studioSearchMock } from "src/test/graphqlMocks";
 import { renderForm } from "src/test/renderForm";
-import { addCreatableOption, removeMultiValue } from "src/test/selectors";
+import {
+  addTagsInputValue,
+  clearCombobox,
+  removeTagsInputValue,
+  selectComboboxOption,
+} from "src/test/selectors";
 import { describe, expect, it, vi } from "vitest";
 import StudioForm from "../StudioForm";
 
@@ -86,19 +91,15 @@ describe("StudioForm", () => {
       const { user } = renderCreate(callback);
 
       await user.type(screen.getByPlaceholderText("Name"), "Brand New Studio");
-      await addCreatableOption(user, "BNS", containerFor("Aliases"));
+      await addTagsInputValue(user, "BNS", containerFor("Aliases"));
 
       // Network (parent) — type to trigger search
-      const networkContainer = containerFor("Network");
-      const networkInput = networkContainer.querySelector(
-        ".react-select__input",
-      ) as HTMLInputElement;
-      await user.click(networkInput);
-      await user.type(networkInput, "Network");
-      const option = await screen.findByText("Network", {
-        selector: "[class*='react-select__option'] *",
-      });
-      await user.click(option);
+      await selectComboboxOption(
+        user,
+        "Network",
+        "Network",
+        containerFor("Network"),
+      );
 
       // Links tab
       await user.click(screen.getByRole("tab", { name: "Links" }));
@@ -156,7 +157,7 @@ describe("StudioForm", () => {
     it("adds an alias", async () => {
       const callback = vi.fn();
       const { user } = renderEdit(callback);
-      await addCreatableOption(user, "alt-c", containerFor("Aliases"));
+      await addTagsInputValue(user, "alt-c", containerFor("Aliases"));
       await submit(user);
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
       expect(lastCallback(callback).aliases).toEqual([
@@ -169,7 +170,7 @@ describe("StudioForm", () => {
     it("removes an alias", async () => {
       const callback = vi.fn();
       const { user } = renderEdit(callback);
-      await removeMultiValue(user, "alt-b", containerFor("Aliases"));
+      await removeTagsInputValue(user, "alt-b", containerFor("Aliases"));
       await submit(user);
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
       expect(lastCallback(callback).aliases).toEqual(["alt-a"]);
@@ -178,16 +179,12 @@ describe("StudioForm", () => {
     it("changes network (parent)", async () => {
       const callback = vi.fn();
       const { user } = renderEdit(callback);
-      const networkContainer = containerFor("Network");
-      const networkInput = networkContainer.querySelector(
-        ".react-select__input",
-      ) as HTMLInputElement;
-      await user.click(networkInput);
-      await user.type(networkInput, "Network");
-      const option = await screen.findByText("Network", {
-        selector: "[class*='react-select__option'] *",
-      });
-      await user.click(option);
+      await selectComboboxOption(
+        user,
+        "Network",
+        "Network",
+        containerFor("Network"),
+      );
       await submit(user);
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
       expect(lastCallback(callback).parent_id).toBe("parent-net-1");
@@ -243,8 +240,8 @@ describe("StudioForm", () => {
     it("removes all aliases", async () => {
       const callback = vi.fn();
       const { user } = renderEdit(callback);
-      await removeMultiValue(user, "alt-a", containerFor("Aliases"));
-      await removeMultiValue(user, "alt-b", containerFor("Aliases"));
+      await removeTagsInputValue(user, "alt-a", containerFor("Aliases"));
+      await removeTagsInputValue(user, "alt-b", containerFor("Aliases"));
       await submit(user);
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
       expect(lastCallback(callback).aliases).toEqual([]);
@@ -271,12 +268,7 @@ describe("StudioForm", () => {
     it("clears parent network", async () => {
       const callback = vi.fn();
       const { user } = renderEdit(callback);
-      const clearBtn = document.querySelector(
-        ".StudioSelect .react-select__clear-indicator",
-      ) as HTMLElement | null;
-      expect(clearBtn).not.toBeNull();
-      // biome-ignore lint/style/noNonNullAssertion: presence asserted above
-      await user.click(clearBtn!);
+      await clearCombobox(user, containerFor("Network"));
       await submit(user);
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
       expect(lastCallback(callback).parent_id).toBeNull();

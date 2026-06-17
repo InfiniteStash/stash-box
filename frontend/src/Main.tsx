@@ -1,10 +1,16 @@
 import { faBell as faBellOutlined } from "@fortawesome/free-regular-svg-icons";
-import { faBell, faBook, faUser } from "@fortawesome/free-solid-svg-icons";
-import { type FC, useEffect, useMemo } from "react";
-import { Badge, Button, Nav, Navbar } from "react-bootstrap";
+import {
+  faBars,
+  faBell,
+  faBook,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
+import { type FC, useEffect, useMemo, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Icon } from "src/components/fragments";
 import SearchField, { SearchType } from "src/components/searchField";
+import { Badge } from "src/components/ui/badge";
+import { Button } from "src/components/ui/button";
 import {
   ROUTE_ACTIVATE,
   ROUTE_ADMIN,
@@ -26,13 +32,8 @@ import {
 } from "src/constants/route";
 import { useConfig, useUnreadNotificationsCount } from "src/graphql";
 import { useAuth } from "src/hooks";
-import {
-  canEdit,
-  canModerate,
-  isAdmin,
-  setCachedUser,
-  userHref,
-} from "src/utils";
+import { cn } from "src/lib/utils";
+import { canEdit, canModerate, isAdmin, setCachedUser, userHref } from "src/utils";
 import { getCredentialsSetting, getPlatformURL } from "src/utils/createClient";
 import AuthContext from "./context";
 
@@ -49,6 +50,7 @@ const Main: FC<Props> = ({ children }) => {
   const notificationCount = unreadCounts?.total || null;
   const hasUrgent = (unreadCounts?.urgent ?? 0) > 0;
   const { data: configData } = useConfig();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const guidelinesURL = configData?.getConfig.guidelines_url;
 
@@ -94,36 +96,69 @@ const Main: FC<Props> = ({ children }) => {
     return false;
   };
 
-  const renderUserNav = () =>
-    contextValue.authenticated &&
+  const linkClass = ({ isActive }: { isActive: boolean }) =>
+    cn(
+      "rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground",
+      isActive ? "font-medium text-link" : "text-foreground/85",
+    );
+
+  const mainLinks = [
+    { to: ROUTE_HOME, label: "Home" },
+    { to: ROUTE_PERFORMERS, label: "Performers" },
+    { to: ROUTE_SCENES, label: "Scenes" },
+    { to: ROUTE_STUDIOS, label: "Studios" },
+    { to: ROUTE_TAGS, label: "Tags" },
+    { to: ROUTE_EDITS, label: "Edits" },
+    ...(canEdit(user) ? [{ to: ROUTE_DRAFTS, label: "Drafts" }] : []),
+    { to: ROUTE_SITES, label: "Sites" },
+    ...(canModerate(user) ? [{ to: ROUTE_IMAGE_REVIEW, label: "Image Review" }] : []),
+  ];
+
+  const closeMenu = () => setMobileOpen(false);
+
+  const renderMainLinks = () =>
+    mainLinks.map(({ to, label }) => (
+      <NavLink key={to} to={to} className={linkClass} onClick={closeMenu}>
+        {label}
+      </NavLink>
+    ));
+
+  const renderGuidelines = () =>
+    guidelinesURL && (
+      <a
+        href={guidelinesURL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-foreground/85 transition-colors hover:bg-accent hover:text-foreground"
+      >
+        <Icon icon={faBook} />
+        Guidelines
+      </a>
+    );
+
+  const renderUserLinks = () =>
     contextValue.user && (
       <>
-        <Link to={ROUTE_NOTIFICATIONS}>
-          <Button variant="link" className="NotificationBadge">
-            <Icon icon={notificationCount ? faBell : faBellOutlined} />
-            {notificationCount && (
-              <Badge bg={hasUrgent ? "danger" : "primary"} className="ms-1">
-                {notificationCount}
-              </Badge>
-            )}
-          </Button>
-        </Link>
         <NavLink
           to={userHref(contextValue.user)}
-          className="nav-link ms-auto me-2"
+          className={(s) => cn(linkClass(s), "inline-flex items-center gap-2")}
+          onClick={closeMenu}
         >
-          <Icon icon={faUser} className="me-2" />
+          <Icon icon={faUser} />
           {contextValue.user.name}
         </NavLink>
         {isAdmin(user) && (
-          <NavLink to={ROUTE_ADMIN} className="nav-link">
+          <NavLink to={ROUTE_ADMIN} className={linkClass} onClick={closeMenu}>
             Admin
           </NavLink>
         )}
         <NavLink
           to={ROUTE_LOGOUT}
-          onClick={handleLogout}
-          className="nav-link me-4"
+          onClick={() => {
+            closeMenu();
+            handleLogout();
+          }}
+          className={linkClass}
         >
           Logout
         </NavLink>
@@ -132,58 +167,63 @@ const Main: FC<Props> = ({ children }) => {
 
   return (
     <div>
-      <Navbar bg="dark" variant="dark" className="px-4">
-        <Nav className="me-auto">
-          <NavLink to={ROUTE_HOME} className="nav-link">
-            Home
-          </NavLink>
-          <NavLink to={ROUTE_PERFORMERS} className="nav-link">
-            Performers
-          </NavLink>
-          <NavLink to={ROUTE_SCENES} className="nav-link">
-            Scenes
-          </NavLink>
-          <NavLink to={ROUTE_STUDIOS} className="nav-link">
-            Studios
-          </NavLink>
-          <NavLink to={ROUTE_TAGS} className="nav-link">
-            Tags
-          </NavLink>
-          <NavLink to={ROUTE_EDITS} className="nav-link">
-            Edits
-          </NavLink>
-          {canEdit(user) && (
-            <NavLink to={ROUTE_DRAFTS} className="nav-link">
-              Drafts
-            </NavLink>
-          )}
-          <NavLink to={ROUTE_SITES} className="nav-link">
-            Sites
-          </NavLink>
-          {canModerate(user) && (
-            <NavLink to={ROUTE_IMAGE_REVIEW} className="nav-link">
-              Image Review
-            </NavLink>
-          )}
-          {guidelinesURL && (
-            <a
-              href={guidelinesURL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="nav-link"
-            >
-              <Icon icon={faBook} className="mx-2" />
-              Guidelines
-            </a>
-          )}
-        </Nav>
-        <Nav className="align-items-center">
-          {contextValue.authenticated && renderUserNav()}
-          <SearchField searchType={SearchType.Combined} nav showAllLink />
-        </Nav>
-      </Navbar>
+      <header className="bg-secondary">
+        <div className="flex h-14 items-center gap-2 px-4">
+          <Button
+            variant="minimal"
+            size="sm"
+            className="md:hidden"
+            aria-label="Toggle navigation"
+            aria-expanded={mobileOpen}
+            onClick={() => setMobileOpen((open) => !open)}
+          >
+            <Icon icon={faBars} />
+          </Button>
+
+          <nav className="hidden items-center gap-0.5 md:flex">
+            {renderMainLinks()}
+            {renderGuidelines()}
+          </nav>
+
+          <div className="ml-auto flex items-center gap-1">
+            <Link to={ROUTE_NOTIFICATIONS} className="relative">
+              <Button variant="minimal" size="sm" aria-label="Notifications">
+                <Icon icon={notificationCount ? faBell : faBellOutlined} />
+              </Button>
+              {notificationCount && (
+                <Badge
+                  variant={hasUrgent ? "danger" : "primary"}
+                  className="absolute -right-1 -top-1"
+                >
+                  {notificationCount}
+                </Badge>
+              )}
+            </Link>
+
+            <nav className="hidden items-center gap-0.5 md:flex">
+              {renderUserLinks()}
+            </nav>
+
+            <div className="hidden sm:block sm:w-56 lg:w-72">
+              <SearchField searchType={SearchType.Combined} nav showAllLink />
+            </div>
+          </div>
+        </div>
+
+        {mobileOpen && (
+          <nav className="flex flex-col gap-0.5 border-t border-border px-4 pb-3 md:hidden">
+            <div className="my-2 sm:hidden">
+              <SearchField searchType={SearchType.Combined} nav showAllLink />
+            </div>
+            {renderMainLinks()}
+            {renderGuidelines()}
+            <div className="my-1 border-t border-border" />
+            {renderUserLinks()}
+          </nav>
+        )}
+      </header>
       <AuthContext.Provider value={contextValue}>
-        <main className="MainContent container-fluid">{children}</main>
+        <main className="px-4 py-4">{children}</main>
       </AuthContext.Provider>
     </div>
   );

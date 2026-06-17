@@ -4,7 +4,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { type FC, Fragment } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
-import Select from "react-select";
+import { SelectCombobox } from "src/components/ui/combobox";
 import { Icon } from "src/components/fragments";
 import { List } from "src/components/list";
 import { GenderFilterTypes } from "src/constants";
@@ -80,15 +80,14 @@ export const StudioPerformers: FC<Props> = ({ id }) => {
         defaultValue={params.query}
         className="w-auto"
       />
-      <Select
-        id="performer-gender"
+      <SelectCombobox
+        inputId="performer-gender"
         options={genderOptions}
-        defaultValue={genderOptions.find((o) => o.value === gender)}
+        value={gender}
         placeholder="Gender"
         isClearable
-        onChange={(e) => setParams("gender", e?.value ?? undefined)}
-        classNamePrefix="react-select"
-        className="performer-filter ms-2"
+        onChange={(v) => setParams("gender", v ?? undefined)}
+        className="ms-2 w-40"
       />
       <InputGroup className="performer-sort ms-2 me-3">
         <Form.Select

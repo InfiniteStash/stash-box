@@ -1,14 +1,13 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
-import { groupBy, sortBy } from "lodash-es";
 import type { FC } from "react";
 import { Button, Form } from "react-bootstrap";
 import { Controller, type FieldError, useForm } from "react-hook-form";
-import Select from "react-select";
 import { EditNote } from "src/components/form";
 import { LoadingIndicator } from "src/components/fragments";
 import MergeConflicts from "src/components/mergeConflicts";
 import MultiSelect from "src/components/multiSelect";
+import { SelectCombobox } from "src/components/ui/combobox";
 import {
   type TagFragment as Tag,
   type TagEditDetailsInput,
@@ -77,12 +76,6 @@ const TagForm: FC<TagProps> = ({
     value: cat.id,
     group: cat.group,
   }));
-  const grouped = groupBy(categories, (cat) => cat.group);
-  const categoryObj = sortBy(Object.keys(grouped)).map((groupName) => ({
-    label: groupName,
-    options: sortBy(grouped[groupName], (cat) => cat.label),
-  }));
-
   return (
     <Form className="TagForm w-50" onSubmit={handleSubmit(onSubmit)}>
       {conflicts && conflicts.length > 0 && (
@@ -136,21 +129,16 @@ const TagForm: FC<TagProps> = ({
           name="category"
           control={control}
           render={({ field: { onChange, value } }) => (
-            <Select
+            <SelectCombobox
               inputId="tag-category-select"
-              classNamePrefix="react-select"
-              className={cx({ "is-invalid": errors.category })}
-              onChange={(opt) =>
-                onChange(opt ? { id: opt.value, name: opt.label } : null)
-              }
-              options={categoryObj}
+              options={categories}
               isClearable
               placeholder="Category"
-              value={
-                value
-                  ? (categories.find((s) => s.value === value.id) ?? null)
-                  : null
-              }
+              value={value?.id}
+              onChange={(v) => {
+                const opt = categories.find((o) => o.value === v);
+                onChange(opt ? { id: opt.value, name: opt.label } : null);
+              }}
             />
           )}
         />

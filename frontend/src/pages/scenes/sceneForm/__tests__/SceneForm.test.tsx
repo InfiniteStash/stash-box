@@ -8,6 +8,7 @@ import {
   tagSearchMock,
 } from "src/test/graphqlMocks";
 import { renderForm } from "src/test/renderForm";
+import { selectComboboxOption } from "src/test/selectors";
 import { describe, expect, it, vi } from "vitest";
 import SceneForm from "../SceneForm";
 
@@ -103,28 +104,6 @@ const containerFor = (labelText: string) => {
   return (label?.closest(".mb-3") ?? label?.parentElement) as HTMLElement;
 };
 
-/** Search via a react-select Async typeahead and pick a result. The 400ms
- *  debounce in TagSelect/SearchField + Apollo round-trip can exceed the
- *  default 1000ms `findBy*` timeout, so we wait longer here. */
-const typeaheadPick = async (
-  user: ReturnType<typeof renderForm>["user"],
-  container: HTMLElement,
-  term: string,
-  optionText: string,
-) => {
-  const input = container.querySelector(
-    ".react-select__input",
-  ) as HTMLInputElement;
-  await user.click(input);
-  await user.type(input, term);
-  const option = await screen.findByText(
-    optionText,
-    { selector: "[class*='react-select__option'] *" },
-    { timeout: 3000 },
-  );
-  await user.click(option);
-};
-
 const lastCallback = (cb: ReturnType<typeof vi.fn>) => cb.mock.calls[0][0];
 
 const renderCreate = (callback = vi.fn()) =>
@@ -151,17 +130,17 @@ describe("SceneForm", () => {
       await user.type(screen.getByPlaceholderText("Details"), "Scene details");
 
       const studioContainer = containerFor("Studio");
-      await typeaheadPick(user, studioContainer, "MyStudio", "MyStudio");
+      await selectComboboxOption(user, "MyStudio", "MyStudio", studioContainer);
 
       // Tag
-      await typeaheadPick(user, containerFor("Tags"), "mytag", "mytag");
+      await selectComboboxOption(user, "mytag", "mytag", containerFor("Tags"));
 
       // Performer
-      await typeaheadPick(
+      await selectComboboxOption(
         user,
+        "Alice",
+        "Alice",
         document.querySelector(".add-performer") as HTMLElement,
-        "Alice",
-        "Alice",
       );
 
       // Links tab
@@ -286,11 +265,11 @@ describe("SceneForm", () => {
     it("changes studio", async () => {
       const callback = vi.fn();
       const { user } = renderEdit(callback);
-      await typeaheadPick(
+      await selectComboboxOption(
         user,
+        "OtherStudio",
+        "OtherStudio",
         containerFor("Studio"),
-        "OtherStudio",
-        "OtherStudio",
       );
       await submit(user);
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
@@ -300,7 +279,7 @@ describe("SceneForm", () => {
     it("adds a tag", async () => {
       const callback = vi.fn();
       const { user } = renderEdit(callback);
-      await typeaheadPick(user, containerFor("Tags"), "mytag", "mytag");
+      await selectComboboxOption(user, "mytag", "mytag", containerFor("Tags"));
       await submit(user);
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
       expect(lastCallback(callback).tag_ids).toEqual(["tag-1"]);
@@ -309,11 +288,11 @@ describe("SceneForm", () => {
     it("adds a performer (searches under the existing scene studio)", async () => {
       const callback = vi.fn();
       const { user } = renderEdit(callback);
-      await typeaheadPick(
+      await selectComboboxOption(
         user,
+        "Alice",
+        "Alice",
         document.querySelector(".add-performer") as HTMLElement,
-        "Alice",
-        "Alice",
       );
       await submit(user);
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
@@ -429,7 +408,12 @@ describe("SceneForm", () => {
       const { user } = renderCreate(callback);
       const dateInputs = screen.getAllByPlaceholderText("YYYY-MM-DD");
       await user.type(dateInputs[0], "2024-06-01");
-      await typeaheadPick(user, containerFor("Studio"), "MyStudio", "MyStudio");
+      await selectComboboxOption(
+        user,
+        "MyStudio",
+        "MyStudio",
+        containerFor("Studio"),
+      );
       await submit(user);
       const matches = await screen.findAllByText("Title is required");
       expect(matches.length).toBeGreaterThan(0);
@@ -440,7 +424,12 @@ describe("SceneForm", () => {
       const callback = vi.fn();
       const { user } = renderCreate(callback);
       await user.type(screen.getByPlaceholderText("Title"), "X");
-      await typeaheadPick(user, containerFor("Studio"), "MyStudio", "MyStudio");
+      await selectComboboxOption(
+        user,
+        "MyStudio",
+        "MyStudio",
+        containerFor("Studio"),
+      );
       await submit(user);
       const matches = await screen.findAllByText("Release date is required");
       expect(matches.length).toBeGreaterThan(0);

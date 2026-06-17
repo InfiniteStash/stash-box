@@ -1,0 +1,93 @@
+/*
+ * Tailwind entry for the Base UI migration.
+ *
+ * Bootstrap's stylesheet has been removed; preflight is now our reset.
+ * Everything is imported UNLAYERED so single-class utilities (0,1,0) win by
+ * specificity over the remaining legacy theme.scss element selectors (0,0,1)
+ * that still style un-ported react-bootstrap pages. tailwind.css is imported
+ * AFTER App.scss so preflight wins same-specificity ties over legacy.
+ * @source is required because importing the sub-files (instead of the full
+ * `tailwindcss`) disables automatic content detection.
+ */
+@import "tailwindcss/theme.css";
+@import "tailwindcss/preflight.css";
+@import "tailwindcss/utilities.css";
+@source "../**/*.{ts,tsx}";
+
+/* Page background/text — Bootstrap reboot set this; preflight does not. */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/*
+ * Blueprint dark palette ported from styles/theme.scss, expressed as the
+ * shadcn-style semantic tokens our Base UI components consume.
+ * App is dark-only, so the values live directly on :root (no .dark variant).
+ */
+:root {
+  --background: #202b33;
+  --foreground: #f5f8fa;
+
+  --card: #30404d;
+  --card-foreground: #f5f8fa;
+
+  --popover: #394b59;
+  --popover-foreground: #f5f8fa;
+
+  --primary: #137cbd;
+  --primary-foreground: #ffffff;
+
+  --secondary: #394b59;
+  --secondary-foreground: #f5f8fa;
+
+  --muted: #394b59;
+  --muted-foreground: #bfccd6;
+
+  --accent: #2f3e49;
+  --accent-foreground: #f5f8fa;
+
+  --destructive: #db3737;
+  --destructive-foreground: #ffffff;
+  --success: #0f9960;
+  --warning: #d9822b;
+
+  --link: #48aff0;
+
+  --border: rgba(255 255 255 / 10%);
+  --input: rgba(255 255 255 / 14%);
+  --ring: #137cbd;
+
+  --radius: 0.5rem;
+}
+
+/* Map the semantic tokens onto Tailwind's color/radius scales so
+ * `bg-background`, `text-foreground`, `border-border`, `rounded-lg`, etc. work. */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-link: var(--link);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 1px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+}

@@ -1,8 +1,14 @@
 import type { FC } from "react";
-import { Button, Tab, Tabs } from "react-bootstrap";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Tooltip } from "src/components/fragments";
 import { EditList, SceneList } from "src/components/list";
+import { Button } from "src/components/ui/button";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "src/components/ui/tabs";
 import {
   ROUTE_CATEGORY,
   ROUTE_TAG_DELETE,
@@ -41,17 +47,17 @@ const TagComponent: FC<Props> = ({ tag }) => {
 
   return (
     <>
-      <div className="d-flex">
-        <h3>
-          <span className="me-2">Tag:</span>
+      <div className="flex items-center">
+        <h3 className="text-2xl font-semibold">
+          <span className="mr-2">Tag:</span>
           {tag.deleted ? <del>{tag.name}</del> : <em>{tag.name}</em>}
         </h3>
         {isTagEditor && !tag.deleted && (
-          <div className="ms-auto">
-            <Link to={tagHref(tag, ROUTE_TAG_EDIT)} className="ms-2">
+          <div className="ml-auto flex gap-2">
+            <Link to={tagHref(tag, ROUTE_TAG_EDIT)}>
               <Button>Edit</Button>
             </Link>
-            <Link to={tagHref(tag, ROUTE_TAG_MERGE)} className="ms-2">
+            <Link to={tagHref(tag, ROUTE_TAG_MERGE)}>
               <Tooltip
                 text={
                   <>
@@ -62,35 +68,47 @@ const TagComponent: FC<Props> = ({ tag }) => {
                 <Button>Merge</Button>
               </Tooltip>
             </Link>
-            <Link to={createHref(ROUTE_TAG_DELETE, tag)} className="ms-2">
+            <Link to={createHref(ROUTE_TAG_DELETE, tag)}>
               <Button variant="danger">Delete</Button>
             </Link>
           </div>
         )}
       </div>
       {tag.description && (
-        <div className="d-flex">
-          <b className="me-2">Description:</b>
+        <div className="flex gap-2">
+          <b>Description:</b>
           <span>{tag.description}</span>
         </div>
       )}
       {tag.category && (
-        <div className="d-flex">
-          <b className="me-2">Category:</b>
-          <Link to={createHref(ROUTE_CATEGORY, tag.category)}>
+        <div className="flex gap-2">
+          <b>Category:</b>
+          <Link
+            to={createHref(ROUTE_CATEGORY, tag.category)}
+            className="text-link hover:underline"
+          >
             {tag.category.name}
           </Link>
         </div>
       )}
       {tag.aliases.length > 0 && (
-        <div className="d-flex">
-          <b className="me-2">Aliases:</b>
+        <div className="flex gap-2">
+          <b>Aliases:</b>
           <span>{tag.aliases.join(", ")}</span>
         </div>
       )}
-      <hr className="my-2" />
-      <Tabs activeKey={activeTab} id="tag-tabs" mountOnEnter onSelect={setTab}>
-        <Tab eventKey="scenes" title="Scenes">
+      <hr className="my-3 border-border" />
+      <Tabs value={activeTab} onValueChange={setTab}>
+        <TabsList>
+          <TabsTrigger value="scenes">Scenes</TabsTrigger>
+          <TabsTrigger
+            value="edits"
+            className={pendingEditCount ? "text-warning" : undefined}
+          >
+            {`Edits${formatPendingEdits(pendingEditCount)}`}
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="scenes">
           <SceneList
             tagsFilter={{
               value: [tag.id],
@@ -98,14 +116,10 @@ const TagComponent: FC<Props> = ({ tag }) => {
             }}
             favoriteFilter="all"
           />
-        </Tab>
-        <Tab
-          eventKey="edits"
-          title={`Edits${formatPendingEdits(pendingEditCount)}`}
-          tabClassName={pendingEditCount ? "PendingEditTab" : ""}
-        >
+        </TabsContent>
+        <TabsContent value="edits">
           <EditList type={TargetTypeEnum.TAG} id={tag.id} />
-        </Tab>
+        </TabsContent>
       </Tabs>
     </>
   );

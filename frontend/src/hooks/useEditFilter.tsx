@@ -3,8 +3,8 @@ import {
   faSortAmountUp,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button, Form, InputGroup } from "react-bootstrap";
-import Select from "react-select";
 import { Icon } from "src/components/fragments";
+import { SelectCombobox } from "src/components/ui/combobox";
 import {
   EditOperationTypes,
   EditStatusTypes,
@@ -230,17 +230,11 @@ const useEditFilter = ({
       )}
       <Form.Group controlId="bot" className="text-center ms-3">
         <Form.Label>Bot Edits</Form.Label>
-        <Select
+        <SelectCombobox
           className="BotFilter"
-          classNamePrefix="react-select"
-          onChange={(option) => setParams("bot", option?.value ?? "")}
-          isClearable={false}
-          components={{ IndicatorSeparator: null }}
-          styles={{
-            valueContainer: (props) => ({ ...props, fontWeight: 400 }),
-          }}
+          onChange={(v) => setParams("bot", v ?? "")}
           options={botOptions}
-          value={botOptions.find((opt) => opt.value === selectedBot)}
+          value={selectedBot ? String(selectedBot) : undefined}
         />
       </Form.Group>
       {fixedUserSubmitted === undefined && (
