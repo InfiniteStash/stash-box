@@ -1,7 +1,9 @@
-import cx from "classnames";
 import type { FC } from "react";
-import { Form } from "react-bootstrap";
 import type { FieldError, UseFormRegister } from "react-hook-form";
+import {
+  FieldError as FieldErrorMessage,
+  Label,
+} from "src/components/ui/field";
 
 import NoteInput from "./NoteInput";
 
@@ -13,19 +15,13 @@ interface Props {
 
 const EditNote: FC<Props> = ({ register, error }) => (
   <div className="mb-3">
-    <Form.Label>Edit Note</Form.Label>
-    <NoteInput
-      className={cx({ "is-invalid": error })}
-      register={register}
-      hasError={!!error?.message}
-    />
-    <Form.Text>
+    <Label>Edit Note</Label>
+    <NoteInput register={register} hasError={!!error?.message} />
+    <p className="mt-1 text-sm text-muted-foreground">
       Please add any relevant sources or other supporting information for your
       edit.
-    </Form.Text>
-    <Form.Control.Feedback type="invalid">
-      {error?.message}
-    </Form.Control.Feedback>
+    </p>
+    <FieldErrorMessage>{error?.message}</FieldErrorMessage>
   </div>
 );
 

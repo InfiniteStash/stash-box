@@ -134,7 +134,7 @@ describe("SiteForm", () => {
       const { user } = renderForm(
         <SiteForm site={baseSite} callback={callback} />,
       );
-      const toggle = screen.getByLabelText("Highlight links");
+      const toggle = screen.getByRole("switch", { name: "Highlight links" });
       expect(toggle).toBeChecked();
       await user.click(toggle);
       await user.click(screen.getByRole("button", { name: "Save" }));

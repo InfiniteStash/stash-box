@@ -1,12 +1,10 @@
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import { useLens } from "@hookform/lenses";
 import { yupResolver } from "@hookform/resolvers/yup";
-import cx from "classnames";
 import Countries from "i18n-iso-countries";
 import english from "i18n-iso-countries/langs/en.json";
 import { sortBy } from "lodash-es";
 import { type FC, useEffect, useMemo, useState, type WheelEvent } from "react";
-import { Col, Form, Row, Tab, Tabs } from "react-bootstrap";
 import { Controller, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { renderPerformerDetails } from "src/components/editCard/ModifyEdit";
@@ -21,6 +19,20 @@ import { Help, Icon } from "src/components/fragments";
 import MergeConflicts from "src/components/mergeConflicts";
 import MultiSelect from "src/components/multiSelect";
 import { SelectCombobox } from "src/components/ui/combobox";
+import {
+  FieldError as FieldErrorMessage,
+  FormGroup,
+  Label,
+} from "src/components/ui/field";
+import { Input } from "src/components/ui/input";
+import { Select } from "src/components/ui/select";
+import { Switch } from "src/components/ui/switch";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "src/components/ui/tabs";
 import URLInput from "src/components/urlInput";
 import { GenderTypes } from "src/constants";
 import {
@@ -307,278 +319,287 @@ const PerformerForm: FC<PerformerProps> = ({
   ].filter((e) => e.error) as { error: string; tab: string }[];
 
   return (
-    <Form className="PerformerForm" onSubmit={handleSubmit(onSubmit)}>
+    <form className="PerformerForm" onSubmit={handleSubmit(onSubmit)}>
       <input type="hidden" value={performer?.id} {...register("id")} />
       {conflicts && conflicts.length > 0 && (
-        <Row>
-          <Col xs={9}>
-            <MergeConflicts
-              conflicts={conflicts}
-              values={fieldData}
-              onSelect={(field, value) =>
-                // RHF cannot infer the value type from a dynamic field name.
-                setValue(field, value as never, {
-                  shouldDirty: true,
-                  shouldValidate: true,
-                })
-              }
-            />
-          </Col>
-        </Row>
+        <div className="max-w-4xl">
+          <MergeConflicts
+            conflicts={conflicts}
+            values={fieldData}
+            onSelect={(field, value) =>
+              // RHF cannot infer the value type from a dynamic field name.
+              setValue(field, value as never, {
+                shouldDirty: true,
+                shouldValidate: true,
+              })
+            }
+          />
+        </div>
       )}
       {isCreate && (
-        <Row>
-          <Col xs={9}>
-            <ExistingPerformerAlert
-              name={fieldData.name || ""}
-              disambiguation={fieldData.disambiguation}
-              urls={fieldData.urls || []}
-            />
-          </Col>
-        </Row>
+        <div className="max-w-4xl">
+          <ExistingPerformerAlert
+            name={fieldData.name || ""}
+            disambiguation={fieldData.disambiguation}
+            urls={fieldData.urls || []}
+          />
+        </div>
       )}
-      <Tabs
-        activeKey={activeTab}
-        onSelect={(key) => key && setActiveTab(key)}
-        className="d-flex"
-      >
-        <Tab
-          eventKey="personal"
-          title="Personal Information"
-          className="col-xl-9"
-        >
-          <Row>
-            <Form.Group controlId="name" className="col-6 mb-3">
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                className={cx({ "is-invalid": errors.name })}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="personal">Personal Information</TabsTrigger>
+          <TabsTrigger value="bodymod">Tattoos and Piercings</TabsTrigger>
+          <TabsTrigger value="links">Links</TabsTrigger>
+          <TabsTrigger value="images">Images</TabsTrigger>
+          <TabsTrigger value="confirm">Confirm</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="personal" className="max-w-4xl">
+          <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2">
+            <FormGroup>
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                aria-invalid={!!errors.name}
                 {...register("name")}
               />
-              <Form.Control.Feedback type="invalid">
-                {errors?.name?.message}
-              </Form.Control.Feedback>
-              <Form.Text>The primary name used by the performer.</Form.Text>
-            </Form.Group>
-            <Form.Group controlId="disambiguation" className="col-6 mb-3">
-              <Form.Label>Disambiguation</Form.Label>
-              <Form.Control
-                className={cx({ "is-invalid": errors.disambiguation })}
+              <FieldErrorMessage>{errors?.name?.message}</FieldErrorMessage>
+              <p className="text-sm text-muted-foreground">
+                The primary name used by the performer.
+              </p>
+            </FormGroup>
+            <FormGroup>
+              <Label htmlFor="disambiguation">Disambiguation</Label>
+              <Input
+                id="disambiguation"
+                aria-invalid={!!errors.disambiguation}
                 {...register("disambiguation")}
               />
-              <Form.Text>Required if the primary name is not unique.</Form.Text>
-            </Form.Group>
-          </Row>
+              <p className="text-sm text-muted-foreground">
+                Required if the primary name is not unique.
+              </p>
+            </FormGroup>
+          </div>
 
           {changedName && (
-            <Row>
-              <Form.Group className="col mb-3">
-                <Form.Check
+            <FormGroup>
+              <div className="flex items-center gap-2">
+                <Switch
                   id="update-modify-aliases"
                   checked={updateAliases}
-                  onChange={() => setUpdateAliases((prev) => !prev)}
+                  onCheckedChange={() => setUpdateAliases((prev) => !prev)}
                   label="Set unset performance aliases to old name"
-                  className="d-inline-block"
                 />
                 <Help message={UPDATE_ALIAS_MESSAGE} />
-              </Form.Group>
-            </Row>
+              </div>
+            </FormGroup>
           )}
 
-          <Row>
-            <Form.Group controlId="aliases" className="col">
-              <Form.Label htmlFor="performer-aliases-select">
-                Aliases
-              </Form.Label>
-              <Controller
-                control={control}
-                name="aliases"
-                render={({ field: { onChange } }) => (
-                  <MultiSelect
-                    initialValues={initialAliases}
-                    onChange={onChange}
-                    placeholder="Enter name..."
-                    inputId="performer-aliases-select"
-                  />
-                )}
-              />
-              <Form.Text>
-                Any names used by the performer different from the primary name.
-              </Form.Text>
-            </Form.Group>
-          </Row>
+          <FormGroup>
+            <Label htmlFor="performer-aliases-select">Aliases</Label>
+            <Controller
+              control={control}
+              name="aliases"
+              render={({ field: { onChange } }) => (
+                <MultiSelect
+                  initialValues={initialAliases}
+                  onChange={onChange}
+                  placeholder="Enter name..."
+                  inputId="performer-aliases-select"
+                />
+              )}
+            />
+            <p className="text-sm text-muted-foreground">
+              Any names used by the performer different from the primary name.
+            </p>
+          </FormGroup>
 
-          <Row className="mb-3">
-            <Form.Group controlId="gender" className="col-6">
-              <Form.Label>Gender</Form.Label>
-              <Form.Select
-                className={cx({ "is-invalid": errors.gender })}
+          <div className="grid grid-cols-1 gap-x-4 md:grid-cols-12">
+            <FormGroup className="md:col-span-6">
+              <Label htmlFor="gender">Gender</Label>
+              <Select
+                id="gender"
+                aria-invalid={!!errors.gender}
                 {...register("gender")}
               >
                 {enumOptions(GENDER)}
-              </Form.Select>
-              <Form.Control.Feedback type="invalid">
-                {errors?.gender?.message}
-              </Form.Control.Feedback>
-            </Form.Group>
+              </Select>
+              <FieldErrorMessage>{errors?.gender?.message}</FieldErrorMessage>
+            </FormGroup>
 
-            <Form.Group controlId="birthdate" className="col-3">
-              <Form.Label>Birthdate</Form.Label>
-              <Form.Control
-                className={cx({ "is-invalid": errors.birthdate })}
+            <FormGroup className="md:col-span-3">
+              <Label htmlFor="birthdate">Birthdate</Label>
+              <Input
+                id="birthdate"
+                aria-invalid={!!errors.birthdate}
                 placeholder="YYYY-MM-DD"
                 {...register("birthdate")}
               />
-              <Form.Control.Feedback type="invalid">
+              <FieldErrorMessage>
                 {errors?.birthdate?.message}
-              </Form.Control.Feedback>
-            </Form.Group>
+              </FieldErrorMessage>
+            </FormGroup>
 
-            <Form.Group controlId="deathdate" className="col-3">
-              <Form.Label>Deathdate</Form.Label>
-              <Form.Control
-                className={cx({ "is-invalid": errors.deathdate })}
+            <FormGroup className="md:col-span-3">
+              <Label htmlFor="deathdate">Deathdate</Label>
+              <Input
+                id="deathdate"
+                aria-invalid={!!errors.deathdate}
                 placeholder="YYYY-MM-DD"
                 {...register("deathdate")}
               />
-              <Form.Control.Feedback type="invalid">
+              <FieldErrorMessage>
                 {errors?.deathdate?.message}
-              </Form.Control.Feedback>
-            </Form.Group>
+              </FieldErrorMessage>
+            </FormGroup>
+          </div>
+          <p className="-mt-2 mb-4 text-sm text-muted-foreground">
+            If the precise date is unknown the day and/or month can be omitted.
+          </p>
 
-            <Col xs={{ span: 6, offset: 6 }}>
-              <Form.Text>
-                If the precise date is unknown the day and/or month can be
-                omitted.
-              </Form.Text>
-            </Col>
-          </Row>
-
-          <Row>
-            <Form.Group controlId="eye_color" className="col-6 mb-3">
-              <Form.Label>Eye Color</Form.Label>
-              <Form.Select
-                className={cx({ "is-invalid": errors.eye_color })}
+          <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2">
+            <FormGroup>
+              <Label htmlFor="eye_color">Eye Color</Label>
+              <Select
+                id="eye_color"
+                aria-invalid={!!errors.eye_color}
                 {...register("eye_color")}
               >
                 {enumOptions(EYE)}
-              </Form.Select>
-              <Form.Control.Feedback>
+              </Select>
+              <FieldErrorMessage>
                 {errors?.eye_color?.message}
-              </Form.Control.Feedback>
-            </Form.Group>
+              </FieldErrorMessage>
+            </FormGroup>
 
-            <Form.Group controlId="hair_color" className="col-6 mb-3">
-              <Form.Label>Hair Color</Form.Label>
-              <Form.Select
-                className={cx({ "is-invalid": errors.hair_color })}
+            <FormGroup>
+              <Label htmlFor="hair_color">Hair Color</Label>
+              <Select
+                id="hair_color"
+                aria-invalid={!!errors.hair_color}
                 {...register("hair_color")}
               >
                 {enumOptions(HAIR)}
-              </Form.Select>
-              <Form.Control.Feedback>
+              </Select>
+              <FieldErrorMessage>
                 {errors?.hair_color?.message}
-              </Form.Control.Feedback>
-            </Form.Group>
-          </Row>
+              </FieldErrorMessage>
+            </FormGroup>
+          </div>
 
-          <Row>
-            <Form.Group controlId="height" className="col-6 mb-3">
-              <Form.Label>Height</Form.Label>
-              <Form.Control
-                className={cx({ "is-invalid": errors.height })}
+          <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2">
+            <FormGroup>
+              <Label htmlFor="height">Height</Label>
+              <Input
+                id="height"
+                aria-invalid={!!errors.height}
                 type="number"
                 onWheel={handleNumberInputWheel}
                 {...register("height")}
               />
-              <Form.Control.Feedback type="invalid">
-                {errors?.height?.message}
-              </Form.Control.Feedback>
-              <Form.Text>Height in centimeters</Form.Text>
-            </Form.Group>
+              <FieldErrorMessage>{errors?.height?.message}</FieldErrorMessage>
+              <p className="text-sm text-muted-foreground">
+                Height in centimeters
+              </p>
+            </FormGroup>
 
             {fieldData.gender !== "MALE" &&
               fieldData.gender !== "TRANSGENDER_MALE" && (
-                <Form.Group controlId="breastType" className="col-6 mb-3">
-                  <Form.Label>Breast type</Form.Label>
-                  <Form.Select
-                    className={cx({ "is-invalid": errors.breastType })}
+                <FormGroup>
+                  <Label htmlFor="breastType">Breast type</Label>
+                  <Select
+                    id="breastType"
+                    aria-invalid={!!errors.breastType}
                     {...register("breastType")}
                   >
                     {enumOptions(BREAST)}
-                  </Form.Select>
-                  <Form.Control.Feedback type="invalid">
+                  </Select>
+                  <FieldErrorMessage>
                     {errors?.breastType?.message}
-                  </Form.Control.Feedback>
-                </Form.Group>
+                  </FieldErrorMessage>
+                </FormGroup>
               )}
-          </Row>
+          </div>
 
           {showBreastType && (
-            <Row>
-              <Form.Group controlId="bandSize" className="col-2 mb-3">
-                <Form.Label>Band size</Form.Label>
-                <Form.Control
-                  className={cx({ "is-invalid": errors.bandSize })}
+            <div className="grid grid-cols-1 gap-x-4 md:grid-cols-12">
+              <FormGroup className="md:col-span-2">
+                <Label htmlFor="bandSize">Band size</Label>
+                <Input
+                  id="bandSize"
+                  aria-invalid={!!errors.bandSize}
                   type="number"
                   onWheel={handleNumberInputWheel}
                   {...register("bandSize")}
                 />
-                <Form.Control.Feedback type="invalid">
+                <FieldErrorMessage>
                   {errors?.bandSize?.message}
-                </Form.Control.Feedback>
-                <Form.Text>US Bra size number</Form.Text>
-              </Form.Group>
+                </FieldErrorMessage>
+                <p className="text-sm text-muted-foreground">
+                  US Bra size number
+                </p>
+              </FormGroup>
 
-              <Form.Group controlId="cupSize" className="col-2 mb-3">
-                <Form.Label>Cup size</Form.Label>
-                <Form.Control
-                  className={cx({ "is-invalid": errors.cupSize })}
+              <FormGroup className="md:col-span-2">
+                <Label htmlFor="cupSize">Cup size</Label>
+                <Input
+                  id="cupSize"
+                  aria-invalid={!!errors.cupSize}
                   {...register("cupSize")}
                 />
-                <Form.Control.Feedback type="invalid">
+                <FieldErrorMessage>
                   {errors?.cupSize?.message}
-                </Form.Control.Feedback>
-                <Form.Text>US Bra size letter(s)</Form.Text>
-              </Form.Group>
+                </FieldErrorMessage>
+                <p className="text-sm text-muted-foreground">
+                  US Bra size letter(s)
+                </p>
+              </FormGroup>
 
-              <Form.Group controlId="waistSize" className="col-4 mb-3">
-                <Form.Label>Waist size</Form.Label>
-                <Form.Control
-                  className={cx({ "is-invalid": errors.waistSize })}
+              <FormGroup className="md:col-span-4">
+                <Label htmlFor="waistSize">Waist size</Label>
+                <Input
+                  id="waistSize"
+                  aria-invalid={!!errors.waistSize}
                   type="number"
                   onWheel={handleNumberInputWheel}
                   {...register("waistSize")}
                 />
-                <Form.Control.Feedback type="invalid">
+                <FieldErrorMessage>
                   {errors?.waistSize?.message}
-                </Form.Control.Feedback>
-                <Form.Text>Waist circumference in inches</Form.Text>
-              </Form.Group>
+                </FieldErrorMessage>
+                <p className="text-sm text-muted-foreground">
+                  Waist circumference in inches
+                </p>
+              </FormGroup>
 
-              <Form.Group controlId="hipSize" className="col-4 mb-3">
-                <Form.Label>Hip size</Form.Label>
-                <Form.Control
-                  className={cx({ "is-invalid": errors.hipSize })}
+              <FormGroup className="md:col-span-4">
+                <Label htmlFor="hipSize">Hip size</Label>
+                <Input
+                  id="hipSize"
+                  aria-invalid={!!errors.hipSize}
                   type="number"
                   onWheel={handleNumberInputWheel}
                   {...register("hipSize")}
                 />
-                <Form.Control.Feedback type="invalid">
+                <FieldErrorMessage>
                   {errors?.hipSize?.message}
-                </Form.Control.Feedback>
-                <Form.Text>Hip circumference in inches</Form.Text>
-              </Form.Group>
-            </Row>
+                </FieldErrorMessage>
+                <p className="text-sm text-muted-foreground">
+                  Hip circumference in inches
+                </p>
+              </FormGroup>
+            </div>
           )}
 
-          <Row>
-            <Form.Group controlId="country" className="col-6 mb-3">
-              <Form.Label>Nationality</Form.Label>
+          <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2">
+            <FormGroup>
+              <Label htmlFor="country">Nationality</Label>
               <Controller
                 control={control}
                 name="country"
                 render={({ field: { onChange, value } }) => (
                   <SelectCombobox
+                    inputId="country"
                     onChange={(v) => onChange(v)}
                     options={countryObj.filter(
                       (c): c is { label: string; value: string } =>
@@ -588,61 +609,58 @@ const PerformerForm: FC<PerformerProps> = ({
                   />
                 )}
               />
-              <Form.Control.Feedback type="invalid">
-                {errors?.country?.message}
-              </Form.Control.Feedback>
-            </Form.Group>
+              <FieldErrorMessage>{errors?.country?.message}</FieldErrorMessage>
+            </FormGroup>
 
-            <Form.Group controlId="ethnicity" className="col-6 mb-3">
-              <Form.Label>Ethnicity</Form.Label>
-              <Form.Select
-                className={cx({ "is-invalid": errors.ethnicity })}
+            <FormGroup>
+              <Label htmlFor="ethnicity">Ethnicity</Label>
+              <Select
+                id="ethnicity"
+                aria-invalid={!!errors.ethnicity}
                 {...register("ethnicity")}
               >
                 {enumOptions(ETHNICITY)}
-              </Form.Select>
-              <Form.Control.Feedback type="invalid">
+              </Select>
+              <FieldErrorMessage>
                 {errors?.ethnicity?.message}
-              </Form.Control.Feedback>
-            </Form.Group>
-          </Row>
+              </FieldErrorMessage>
+            </FormGroup>
+          </div>
 
-          <Row>
-            <Form.Group controlId="career_start_year" className="col-6 mb-3">
-              <Form.Label>Career Start</Form.Label>
-              <Form.Control
-                className={cx({ "is-invalid": errors.career_start_year })}
+          <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2">
+            <FormGroup>
+              <Label htmlFor="career_start_year">Career Start</Label>
+              <Input
+                id="career_start_year"
+                aria-invalid={!!errors.career_start_year}
                 type="year"
                 placeholder="Year"
                 {...register("career_start_year")}
               />
-              <Form.Control.Feedback type="invalid">
+              <FieldErrorMessage>
                 {errors?.career_start_year?.message}
-              </Form.Control.Feedback>
-            </Form.Group>
+              </FieldErrorMessage>
+            </FormGroup>
 
-            <Form.Group controlId="career_end_year" className="col-6 mb-3">
-              <Form.Label>Career End</Form.Label>
-              <Form.Control
-                className={cx({ "is-invalid": errors.career_end_year })}
+            <FormGroup>
+              <Label htmlFor="career_end_year">Career End</Label>
+              <Input
+                id="career_end_year"
+                aria-invalid={!!errors.career_end_year}
                 type="year"
                 placeholder="Year"
                 {...register("career_end_year")}
               />
-              <Form.Control.Feedback type="invalid">
+              <FieldErrorMessage>
                 {errors?.career_end_year?.message}
-              </Form.Control.Feedback>
-            </Form.Group>
-          </Row>
+              </FieldErrorMessage>
+            </FormGroup>
+          </div>
 
           <NavButtons onNext={() => setActiveTab("bodymod")} />
-        </Tab>
+        </TabsContent>
 
-        <Tab
-          eventKey="bodymod"
-          title="Tattoos and Piercings"
-          className="col-xl-9"
-        >
+        <TabsContent value="bodymod" className="max-w-4xl">
           <BodyModification
             lens={lens.focus("tattoos").defined().cast()}
             name="tattoos"
@@ -650,17 +668,16 @@ const PerformerForm: FC<PerformerProps> = ({
             descriptionPlaceholder="Tattoo description..."
             formatLabel={(text) => `Add tattoo for location "${text}"`}
           />
-          <Form.Control.Feedback
-            className={cx({ "d-block": errors.tattoos })}
-            type="invalid"
-          >
-            {errors?.tattoos?.map?.((mod, idx) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: Undefined location
-              <div key={idx}>
-                Tattoo {idx + 1}: {mod?.location?.message}
-              </div>
-            ))}
-          </Form.Control.Feedback>
+          {errors?.tattoos && (
+            <div className="text-sm text-destructive">
+              {errors.tattoos.map?.((mod, idx) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: Undefined location
+                <div key={idx}>
+                  Tattoo {idx + 1}: {mod?.location?.message}
+                </div>
+              ))}
+            </div>
+          )}
 
           <BodyModification
             lens={lens.focus("piercings").defined().cast()}
@@ -669,22 +686,21 @@ const PerformerForm: FC<PerformerProps> = ({
             descriptionPlaceholder="Piercing description..."
             formatLabel={(text) => `Add piercing for location "${text}"`}
           />
-          <Form.Control.Feedback
-            className={cx({ "d-block": errors.piercings })}
-            type="invalid"
-          >
-            {errors?.piercings?.map?.((mod, idx) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: Undefined location
-              <div key={idx}>
-                Piercing {idx + 1}: {mod?.location?.message}
-              </div>
-            ))}
-          </Form.Control.Feedback>
+          {errors?.piercings && (
+            <div className="text-sm text-destructive">
+              {errors.piercings.map?.((mod, idx) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: Undefined location
+                <div key={idx}>
+                  Piercing {idx + 1}: {mod?.location?.message}
+                </div>
+              ))}
+            </div>
+          )}
 
           <NavButtons onNext={() => setActiveTab("links")} />
-        </Tab>
+        </TabsContent>
 
-        <Tab eventKey="links" title="Links" className="col-xl-9">
+        <TabsContent value="links" className="max-w-4xl">
           <URLInput
             lens={lens.focus("urls").defined()}
             type={ValidSiteTypeEnum.PERFORMER}
@@ -692,9 +708,9 @@ const PerformerForm: FC<PerformerProps> = ({
           />
 
           <NavButtons onNext={() => setActiveTab("images")} />
-        </Tab>
+        </TabsContent>
 
-        <Tab eventKey="images" title="Images">
+        <TabsContent value="images">
           <EditImages
             lens={lens.focus("images").cast<ImageFragment[]>()}
             file={file}
@@ -707,37 +723,34 @@ const PerformerForm: FC<PerformerProps> = ({
             disabled={!!file}
           />
 
-          <div className="d-flex">
-            {/* dummy element for feedback */}
-            <div className="ms-auto">
-              <span className={file ? "is-invalid" : ""} />
-              <Form.Control.Feedback type="invalid">
-                Upload or remove image to continue.
-              </Form.Control.Feedback>
-            </div>
-          </div>
-        </Tab>
+          {file && (
+            <p className="mt-2 text-right text-sm text-destructive">
+              Upload or remove image to continue.
+            </p>
+          )}
+        </TabsContent>
 
-        <Tab eventKey="confirm" title="Confirm" className="mt-3 col-xl-9">
+        <TabsContent value="confirm" className="max-w-4xl">
           {renderPerformerDetails(
             newChanges,
             oldChanges,
             !!performer,
             updateAliases,
           )}
-          <Row className="my-4">
-            <Col md={{ span: 8, offset: 4 }}>
-              <EditNote register={register} error={errors.note} />
-            </Col>
-          </Row>
+          <div className="my-4">
+            <EditNote register={register} error={errors.note} />
+          </div>
 
           {metadataErrors.length > 0 && (
-            <div className="text-end my-4">
-              <h6>
-                <Icon icon={faExclamationTriangle} color="red" />
-                <span className="ms-1">Errors</span>
+            <div className="my-4 text-right">
+              <h6 className="font-semibold">
+                <Icon
+                  icon={faExclamationTriangle}
+                  className="text-destructive"
+                />
+                <span className="ml-1">Errors</span>
               </h6>
-              <div className="d-flex flex-column text-danger">
+              <div className="flex flex-col text-destructive">
                 {metadataErrors.map(({ error, tab }) => (
                   <Link to="#" key={error} onClick={() => setActiveTab(tab)}>
                     {error}
@@ -748,9 +761,9 @@ const PerformerForm: FC<PerformerProps> = ({
           )}
 
           <SubmitButtons disabled={!!file || saving} />
-        </Tab>
+        </TabsContent>
       </Tabs>
-    </Form>
+    </form>
   );
 };
 

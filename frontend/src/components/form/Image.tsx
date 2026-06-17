@@ -1,9 +1,9 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
-import { Button } from "react-bootstrap";
 
 import { Icon } from "src/components/fragments";
 import Image from "src/components/image";
+import { Button } from "src/components/ui/button";
 import type { ImageFragment } from "src/graphql";
 
 type ImageType = Pick<ImageFragment, "id" | "url" | "width" | "height">;
@@ -14,26 +14,23 @@ interface ImageProps {
   onRemove: () => void;
 }
 
-const CLASSNAME = "ImageInput";
-const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
-const CLASSNAME_REMOVE = `${CLASSNAME}-remove`;
-
 const ImageInput: FC<ImageProps> = ({ image, lightboxImages, onRemove }) => (
-  <div className={CLASSNAME}>
+  <div className="relative">
     <Button
       variant="danger"
-      className={CLASSNAME_REMOVE}
+      size="sm"
+      className="absolute right-2 top-2 z-10"
       onClick={() => onRemove()}
     >
       <Icon icon={faXmark} />
     </Button>
     <Image
       images={image}
-      className={CLASSNAME_IMAGE}
+      className="max-h-96 w-full object-contain"
       size="full"
       lightboxImages={lightboxImages}
     />
-    <div className="text-center">
+    <div className="text-center text-sm text-muted-foreground">
       {image.width} x {image.height}
     </div>
   </div>

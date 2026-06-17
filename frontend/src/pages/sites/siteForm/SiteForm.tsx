@@ -1,11 +1,17 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import cx from "classnames";
 import { capitalize } from "lodash-es";
 import type { FC } from "react";
-import { Button, Form } from "react-bootstrap";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { Button } from "src/components/ui/button";
 import { MultiCombobox, SelectCombobox } from "src/components/ui/combobox";
+import {
+  FieldError as FieldErrorMessage,
+  FormGroup,
+  Label,
+} from "src/components/ui/field";
+import { Input } from "src/components/ui/input";
+import { Switch } from "src/components/ui/switch";
 import {
   type SiteCreateInput,
   type SiteQuery,
@@ -71,47 +77,54 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
   };
 
   return (
-    <Form className="SiteForm w-50" onSubmit={handleSubmit(onSubmit)}>
-      <Form.Group controlId="name" className="mb-3">
-        <Form.Label>Name</Form.Label>
-        <Form.Control
-          className={cx({ "is-invalid": errors.name })}
+    <form
+      className="SiteForm w-full md:w-1/2"
+      onSubmit={handleSubmit(onSubmit)}
+    >
+      <FormGroup>
+        <Label htmlFor="name">Name</Label>
+        <Input
+          id="name"
+          aria-invalid={!!errors.name}
           placeholder="Name"
           defaultValue={site?.name ?? ""}
           {...register("name")}
         />
-        <Form.Control.Feedback type="invalid">
-          {errors?.name?.message}
-        </Form.Control.Feedback>
-      </Form.Group>
+        <FieldErrorMessage>{errors?.name?.message}</FieldErrorMessage>
+      </FormGroup>
 
-      <Form.Group controlId="description" className="mb-3">
-        <Form.Label>Description</Form.Label>
-        <Form.Control
+      <FormGroup>
+        <Label htmlFor="description">Description</Label>
+        <Input
+          id="description"
           placeholder="Description"
           defaultValue={site?.description ?? ""}
           {...register("description")}
         />
-      </Form.Group>
+      </FormGroup>
 
-      <Form.Group controlId="url" className="mb-3">
-        <Form.Label>URL</Form.Label>
-        <Form.Control
+      <FormGroup>
+        <Label htmlFor="url">URL</Label>
+        <Input
+          id="url"
           placeholder="URL"
           defaultValue={site?.url ?? ""}
           {...register("url")}
         />
-        <Form.Text>URL of the site, if applicable.</Form.Text>
-      </Form.Group>
+        <p className="text-sm text-muted-foreground">
+          URL of the site, if applicable.
+        </p>
+      </FormGroup>
 
-      <Form.Group controlId="regex" className="mb-3">
-        <Form.Label>Regular Expression</Form.Label>
-        <Form.Control
+      <FormGroup>
+        <Label htmlFor="regex">Regular Expression</Label>
+        <Input
+          id="regex"
           placeholder=""
           defaultValue={site?.regex ?? ""}
           {...register("regex")}
         />
-        <Form.Text>
+        <p className="text-sm text-muted-foreground">
           An optional regular expression that will be used to clean links and
           autofill the Site selection with this Site. Must contain a capture
           group of the portion of the URL that will be kept.
@@ -125,11 +138,11 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
           <code>http://example.org/foo/bar?id=69#top</code>
           <br />
           and will clean it into <code>http://example.org/foo/bar</code>
-        </Form.Text>
-      </Form.Group>
+        </p>
+      </FormGroup>
 
-      <Form.Group className="mb-3">
-        <Form.Label>Valid link targets</Form.Label>
+      <FormGroup>
+        <Label>Valid link targets</Label>
         <Controller
           control={control}
           name="valid_types"
@@ -146,14 +159,13 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
             />
           )}
         />
-        <Form.Control.Feedback type="invalid">
-          {/* Workaround for typing error in react-hook-form */}
+        <FieldErrorMessage>
           {(errors.valid_types as unknown as { message: string })?.message}
-        </Form.Control.Feedback>
-      </Form.Group>
+        </FieldErrorMessage>
+      </FormGroup>
 
-      <Form.Group className="mb-3">
-        <Form.Label>Category</Form.Label>
+      <FormGroup>
+        <Label>Category</Label>
         <Controller
           control={control}
           name="category_id"
@@ -171,37 +183,41 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
             />
           )}
         />
-        <Form.Text>
+        <p className="text-sm text-muted-foreground">
           Optional category used to group links. Uncategorized sites are shown
           under &ldquo;Other&rdquo;.
-        </Form.Text>
-      </Form.Group>
+        </p>
+      </FormGroup>
 
-      <Form.Group controlId="highlighted" className="mb-3">
-        <Form.Check
-          type="switch"
-          label="Highlight links"
-          defaultChecked={site?.highlighted ?? true}
-          {...register("highlighted")}
+      <FormGroup>
+        <Controller
+          control={control}
+          name="highlighted"
+          defaultValue={site?.highlighted ?? true}
+          render={({ field: { onChange, value } }) => (
+            <Switch
+              label="Highlight links"
+              checked={value}
+              onCheckedChange={onChange}
+            />
+          )}
         />
-        <Form.Text>
+        <p className="text-sm text-muted-foreground">
           Highlighted sites are shown as icons on performer, scene, and studio
           pages. Other sites only appear in the links section.
-        </Form.Text>
-      </Form.Group>
+        </p>
+      </FormGroup>
 
-      <Form.Group className="d-flex mb-3">
-        <Button type="submit" className="col-2">
-          Save
-        </Button>
-        <Button type="reset" className="ms-auto me-2">
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+        <Button type="submit">Save</Button>
+        <Button type="reset" className="sm:ml-auto">
           Reset
         </Button>
         <Button variant="danger" onClick={() => navigate(-1)}>
           Cancel
         </Button>
-      </Form.Group>
-    </Form>
+      </div>
+    </form>
   );
 };
 

@@ -234,10 +234,10 @@ describe("PerformerForm", () => {
       const name = screen.getByLabelText("Name");
       await user.clear(name);
       await user.type(name, "Janet Doe");
-      // Name change reveals the "Set unset performance aliases…" checkbox
-      const checkbox = await screen.findByLabelText(
-        /Set unset performance aliases/,
-      );
+      // Name change reveals the "Set unset performance aliases…" toggle
+      const checkbox = await screen.findByRole("switch", {
+        name: /Set unset performance aliases/,
+      });
       await user.click(checkbox);
       await submit(user);
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));

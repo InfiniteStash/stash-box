@@ -1,11 +1,13 @@
 import { type FC, useState } from "react";
-import { Button, Card, Form } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import {
   AmendableModifyEdit,
   useAmendment,
 } from "src/components/amendableEditCard";
 import Title from "src/components/title";
+import { Button } from "src/components/ui/button";
+import { Card, CardBody, CardHeader } from "src/components/ui/card";
+import { Textarea } from "src/components/ui/textarea";
 import { EditOperationTypes, EditTargetTypes, ROUTE_EDIT } from "src/constants";
 import type { AmendItemRemoval, EditFragment } from "src/graphql";
 import { OperationEnum, useAmendEdit } from "src/graphql";
@@ -79,54 +81,53 @@ const EditAmendForm: FC<EditAmendFormProps> = ({ edit }) => {
       <Title
         page={`Amend ${EditOperationTypes[edit.operation]} ${EditTargetTypes[edit.target_type]}${targetName && targetName !== "-" ? ` "${targetName}"` : ""}`}
       />
-      <h3>
+      <h3 className="text-2xl font-semibold">
         Amend Edit: {EditOperationTypes[edit.operation]}{" "}
         {EditTargetTypes[edit.target_type]}
         {targetName && targetName !== "-" && ` - ${targetName}`}
       </h3>
-      <p className="text-muted">
+      <p className="text-muted-foreground">
         Click the X button next to any field or item to mark it for removal from
         this edit. Removed changes will appear dimmed.
       </p>
 
-      <Form onSubmit={handleSubmit}>
-        <Card className="mb-4">
-          <Card.Header>
-            <strong>Edit Details</strong>
-            <span className="text-muted ms-2">
-              (submitted by {edit.user?.name ?? "Unknown"})
-            </span>
-          </Card.Header>
-          <Card.Body>
+      <form onSubmit={handleSubmit}>
+        <Card className="my-4">
+          <CardHeader>
+            <div>
+              <strong>Edit Details</strong>
+              <span className="ml-2 text-muted-foreground">
+                (submitted by {edit.user?.name ?? "Unknown"})
+              </span>
+            </div>
+          </CardHeader>
+          <CardBody className="pt-0">
             <AmendableModifyEdit
               details={edit.details}
               oldDetails={edit.old_details}
               options={edit.options}
             />
-          </Card.Body>
+          </CardBody>
         </Card>
 
-        <Card className="mb-4">
-          <Card.Header>
+        <Card className="my-4">
+          <CardHeader>
             <strong>Amendment Reason</strong>
-          </Card.Header>
-          <Card.Body>
-            <Form.Group>
-              <Form.Control
-                as="textarea"
-                rows={4}
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="Explain why these fields are being removed from the edit..."
-                required
-                disabled={amending}
-              />
-            </Form.Group>
-            {error && <div className="text-danger mt-3">{error}</div>}
-          </Card.Body>
+          </CardHeader>
+          <CardBody className="pt-0">
+            <Textarea
+              rows={4}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Explain why these fields are being removed from the edit..."
+              required
+              disabled={amending}
+            />
+            {error && <div className="mt-3 text-destructive">{error}</div>}
+          </CardBody>
         </Card>
 
-        <div className="d-flex justify-content-end gap-2">
+        <div className="flex justify-end gap-2">
           <Link to={createHref(ROUTE_EDIT, edit)}>
             <Button variant="secondary" disabled={amending}>
               Cancel
@@ -134,13 +135,12 @@ const EditAmendForm: FC<EditAmendFormProps> = ({ edit }) => {
           </Link>
           <Button
             type="submit"
-            variant="primary"
             disabled={!reason.trim() || !hasChanges || amending}
           >
             Amend Edit
           </Button>
         </div>
-      </Form>
+      </form>
     </div>
   );
 };
