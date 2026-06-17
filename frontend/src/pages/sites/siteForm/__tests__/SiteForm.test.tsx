@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { ValidSiteTypeEnum } from "src/graphql/types";
 import { siteCategoriesMock } from "src/test/graphqlMocks";
 import { renderForm } from "src/test/renderForm";
-import { selectReactSelect } from "src/test/selectors";
+import { selectComboboxOption } from "src/test/selectors";
 import { describe, expect, it, vi } from "vitest";
 import SiteForm from "../SiteForm";
 
@@ -25,7 +25,7 @@ const baseSite = {
 const selectType = (
   user: ReturnType<typeof renderForm>["user"],
   label: string,
-) => selectReactSelect(user, label);
+) => selectComboboxOption(user, label, label);
 
 const render = (ui: ReactElement) =>
   renderForm(ui, { mocks: [siteCategoriesMock] });

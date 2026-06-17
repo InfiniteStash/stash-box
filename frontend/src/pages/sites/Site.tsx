@@ -1,8 +1,8 @@
 import type { FC } from "react";
-import { Button } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import DeleteButton from "src/components/deleteButton";
 import { SiteLink } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
 import {
   ROUTE_SITE_CATEGORY,
   ROUTE_SITE_EDIT,
@@ -38,16 +38,16 @@ const SiteComponent: FC<Props> = ({ site }) => {
 
   return (
     <>
-      <Link to={ROUTE_SITES}>
+      <Link to={ROUTE_SITES} className="text-link hover:underline">
         <h6 className="mb-4">&larr; Site List</h6>
       </Link>
-      <div className="d-flex">
-        <h3 className="me-auto">
+      <div className="flex items-center">
+        <h3 className="mr-auto text-2xl font-semibold">
           <SiteLink site={site} />
         </h3>
         {isAdmin && (
-          <div className="ms-auto">
-            <Link to={createHref(ROUTE_SITE_EDIT, site)} className="me-2">
+          <div className="flex gap-2">
+            <Link to={createHref(ROUTE_SITE_EDIT, site)}>
               <Button>Edit</Button>
             </Link>
             <DeleteButton
@@ -58,7 +58,7 @@ const SiteComponent: FC<Props> = ({ site }) => {
           </div>
         )}
       </div>
-      <dl>
+      <dl className="mt-4 grid grid-cols-[max-content_1fr] gap-x-4 gap-y-2 [&>dt]:font-semibold [&>dt]:text-muted-foreground">
         <dt>Valid targets</dt>
         <dd>{site.valid_types.join(", ")}</dd>
         <dt>Link visibility</dt>

@@ -1,20 +1,11 @@
 import { useApolloClient } from "@apollo/client/react";
-import debounce from "p-debounce";
-import { type FC, type KeyboardEvent, useRef, useState } from "react";
+import { type FC, type KeyboardEvent, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { GenderIcon, Thumbnail } from "src/components/fragments";
 import {
-  components,
-  type GroupBase,
-  type OnChangeValue,
-  type SelectInstance,
-} from "react-select";
-import Async from "react-select/async";
-import {
-  GenderIcon,
-  SearchHint,
-  SearchInput,
-  Thumbnail,
-} from "src/components/fragments";
+  AsyncSearchAdd,
+  type ComboboxOption,
+} from "src/components/ui/combobox";
 import type { SearchAllQuery, SearchPerformersQuery } from "src/graphql";
 import SearchAllGQL from "src/graphql/queries/SearchAll.gql";
 import SearchPerformersGQL from "src/graphql/queries/SearchPerformers.gql";
@@ -23,6 +14,7 @@ import {
   handleResult,
   type PerformerResult,
   type SceneResult,
+  type SearchGroup,
   type SearchResult,
 } from "./handleResult";
 
@@ -47,40 +39,58 @@ interface SearchFieldProps {
   inputId?: string;
 }
 
-const ValueContainer: typeof components.ValueContainer = (props) => (
-  <>
-    <SearchHint />
-    <components.ValueContainer {...props} />
-  </>
-);
+const ALL_VALUE = "__all__";
 
-const DropdownIndicator = () => null;
-const IndicatorSeparator = () => null;
+interface SearchOption extends ComboboxOption {
+  type: string;
+  sublabel?: string;
+  result?: SceneResult | PerformerResult;
+}
 
 const valueIsPerformer = (
   arg?: SceneResult | PerformerResult,
 ): arg is PerformerResult => arg?.__typename === "Performer";
 
-const formatOptionLabel = ({ label, sublabel, value }: SearchResult) => (
-  <div className="d-flex">
-    {valueIsPerformer(value) && (
-      <Thumbnail
-        image={getImage(value.images, "portrait")}
-        className="SearchField-thumb"
-        alt={value.name}
-        size={300}
-        orientation="portrait"
-      />
-    )}
-    <div>
-      <div className="search-value">
-        {valueIsPerformer(value) && <GenderIcon gender={value.gender} />}
-        {value?.deleted ? <del>{label}</del> : label}
+const toOption = (r: SearchResult): SearchOption => ({
+  value: r.value?.id ?? ALL_VALUE,
+  label: r.label ?? "",
+  sublabel: r.sublabel,
+  type: r.type,
+  result: r.value,
+});
+
+const flatten = (entries: (SearchGroup | SearchResult)[]): SearchOption[] =>
+  entries.flatMap((entry) =>
+    "options" in entry ? entry.options.map(toOption) : [toOption(entry)],
+  );
+
+const renderOption = (opt: SearchOption) => {
+  if (opt.type === "ALL") return <span>{opt.label}</span>;
+  return (
+    <div className="flex gap-2">
+      {valueIsPerformer(opt.result) && (
+        <Thumbnail
+          image={getImage(opt.result.images, "portrait")}
+          className="h-12 w-9 shrink-0 rounded object-cover"
+          alt={opt.result.name}
+          size={300}
+          orientation="portrait"
+        />
+      )}
+      <div className="min-w-0">
+        <div className="flex items-center gap-1">
+          {valueIsPerformer(opt.result) && (
+            <GenderIcon gender={opt.result.gender} />
+          )}
+          {opt.result?.deleted ? <del>{opt.label}</del> : opt.label}
+        </div>
+        {opt.sublabel && (
+          <div className="text-xs text-muted-foreground">{opt.sublabel}</div>
+        )}
       </div>
-      <div className="search-subvalue">{sublabel}</div>
     </div>
-  </div>
-);
+  );
+};
 
 const SearchField: FC<SearchFieldProps> = ({
   onClick,
@@ -96,16 +106,12 @@ const SearchField: FC<SearchFieldProps> = ({
 }) => {
   const client = useApolloClient();
   const navigate = useNavigate();
-  const [selectedValue, setSelected] = useState(null);
   const searchTerm = useRef("");
-  const selectRef =
-    useRef<SelectInstance<SearchResult, false, GroupBase<SearchResult>>>(null);
 
-  const handleSearch = async (term: string) => {
-    if (term) {
-      const { data } = await client.query<
-        SearchPerformersQuery | SearchAllQuery
-      >({
+  const loadOptions = async (term: string): Promise<SearchOption[]> => {
+    if (!term) return [];
+    const { data } = await client.query<SearchPerformersQuery | SearchAllQuery>(
+      {
         query:
           searchType === SearchType.Performer
             ? SearchPerformersGQL
@@ -117,69 +123,51 @@ const SearchField: FC<SearchFieldProps> = ({
             : {}),
         },
         fetchPolicy: "network-only",
-      });
-      if (!data) return [];
-      return handleResult(data, excludeIDs, showAllLink, studioId);
-    }
-    return [];
+      },
+    );
+    if (!data) return [];
+    return flatten(handleResult(data, excludeIDs, showAllLink, studioId));
   };
 
-  const debouncedLoadOptions = debounce(handleSearch, 400);
-
-  const handleLoad = (term: string) => {
-    searchTerm.current = term;
-    return debouncedLoadOptions(term);
-  };
-
-  const handleChange = (result: OnChangeValue<SearchResult, false>) => {
-    if (result?.type === "ALL")
-      return navigate(`/search?q=${encodeURIComponent(searchTerm.current)}`);
-
-    if (result?.value) {
-      if (valueIsPerformer(result.value)) onClickPerformer?.(result.value);
-      onClick?.(result.value);
-      if (nav) navigate(`/${result.type}s/${result.value.id}`);
+  const handleSelect = (opt: SearchOption) => {
+    if (opt.type === "ALL") {
+      navigate(`/search?q=${encodeURIComponent(searchTerm.current)}`);
+      return;
     }
-
-    setSelected(null);
+    const result = opt.result;
+    if (!result) return;
+    if (valueIsPerformer(result)) onClickPerformer?.(result);
+    onClick?.(result);
+    if (nav) navigate(`/${opt.type}s/${result.id}`);
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLElement>) => {
     if (e.key === "Enter" && searchTerm.current && showAllLink) {
       navigate(`/search?q=${encodeURIComponent(searchTerm.current)}`);
-      selectRef?.current?.blur();
     }
   };
 
   return (
-    <div className="SearchField">
-      <Async
-        autoFocus={autoFocus}
-        inputId={inputId}
-        classNamePrefix="react-select"
-        value={selectedValue}
-        loadOptions={handleLoad}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        ref={selectRef}
-        placeholder={
-          placeholder ??
-          (searchType === SearchType.Performer
-            ? "Search for performer..."
-            : "Search for performer or scene...")
-        }
-        formatOptionLabel={formatOptionLabel}
-        components={{
-          DropdownIndicator,
-          IndicatorSeparator,
-          ValueContainer,
-          Input: SearchInput,
-        }}
-        noOptionsMessage={({ inputValue }) =>
-          inputValue === "" ? null : `No result found for "${inputValue}"`
-        }
-      />
-    </div>
+    <AsyncSearchAdd<SearchOption>
+      inputId={inputId}
+      autoFocus={autoFocus}
+      onSelect={handleSelect}
+      loadOptions={loadOptions}
+      onInputChange={(term) => {
+        searchTerm.current = term;
+      }}
+      onKeyDown={handleKeyDown}
+      renderOption={renderOption}
+      placeholder={
+        placeholder ??
+        (searchType === SearchType.Performer
+          ? "Search for performer..."
+          : "Search for performer or scene...")
+      }
+      noOptionsMessage={(term) =>
+        term === "" ? null : `No result found for "${term}"`
+      }
+    />
   );
 };
 

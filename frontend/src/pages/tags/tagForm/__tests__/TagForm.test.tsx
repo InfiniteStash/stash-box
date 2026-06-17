@@ -3,9 +3,9 @@ import type { TagFragment } from "src/graphql";
 import { categoriesMock, configMock } from "src/test/graphqlMocks";
 import { renderForm } from "src/test/renderForm";
 import {
-  addCreatableOption,
-  removeMultiValue,
-  selectReactSelect,
+  addTagsInputValue,
+  removeTagsInputValue,
+  selectComboboxOption,
 } from "src/test/selectors";
 import { describe, expect, it, vi } from "vitest";
 import TagForm from "../TagForm";
@@ -17,7 +17,7 @@ const selectCategory = async (
   const labels = screen.getAllByText("Category");
   const labelEl = labels.find((el) => el.tagName === "LABEL") ?? labels[0];
   const categoryGroup = labelEl.closest(".mb-3") as HTMLElement;
-  await selectReactSelect(user, label, categoryGroup);
+  await selectComboboxOption(user, label, label, categoryGroup);
 };
 
 const aliasContainer = () => {
@@ -76,8 +76,8 @@ describe("TagForm", () => {
         screen.getByPlaceholderText("Description"),
         "a description",
       );
-      await addCreatableOption(user, "alt1", aliasContainer());
-      await addCreatableOption(user, "alt2", aliasContainer());
+      await addTagsInputValue(user, "alt1", aliasContainer());
+      await addTagsInputValue(user, "alt2", aliasContainer());
       await selectCategory(user, "Activity");
       await fillNote(user);
       await user.click(screen.getByRole("button", { name: "Submit Edit" }));
@@ -145,7 +145,7 @@ describe("TagForm", () => {
 
     it("adds an alias", async () => {
       const { callback, user } = await setupEdit();
-      await addCreatableOption(user, "gamma", aliasContainer());
+      await addTagsInputValue(user, "gamma", aliasContainer());
       await fillNote(user);
       await user.click(screen.getByRole("button", { name: "Submit Edit" }));
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
@@ -158,7 +158,7 @@ describe("TagForm", () => {
 
     it("removes an alias", async () => {
       const { callback, user } = await setupEdit();
-      await removeMultiValue(user, "beta", aliasContainer());
+      await removeTagsInputValue(user, "beta", aliasContainer());
       await fillNote(user);
       await user.click(screen.getByRole("button", { name: "Submit Edit" }));
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
@@ -179,8 +179,8 @@ describe("TagForm", () => {
 
     it("removes all aliases", async () => {
       const { callback, user } = await setupEdit();
-      await removeMultiValue(user, "alpha", aliasContainer());
-      await removeMultiValue(user, "beta", aliasContainer());
+      await removeTagsInputValue(user, "alpha", aliasContainer());
+      await removeTagsInputValue(user, "beta", aliasContainer());
       await fillNote(user);
       await user.click(screen.getByRole("button", { name: "Submit Edit" }));
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));

@@ -1,17 +1,6 @@
-// biome-ignore-all lint/correctness/noNestedComponentDefinitions: Necessary for react-select
-
+import { Popover } from "@base-ui/react/popover";
 import { uniq } from "lodash-es";
 import type { FC } from "react";
-import { Form } from "react-bootstrap";
-import Select, { type OnChangeValue } from "react-select";
-
-interface MultiSelectProps {
-  values: IOptionType[];
-  onChange: (values: string[]) => void;
-  placeholder?: string;
-  plural?: string;
-  selected?: string[];
-}
 
 interface IOptionType {
   label: string;
@@ -19,76 +8,69 @@ interface IOptionType {
   subValues: string[] | null;
 }
 
-const CheckboxSelect: FC<MultiSelectProps> = ({
+interface CheckboxSelectProps {
+  values: IOptionType[];
+  onChange: (values: string[]) => void;
+  placeholder?: string;
+  plural?: string;
+  selected?: string[];
+}
+
+// Collapsed multi-filter: a summary trigger opens a checkbox list. Selecting an
+// option with subValues toggles the option plus all of its subValues.
+const CheckboxSelect: FC<CheckboxSelectProps> = ({
   values,
   onChange,
   placeholder = "Select...",
   plural = "values",
   selected = [],
 }) => {
-  const handleChange = (vals: OnChangeValue<IOptionType, true>) => {
-    onChange(uniq(vals.flatMap((v) => [v.value, ...(v.subValues ?? [])])));
+  const isSelected = (option: IOptionType) => selected.includes(option.value);
+
+  const toggle = (option: IOptionType) => {
+    const group = [option.value, ...(option.subValues ?? [])];
+    onChange(
+      isSelected(option)
+        ? selected.filter((s) => !group.includes(s))
+        : uniq([...selected, ...group]),
+    );
   };
 
-  const formatLabel = (
-    option: IOptionType,
-    meta: { context: "menu" | "value" },
-  ) => {
-    if (meta.context === "menu")
-      return option.subValues === null ? (
-        <div className="d-flex ms-3">
-          <Form.Check
-            className="me-2"
-            checked={selected.includes(option.value)}
-          />
-          {option.label}
-        </div>
-      ) : (
-        <div className="d-flex">
-          <Form.Check
-            className="me-2"
-            checked={selected.includes(option.value)}
-          />
-          <span className="text-muted">{option.label}</span>
-        </div>
-      );
-    return `${
-      selected.length === 0 ? "All" : selected.length
-    } ${plural} selected`;
-  };
-
-  const selectedOptions = values.filter((val) => selected.includes(val.value));
+  const summary =
+    selected.length === 0
+      ? placeholder
+      : `${selected.length} ${plural} selected`;
 
   return (
-    <Select
-      value={selectedOptions}
-      isMulti
-      classNamePrefix="react-select"
-      className="react-select CheckboxSelect"
-      options={values}
-      onChange={handleChange}
-      formatOptionLabel={formatLabel}
-      hideSelectedOptions={false}
-      closeMenuOnSelect={false}
-      placeholder={placeholder}
-      noOptionsMessage={() => null}
-      styles={{
-        option: (base) => ({
-          ...base,
-          backgroundColor: "transparent",
-        }),
-      }}
-      components={{
-        DropdownIndicator: () => null,
-        IndicatorSeparator: () => null,
-        MultiValue: (e) =>
-          e.data.value === selected[0] ? (
-            <span className="text-secondary">
-              {selected.length} {plural} selected
-            </span>
-          ) : null,
-      }}
-    />
+    <Popover.Root>
+      <Popover.Trigger className="flex h-9 w-full items-center rounded-md border border-input bg-secondary px-3 text-left text-sm text-foreground transition-colors focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 data-[popup-open]:border-ring">
+        {summary}
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Positioner sideOffset={4} className="z-50">
+          <Popover.Popup className="max-h-72 w-[var(--anchor-width)] overflow-auto rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg outline-none">
+            {values.map((option) => (
+              <label
+                key={option.value}
+                className="flex cursor-pointer select-none items-center gap-2 rounded px-3 py-2 text-sm hover:bg-accent"
+              >
+                <input
+                  type="checkbox"
+                  checked={isSelected(option)}
+                  onChange={() => toggle(option)}
+                  className="accent-primary"
+                />
+                {option.subValues === null ? (
+                  option.label
+                ) : (
+                  <span className="text-muted-foreground">{option.label}</span>
+                )}
+              </label>
+            ))}
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
   );
 };
 

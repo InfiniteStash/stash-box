@@ -1,15 +1,11 @@
-import cx from "classnames";
 import { type FC, useEffect, useState } from "react";
-import { Spinner } from "react-bootstrap";
+import { Spinner } from "src/components/ui/spinner";
+import { cn } from "src/lib/utils";
 
 interface LoadingProps {
   message?: string;
   delay?: number;
 }
-
-const CLASSNAME = "LoadingIndicator";
-const CLASSNAME_MESSAGE = `${CLASSNAME}-message`;
-const CLASSNAME_DELAYED = `${CLASSNAME}-delayed`;
 
 const LoadingIndicator: FC<LoadingProps> = ({ message, delay = 100 }) => {
   const [delayed, setDelayed] = useState(delay > 0);
@@ -20,11 +16,16 @@ const LoadingIndicator: FC<LoadingProps> = ({ message, delay = 100 }) => {
   }, [delayed, delay]);
 
   return (
-    <div className={cx(CLASSNAME, { [CLASSNAME_DELAYED]: delayed })}>
-      <Spinner animation="border" role="status">
-        <span className="visually-hidden">Loading...</span>
-      </Spinner>
-      <h4 className={CLASSNAME_MESSAGE}>{message ?? "Loading..."}</h4>
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center gap-3 py-12 transition-opacity",
+        delayed && "opacity-0",
+      )}
+    >
+      <Spinner />
+      <h4 className="text-lg text-muted-foreground">
+        {message ?? "Loading..."}
+      </h4>
     </div>
   );
 };

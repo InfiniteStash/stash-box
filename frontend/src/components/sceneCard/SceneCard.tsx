@@ -1,16 +1,10 @@
 import { faVideo } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
-import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon, Thumbnail } from "src/components/fragments";
+import { Card } from "src/components/ui/card";
 import type { Scene, Studio } from "src/graphql";
-import {
-  formatDuration,
-  getImage,
-  imageType,
-  sceneHref,
-  studioHref,
-} from "src/utils";
+import { formatDuration, getImage, sceneHref, studioHref } from "src/utils";
 
 type Performance = Pick<
   Scene,
@@ -19,48 +13,44 @@ type Performance = Pick<
   studio?: Pick<Studio, "id" | "name"> | null;
 };
 
-const CLASSNAME = "SceneCard";
-const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
-const CLASSNAME_BODY = `${CLASSNAME}-body`;
-
 const SceneCard: FC<{ scene: Performance }> = ({ scene }) => (
-  <Card className={CLASSNAME}>
-    <Card.Body className={CLASSNAME_BODY}>
-      <Link className={CLASSNAME_IMAGE} to={sceneHref(scene)}>
-        <Thumbnail
-          alt={scene.title}
-          className={imageType(scene.images[0])}
-          image={getImage(scene.images, "landscape")}
-          size={300}
-        />
-      </Link>
-    </Card.Body>
-    <Card.Footer>
-      <div className="d-flex">
+  <Card className="overflow-hidden">
+    <Link to={sceneHref(scene)} className="block aspect-video bg-secondary">
+      <Thumbnail
+        alt={scene.title}
+        image={getImage(scene.images, "landscape")}
+        size={300}
+        className="h-full w-full object-cover"
+      />
+    </Link>
+    <div className="space-y-1 p-2">
+      <div className="flex items-center gap-2">
         <Link
-          className="text-truncate w-100"
+          className="min-w-0 flex-1"
           to={sceneHref(scene)}
           title={scene.title ?? ""}
         >
-          <h6 className="text-truncate">{scene.title}</h6>
+          <h6 className="truncate text-sm font-medium text-link hover:underline">
+            {scene.title}
+          </h6>
         </Link>
-        <span className="text-muted">
+        <span className="whitespace-nowrap text-xs text-muted-foreground">
           {scene.duration ? formatDuration(scene.duration) : ""}
         </span>
       </div>
-      <div className="text-muted">
+      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+        <strong className="text-foreground">{scene.release_date}</strong>
         {scene.studio && (
           <Link
             to={studioHref(scene.studio)}
-            className="float-end text-truncate SceneCard-studio-name"
+            className="flex items-center gap-1 truncate text-link hover:underline"
           >
-            <Icon icon={faVideo} className="me-1" />
+            <Icon icon={faVideo} />
             {scene.studio.name}
           </Link>
         )}
-        <strong>{scene.release_date}</strong>
       </div>
-    </Card.Footer>
+    </div>
   </Card>
 );
 

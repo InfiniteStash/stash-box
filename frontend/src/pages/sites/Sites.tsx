@@ -1,8 +1,9 @@
 import { groupBy, sortBy } from "lodash-es";
 import type { FC } from "react";
-import { Button, Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { LoadingIndicator, SiteLink } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
+import { Card, CardBody } from "src/components/ui/card";
 import { ROUTE_SITE_ADD, ROUTE_SITE_CATEGORIES } from "src/constants/route";
 import { useSites } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
@@ -26,12 +27,11 @@ const SiteList: FC = () => {
   );
 
   const renderSite = (site: (typeof sites)[number]) => (
-    <li key={site.id} className="d-block">
+    <li key={site.id}>
       <SiteLink site={site} noMargin />
       {site.description && (
-        <span className="ms-2">
-          &bull;
-          <small className="ms-2">{site.description}</small>
+        <span className="ml-2 text-muted-foreground">
+          &bull; <small className="ml-2">{site.description}</small>
         </span>
       )}
     </li>
@@ -39,11 +39,11 @@ const SiteList: FC = () => {
 
   return (
     <>
-      <div className="d-flex">
-        <h3 className="me-4">Sites</h3>
+      <div className="mb-4 flex items-center">
+        <h3 className="text-2xl font-semibold">Sites</h3>
         {isAdmin && (
-          <div className="ms-auto">
-            <Link to={ROUTE_SITE_CATEGORIES} className="me-2">
+          <div className="ml-auto flex gap-2">
+            <Link to={ROUTE_SITE_CATEGORIES}>
               <Button variant="secondary">Categories</Button>
             </Link>
             <Link to={ROUTE_SITE_ADD}>
@@ -53,19 +53,21 @@ const SiteList: FC = () => {
         )}
       </div>
       <Card>
-        <Card.Body className="p-4">
+        <CardBody>
           {loading && <LoadingIndicator message="Loading sites..." />}
           {!hasCategories ? (
-            <ul className="ps-0">{sites.map(renderSite)}</ul>
+            <ul className="space-y-1">{sites.map(renderSite)}</ul>
           ) : (
             groups.map((group) => (
-              <div key={group[0].category?.id ?? "other"}>
-                <h6>{group[0].category?.name ?? "Other"}</h6>
-                <ul className="ps-0">{group.map(renderSite)}</ul>
+              <div key={group[0].category?.id ?? "other"} className="mb-4">
+                <h6 className="mb-1 text-lg font-semibold">
+                  {group[0].category?.name ?? "Other"}
+                </h6>
+                <ul className="space-y-1">{group.map(renderSite)}</ul>
               </div>
             ))
           )}
-        </Card.Body>
+        </CardBody>
       </Card>
     </>
   );

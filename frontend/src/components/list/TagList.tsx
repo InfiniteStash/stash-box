@@ -1,8 +1,9 @@
 import { debounce } from "lodash-es";
 import type { FC } from "react";
-import { Card, Form, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { ErrorMessage } from "src/components/fragments";
+import { Card, CardBody } from "src/components/ui/card";
+import { Input } from "src/components/ui/input";
 import { ROUTE_CATEGORIES } from "src/constants/route";
 import {
   SortDirectionEnum,
@@ -39,11 +40,13 @@ const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
 
   const tags = (data?.queryTags?.tags ?? []).map((tag) => (
     <li key={tag.id}>
-      <Link to={tagHref(tag)}>{tag.name}</Link>
+      <Link to={tagHref(tag)} className="text-link hover:underline">
+        {tag.name}
+      </Link>
       {tag.description && (
-        <span className="ms-2">
+        <span className="ml-2 text-muted-foreground">
           &bull;
-          <small className="ms-2">{tag.description}</small>
+          <small className="ml-2">{tag.description}</small>
         </span>
       )}
     </li>
@@ -52,12 +55,12 @@ const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
   const debouncedHandler = debounce(setParams, 200);
 
   const filters = (
-    <Form.Control
+    <Input
       id="tag-query"
       onChange={(e) => debouncedHandler("name", e.currentTarget.value)}
       placeholder="Filter tag name"
       defaultValue={name}
-      className="w-25"
+      className="w-full sm:w-64"
     />
   );
 
@@ -73,17 +76,18 @@ const TagList: FC<TagListProps> = ({ tagFilter, showCategoryLink = false }) => {
       loading={loading}
       listCount={data?.queryTags.count}
     >
-      <Card>
-        <Card.Body className="pt-4">
-          <Row className="g-0">
-            {showCategoryLink && (
-              <Link to={createHref(ROUTE_CATEGORIES)} className="ms-2">
-                <h5>List of Categories</h5>
-              </Link>
-            )}
-          </Row>
-          <ul>{tags}</ul>
-        </Card.Body>
+      <Card className="mt-4">
+        <CardBody>
+          {showCategoryLink && (
+            <Link
+              to={createHref(ROUTE_CATEGORIES)}
+              className="text-link hover:underline"
+            >
+              <h5 className="mb-2 text-lg font-semibold">List of Categories</h5>
+            </Link>
+          )}
+          <ul className="space-y-1">{tags}</ul>
+        </CardBody>
       </Card>
     </List>
   );

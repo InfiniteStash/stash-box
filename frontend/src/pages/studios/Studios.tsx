@@ -1,12 +1,16 @@
 import { debounce } from "lodash-es";
 import type { FC } from "react";
-import { Button, Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { FavoriteStar } from "src/components/fragments";
 import { List } from "src/components/list";
+import { Button } from "src/components/ui/button";
+import { Card, CardBody } from "src/components/ui/card";
+import { Input } from "src/components/ui/input";
+import { Switch } from "src/components/ui/switch";
 import { ROUTE_STUDIO_ADD } from "src/constants/route";
 import { SortDirectionEnum, StudioSortEnum, useStudios } from "src/graphql";
 import { useCurrentUser, usePagination, useQueryParams } from "src/hooks";
+import { cn } from "src/lib/utils";
 import { createHref, studioHref } from "src/utils";
 
 const PER_PAGE = 40;
@@ -35,14 +39,25 @@ const StudiosComponent: FC = () => {
   });
 
   const studioList = data?.queryStudios.studios.map((s) => (
-    <li key={s.id} className={s.parent === null ? "fw-bold" : ""}>
-      <Link to={studioHref(s)}>{s.name}</Link>
+    <li key={s.id} className="flex items-center gap-2">
+      <Link
+        to={studioHref(s)}
+        className={cn(
+          "text-link hover:underline",
+          s.parent === null && "font-bold",
+        )}
+      >
+        {s.name}
+      </Link>
       {s.parent && (
-        <small className="bullet-separator text-muted">
-          <Link to={studioHref(s.parent)}>{s.parent.name}</Link>
+        <small className="text-muted-foreground">
+          &bull;{" "}
+          <Link to={studioHref(s.parent)} className="hover:underline">
+            {s.parent.name}
+          </Link>
         </small>
       )}
-      <FavoriteStar entity={s} entityType="studio" className="ps-2" />
+      <FavoriteStar entity={s} entityType="studio" className="pl-2" />
     </li>
   ));
 
@@ -50,45 +65,37 @@ const StudiosComponent: FC = () => {
 
   const filters = (
     <>
-      <Form.Control
+      <Input
         id="studio-query"
         onChange={(e) => debouncedHandler("query", e.currentTarget.value)}
         placeholder="Filter studio name"
         defaultValue={params.query ?? ""}
-        className="w-25 me-3"
+        className="w-full sm:w-64"
       />
-      <Form.Group controlId="favorite">
-        <Form.Check
-          className="mt-2"
-          type="switch"
-          label="Only favorites"
-          defaultChecked={favorite}
-          onChange={(e) =>
-            setParams("favorite", e.currentTarget.checked.toString())
-          }
-        />
-      </Form.Group>
-      <Form.Group controlId="parentOnly" className="ms-3">
-        <Form.Check
-          className="mt-2"
-          type="switch"
-          label="Only parent networks"
-          defaultChecked={parentOnly}
-          onChange={(e) =>
-            setParams("parentOnly", e.currentTarget.checked.toString())
-          }
-        />
-      </Form.Group>
+      <Switch
+        id="favorite"
+        label="Only favorites"
+        defaultChecked={favorite}
+        onCheckedChange={(checked) => setParams("favorite", checked.toString())}
+      />
+      <Switch
+        id="parentOnly"
+        label="Only parent networks"
+        defaultChecked={parentOnly}
+        onCheckedChange={(checked) =>
+          setParams("parentOnly", checked.toString())
+        }
+      />
     </>
   );
 
   return (
     <>
-      <div className="d-flex">
-        <h3 className="me-4">Studios</h3>
+      <div className="mb-4 flex items-center">
+        <h3 className="text-2xl font-semibold">Studios</h3>
         {isEditor && (
-          <Link to={createHref(ROUTE_STUDIO_ADD)} className="ms-auto">
-            <Button className="me-auto">Create</Button>
+          <Link to={createHref(ROUTE_STUDIO_ADD)} className="ml-auto">
+            <Button>Create</Button>
           </Link>
         )}
       </div>
@@ -101,10 +108,10 @@ const StudiosComponent: FC = () => {
         loading={loading}
         listCount={data?.queryStudios.count}
       >
-        <Card>
-          <Card.Body>
-            <ul>{studioList}</ul>
-          </Card.Body>
+        <Card className="mt-4">
+          <CardBody>
+            <ul className="space-y-1">{studioList}</ul>
+          </CardBody>
         </Card>
       </List>
     </>

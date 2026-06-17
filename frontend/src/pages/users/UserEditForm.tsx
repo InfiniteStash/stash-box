@@ -4,7 +4,7 @@ import type { FC } from "react";
 import { Button, Form, Row } from "react-bootstrap";
 import { Controller, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
-import Select from "react-select";
+import { MultiCombobox } from "src/components/ui/combobox";
 import { RoleEnum, type UserUpdateInput } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
 import { userHref } from "src/utils";
@@ -98,14 +98,12 @@ const UserForm: FC<UserProps> = ({ user, username, callback, error }) => {
               control={control}
               defaultValue={(user.roles ?? []) as string[]}
               render={({ field: { onChange, value } }) => (
-                <Select
-                  classNamePrefix="react-select"
-                  name="roles"
+                <MultiCombobox
+                  inputId="roles"
                   options={roles}
+                  values={value}
+                  onChange={onChange}
                   placeholder="User roles"
-                  onChange={(vals) => onChange(vals.map((v) => v.value) ?? [])}
-                  defaultValue={roles.filter((r) => value.includes(r.value))}
-                  isMulti
                 />
               )}
             />

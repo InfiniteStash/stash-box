@@ -10,9 +10,9 @@ import {
 import { configMock, sitesMock } from "src/test/graphqlMocks";
 import { renderForm } from "src/test/renderForm";
 import {
-  addCreatableOption,
-  removeMultiValue,
-  selectReactSelect,
+  addTagsInputValue,
+  removeTagsInputValue,
+  selectComboboxOption,
 } from "src/test/selectors";
 import { describe, expect, it, vi } from "vitest";
 import PerformerForm from "../PerformerForm";
@@ -138,8 +138,9 @@ describe("PerformerForm", () => {
       await user.type(screen.getByLabelText("Cup size"), "C");
       await user.type(screen.getByLabelText("Waist size"), "24");
       await user.type(screen.getByLabelText("Hip size"), "34");
-      await selectReactSelect(
+      await selectComboboxOption(
         user,
+        "United States",
         "United States",
         containerFor("Nationality"),
       );
@@ -150,18 +151,18 @@ describe("PerformerForm", () => {
       await user.type(screen.getByLabelText("Career Start"), "2015");
       await user.type(screen.getByLabelText("Career End"), "2024");
 
-      await addCreatableOption(user, "AliasOne", containerFor("Aliases"));
+      await addTagsInputValue(user, "AliasOne", containerFor("Aliases"));
 
       // Body modifications (tattoos / piercings) tab
       await user.click(
         screen.getByRole("tab", { name: "Tattoos and Piercings" }),
       );
-      await addCreatableOption(
+      await addTagsInputValue(
         user,
         "shoulder",
         containerFor("tattoos") ?? document.body,
       );
-      await addCreatableOption(
+      await addTagsInputValue(
         user,
         "nose",
         containerFor("piercings") ?? document.body,
@@ -435,7 +436,12 @@ describe("PerformerForm", () => {
     it("changes country", async () => {
       const callback = vi.fn();
       const { user } = renderEdit(callback);
-      await selectReactSelect(user, "Japan", containerFor("Nationality"));
+      await selectComboboxOption(
+        user,
+        "Japan",
+        "Japan",
+        containerFor("Nationality"),
+      );
       await submit(user);
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
       expect(lastCallback(callback)).toMatchObject({ country: "JP" });
@@ -444,7 +450,7 @@ describe("PerformerForm", () => {
     it("adds an alias", async () => {
       const callback = vi.fn();
       const { user } = renderEdit(callback);
-      await addCreatableOption(user, "Janie", containerFor("Aliases"));
+      await addTagsInputValue(user, "Janie", containerFor("Aliases"));
       await submit(user);
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
       expect(lastCallback(callback).aliases).toEqual(["JD", "Janie"]);
@@ -453,7 +459,7 @@ describe("PerformerForm", () => {
     it("removes an alias", async () => {
       const callback = vi.fn();
       const { user } = renderEdit(callback);
-      await removeMultiValue(user, "JD", containerFor("Aliases"));
+      await removeTagsInputValue(user, "JD", containerFor("Aliases"));
       await submit(user);
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
       expect(lastCallback(callback).aliases).toEqual([]);
@@ -506,7 +512,7 @@ describe("PerformerForm", () => {
       await user.click(
         screen.getByRole("tab", { name: "Tattoos and Piercings" }),
       );
-      await addCreatableOption(
+      await addTagsInputValue(
         user,
         "wrist",
         containerFor("tattoos") ?? document.body,
@@ -539,7 +545,7 @@ describe("PerformerForm", () => {
       await user.click(
         screen.getByRole("tab", { name: "Tattoos and Piercings" }),
       );
-      await addCreatableOption(
+      await addTagsInputValue(
         user,
         "lip",
         containerFor("piercings") ?? document.body,
@@ -644,7 +650,12 @@ describe("PerformerForm", () => {
     it("clears nationality (country)", async () => {
       const callback = vi.fn();
       const { user } = renderEdit(callback);
-      await selectReactSelect(user, "Unknown", containerFor("Nationality"));
+      await selectComboboxOption(
+        user,
+        "Unknown",
+        "Unknown",
+        containerFor("Nationality"),
+      );
       await submit(user);
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
       expect(lastCallback(callback).country).toBeNull();

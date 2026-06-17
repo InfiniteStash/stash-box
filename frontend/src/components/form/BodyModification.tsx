@@ -1,11 +1,8 @@
-// biome-ignore-all lint/correctness/noNestedComponentDefinitions: react-select
-
 import type { Lens } from "@hookform/lenses";
-import type { ChangeEvent, FC } from "react";
+import { type ChangeEvent, type FC, type KeyboardEvent, useState } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { useFieldArray } from "react-hook-form";
-import { components } from "react-select";
-import Creatable from "react-select/creatable";
+import { Input } from "src/components/ui/input";
 
 export type BodyModItem = {
   location: string;
@@ -27,7 +24,6 @@ const BodyModification: FC<BodyModificationProps> = ({
   locationPlaceholder,
   descriptionPlaceholder,
   lens,
-  formatLabel,
 }) => {
   const interop = lens.interop();
   const {
@@ -41,12 +37,23 @@ const BodyModification: FC<BodyModificationProps> = ({
     keyName: "key",
   });
 
+  const [location, setLocation] = useState("");
+
   const isNewLocationValid = (inputValue: string): boolean =>
     !!inputValue &&
-    !modifications.find(({ location }) => inputValue === location);
+    !modifications.find(({ location: loc }) => inputValue === loc);
 
-  const handleNewLocation = (inputValue: string) => {
-    append({ location: inputValue });
+  const addLocation = () => {
+    const value = location.trim();
+    if (isNewLocationValid(value)) append({ location: value });
+    setLocation("");
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addLocation();
+    }
   };
 
   const modificationList = modifications.map((mod, index) => (
@@ -76,19 +83,13 @@ const BodyModification: FC<BodyModificationProps> = ({
       <Row className={CLASSNAME}>
         <Col className="mb-3">
           <Form.Label className="text-capitalize">{name}</Form.Label>
-          <Creatable
-            classNamePrefix="react-select"
-            value={null}
+          <Input
             name={name}
             placeholder={locationPlaceholder}
-            isValidNewOption={isNewLocationValid}
-            onCreateOption={handleNewLocation}
-            formatCreateLabel={formatLabel}
-            components={{
-              DropdownIndicator: () => null,
-              Menu: (data) =>
-                data.options.length > 0 ? <components.Menu {...data} /> : null,
-            }}
+            value={location}
+            onChange={(e) => setLocation(e.currentTarget.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={addLocation}
           />
         </Col>
       </Row>

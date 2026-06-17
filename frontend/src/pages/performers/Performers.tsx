@@ -4,12 +4,15 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { debounce } from "lodash-es";
 import type { FC } from "react";
-import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import Select from "react-select";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import { List } from "src/components/list";
 import PerformerCard from "src/components/performerCard";
+import { Button } from "src/components/ui/button";
+import { SelectCombobox } from "src/components/ui/combobox";
+import { Input } from "src/components/ui/input";
+import { Select } from "src/components/ui/select";
+import { Switch } from "src/components/ui/switch";
 import { GenderFilterTypes, ROUTE_PERFORMER_ADD } from "src/constants";
 import {
   GenderFilterEnum,
@@ -68,49 +71,46 @@ const PerformersComponent: FC = () => {
     return <ErrorMessage error="Failed to load performers" />;
 
   const performers = (data?.queryPerformers.performers ?? []).map(
-    (performer) => (
-      <Col xs="auto" key={performer.id}>
-        <PerformerCard performer={performer} />
-      </Col>
-    ),
+    (performer) => <PerformerCard performer={performer} key={performer.id} />,
   );
 
   const debouncedHandler = debounce(setParams, 200);
 
   const filters = (
     <>
-      <Form.Control
+      <Input
         id="performer-name"
         onChange={(e) => debouncedHandler("query", e.currentTarget.value)}
         placeholder="Filter performer name"
         defaultValue={params.query}
-        className="w-auto"
+        className="w-full sm:w-56"
       />
-      <Select
-        id="performer-gender"
+      <SelectCombobox
+        inputId="performer-gender"
         options={genderOptions}
-        defaultValue={genderOptions.find((o) => o.value === gender)}
+        value={gender}
         placeholder="Gender"
         isClearable
-        onChange={(e) => setParams("gender", e?.value ?? undefined)}
-        classNamePrefix="react-select"
-        className="performer-filter ms-2"
+        onChange={(v) => setParams("gender", v ?? undefined)}
+        className="w-40"
       />
-      <InputGroup className="performer-sort ms-2 me-3">
-        <Form.Select
+      <div className="flex items-center gap-1">
+        <Select
+          defaultValue={sort ?? "name"}
           onChange={(e) =>
             setParams("sort", e.currentTarget.value.toLowerCase())
           }
-          defaultValue={sort ?? "name"}
         >
           {sortOptions.map((s) => (
             <option value={s.value} key={s.value}>
               {s.label}
             </option>
           ))}
-        </Form.Select>
+        </Select>
         <Button
           variant="secondary"
+          size="sm"
+          aria-label="Toggle sort direction"
           onClick={() =>
             setParams(
               "direction",
@@ -128,27 +128,22 @@ const PerformersComponent: FC = () => {
             }
           />
         </Button>
-      </InputGroup>
-      <Form.Group controlId="favorite">
-        <Form.Check
-          className="mt-2"
-          type="switch"
-          label="Only favorites"
-          defaultChecked={favorite}
-          onChange={(e) =>
-            setParams("favorite", e.currentTarget.checked.toString())
-          }
-        />
-      </Form.Group>
+      </div>
+      <Switch
+        id="favorite"
+        label="Only favorites"
+        defaultChecked={favorite}
+        onCheckedChange={(checked) => setParams("favorite", checked.toString())}
+      />
     </>
   );
 
   return (
     <>
-      <div className="d-flex">
-        <h3 className="me-4">Performers</h3>
+      <div className="mb-4 flex items-center">
+        <h3 className="text-2xl font-semibold">Performers</h3>
         {isEditor && (
-          <Link to={ROUTE_PERFORMER_ADD} className="ms-auto">
+          <Link to={ROUTE_PERFORMER_ADD} className="ml-auto">
             <Button>Create</Button>
           </Link>
         )}
@@ -162,7 +157,9 @@ const PerformersComponent: FC = () => {
         loading={loading}
         listCount={data?.queryPerformers.count}
       >
-        <Row>{performers}</Row>
+        <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+          {performers}
+        </div>
       </List>
     </>
   );

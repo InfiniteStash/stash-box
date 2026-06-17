@@ -1,9 +1,14 @@
 import { groupBy, keyBy, sortBy } from "lodash-es";
 import type { FC } from "react";
-import { Tab, Tabs } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import CheckboxSelect from "src/components/checkboxSelect";
 import { EditList, SceneList, URLList } from "src/components/list";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "src/components/ui/tabs";
 import {
   CriterionModifier,
   type FullPerformerQuery,
@@ -85,14 +90,20 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
   return (
     <>
       <PerformerInfo performer={performer} />
-      <hr className="my-2" />
-      <Tabs
-        activeKey={activeTab}
-        id="performer-tabs"
-        mountOnEnter
-        onSelect={setTab}
-      >
-        <Tab eventKey="scenes" title="Scenes" className="PerformerScenes">
+      <hr className="my-3 border-border" />
+      <Tabs value={activeTab} onValueChange={setTab}>
+        <TabsList>
+          <TabsTrigger value="scenes">Scenes</TabsTrigger>
+          <TabsTrigger value="scenePairings">Scene Pairings</TabsTrigger>
+          <TabsTrigger value="links">Links</TabsTrigger>
+          <TabsTrigger
+            value="edits"
+            className={pendingEditCount ? "text-warning" : undefined}
+          >
+            {`Edits${formatPendingEdits(pendingEditCount)}`}
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="scenes">
           <CheckboxSelect
             values={obj}
             onChange={(ids) => setParams("studioFilter", ids)}
@@ -120,20 +131,16 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
             favoriteFilter={"studio"}
             key={`performer-${performer.id}-scene-list`}
           />
-        </Tab>
-        <Tab eventKey="scenePairings" title="Scene Pairings">
+        </TabsContent>
+        <TabsContent value="scenePairings">
           <ScenePairings id={performer.id} />
-        </Tab>
-        <Tab eventKey="links" title="Links">
+        </TabsContent>
+        <TabsContent value="links">
           <URLList urls={performer.urls} />
-        </Tab>
-        <Tab
-          eventKey="edits"
-          title={`Edits${formatPendingEdits(pendingEditCount)}`}
-          tabClassName={pendingEditCount ? "PendingEditTab" : ""}
-        >
+        </TabsContent>
+        <TabsContent value="edits">
           <EditList type={TargetTypeEnum.PERFORMER} id={performer.id} />
-        </Tab>
+        </TabsContent>
       </Tabs>
     </>
   );

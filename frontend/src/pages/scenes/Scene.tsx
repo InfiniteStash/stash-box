@@ -1,5 +1,4 @@
 import type { FC } from "react";
-import { Button, Card, Tab, Tabs } from "react-bootstrap";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   GenderIcon,
@@ -9,6 +8,14 @@ import {
 } from "src/components/fragments";
 import Image from "src/components/image";
 import { EditList, URLList } from "src/components/list";
+import { Button } from "src/components/ui/button";
+import { Card, CardBody, CardFooter, CardHeader } from "src/components/ui/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "src/components/ui/tabs";
 import { ROUTE_SCENE_DELETE, ROUTE_SCENE_EDIT } from "src/constants/route";
 import {
   type SceneFragment as Scene,
@@ -79,117 +86,122 @@ const SceneComponent: FC<Props> = ({ scene }) => {
 
   return (
     <>
-      <Card className="scene-info">
-        <Card.Header>
-          <div className="float-end">
-            {isEditor && !scene.deleted && (
-              <>
-                <Link to={createHref(ROUTE_SCENE_EDIT, { id: scene.id })}>
-                  <Button>Edit</Button>
-                </Link>
-                <Link
-                  to={createHref(ROUTE_SCENE_DELETE, { id: scene.id })}
-                  className="ms-2"
-                >
-                  <Button variant="danger">Delete</Button>
-                </Link>
-              </>
-            )}
+      <Card>
+        <CardHeader className="flex-row items-start gap-2">
+          <div className="mr-auto">
+            <h3 className="text-2xl font-semibold">
+              {scene.deleted ? (
+                <del>{scene.title}</del>
+              ) : (
+                <span>{scene.title}</span>
+              )}
+            </h3>
+            <h6 className="text-sm text-muted-foreground">
+              {scene.studio && (
+                <>
+                  <Link
+                    to={studioHref(scene.studio)}
+                    className="text-link hover:underline"
+                  >
+                    {scene.studio.name}
+                  </Link>
+                  <span className="mx-1">•</span>
+                </>
+              )}
+              {scene.release_date}
+            </h6>
           </div>
-          <h3>
-            {scene.deleted ? (
-              <del>{scene.title}</del>
-            ) : (
-              <span>{scene.title}</span>
-            )}
-          </h3>
-          <h6>
-            {scene.studio && (
-              <>
-                <Link to={studioHref(scene.studio)}>{scene.studio.name}</Link>
-                <span className="mx-1">•</span>
-              </>
-            )}
-            {scene.release_date}
-          </h6>
-        </Card.Header>
-        <Card.Body className="ScenePhoto">
+          {isEditor && !scene.deleted && (
+            <div className="flex gap-2">
+              <Link to={createHref(ROUTE_SCENE_EDIT, { id: scene.id })}>
+                <Button>Edit</Button>
+              </Link>
+              <Link to={createHref(ROUTE_SCENE_DELETE, { id: scene.id })}>
+                <Button variant="danger">Delete</Button>
+              </Link>
+            </div>
+          )}
+        </CardHeader>
+        <CardBody className="pt-0">
           <Image
             images={scene.images}
             emptyMessage="Scene has no image"
             size={1280}
             lightbox
           />
-        </Card.Body>
-        <Card.Footer className="d-flex mx-1">
-          <div className="scene-performers me-auto">{performers}</div>
+        </CardBody>
+        <CardFooter className="flex-wrap gap-x-6 gap-y-1 pt-0">
+          <div className="mr-auto flex flex-wrap gap-x-2">{performers}</div>
           {scene.code && (
-            <div className="ms-3">
+            <div>
               Studio Code: <strong>{scene.code}</strong>
             </div>
           )}
           {!!scene.duration && (
-            <div title={`${scene.duration} seconds`} className="ms-3">
+            <div title={`${scene.duration} seconds`}>
               Duration: <b>{formatDuration(scene.duration)}</b>
             </div>
           )}
           {scene.director && (
-            <div className="ms-3">
+            <div>
               Director: <strong>{scene.director}</strong>
             </div>
           )}
           {scene.production_date && (
-            <div className="ms-3">
+            <div>
               Produced: <strong>{scene.production_date}</strong>
             </div>
           )}
-        </Card.Footer>
+        </CardFooter>
       </Card>
       <HighlightedLinks urls={scene.urls} />
-      <Tabs
-        activeKey={activeTab}
-        id="scene-tabs"
-        mountOnEnter
-        onSelect={setTab}
-      >
-        <Tab eventKey="description" title="Description" className="my-4">
-          <div className="scene-description">
-            <h4>Description:</h4>
+      <Tabs value={activeTab} onValueChange={setTab}>
+        <TabsList>
+          <TabsTrigger value="description">Description</TabsTrigger>
+          <TabsTrigger value="fingerprints">Fingerprints</TabsTrigger>
+          <TabsTrigger value="links">Links</TabsTrigger>
+          <TabsTrigger
+            value="edits"
+            className={pendingEditCount ? "text-warning" : undefined}
+          >
+            {`Edits${formatPendingEdits(pendingEditCount)}`}
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="description" className="space-y-4">
+          <div>
+            <h4 className="font-semibold">Description:</h4>
             <div>{scene.details}</div>
           </div>
-          <div className="scene-tags">
-            <h6>Tags:</h6>
-            <ul className="scene-tag-list">{tags}</ul>
+          <div>
+            <h6 className="font-semibold">Tags:</h6>
+            <ul className="flex flex-wrap gap-2">{tags}</ul>
           </div>
           {studioURL && (
             <>
-              <hr />
+              <hr className="border-border" />
               <div>
-                <b className="me-2">{studioURL.site.name}:</b>
+                <b className="mr-2">{studioURL.site.name}:</b>
                 <a
                   href={studioURL.url}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="text-link hover:underline"
                 >
                   {studioURL.url}
                 </a>
               </div>
             </>
           )}
-        </Tab>
-        <Tab eventKey="fingerprints" title="Fingerprints" mountOnEnter={false}>
+        </TabsContent>
+        <TabsContent value="fingerprints">
           <FingerprintTable scene={scene} />
-        </Tab>
-        <Tab eventKey="links" title="Links">
+        </TabsContent>
+        <TabsContent value="links">
           <URLList urls={scene.urls} />
-        </Tab>
-        <Tab
-          eventKey="edits"
-          title={`Edits${formatPendingEdits(pendingEditCount)}`}
-          tabClassName={pendingEditCount ? "PendingEditTab" : ""}
-        >
+        </TabsContent>
+        <TabsContent value="edits">
           <EditList type={TargetTypeEnum.SCENE} id={scene.id} />
-        </Tab>
+        </TabsContent>
       </Tabs>
     </>
   );

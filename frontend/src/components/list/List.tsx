@@ -35,7 +35,7 @@ const List: FC<Props> = ({
 
   return (
     <div className={`${entityName}-list`}>
-      <div className="d-flex mt-2 align-items-start flex-wrap">
+      <div className="mt-2 flex flex-wrap items-start gap-3">
         {filters}
         <Pagination
           onClick={setPage}
@@ -50,9 +50,11 @@ const List: FC<Props> = ({
       ) : currentCount && currentCount > 0 ? (
         children
       ) : currentCount === 0 ? (
-        <h4 className="m-4 p-4 text-center">No results</h4>
+        <h4 className="m-4 p-4 text-center text-lg text-muted-foreground">
+          No results
+        </h4>
       ) : null}
-      <div className="d-flex">
+      <div className="mt-4 flex">
         <Pagination
           onClick={setPage}
           count={currentCount ?? 0}

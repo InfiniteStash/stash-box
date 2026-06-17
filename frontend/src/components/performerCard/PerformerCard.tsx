@@ -1,6 +1,4 @@
-import cx from "classnames";
 import type { FC } from "react";
-import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import {
   FavoriteStar,
@@ -8,7 +6,9 @@ import {
   PerformerName,
   Thumbnail,
 } from "src/components/fragments";
+import { Card } from "src/components/ui/card";
 import type { Performer } from "src/graphql";
+import { cn } from "src/lib/utils";
 import { getImage, performerHref } from "src/utils";
 
 type PerformerType = Pick<
@@ -21,32 +21,29 @@ interface PerformerCardProps {
   className?: string;
 }
 
-const CLASSNAME = "PerformerCard";
-const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
-const CLASSNAME_STAR = `${CLASSNAME}-star`;
-
 const PerformerCard: FC<PerformerCardProps> = ({ className, performer }) => (
-  <Card className={cx(CLASSNAME, className)}>
-    <Link to={performerHref(performer)}>
-      <div className={CLASSNAME_IMAGE}>
+  <Card className={cn("overflow-hidden", className)}>
+    <Link to={performerHref(performer)} className="block">
+      <div className="relative aspect-[2/3] bg-secondary">
         <Thumbnail
           image={getImage(performer.images, "portrait")}
           alt={performer.name}
           size={300}
           orientation="portrait"
+          className="h-full w-full object-cover"
         />
         <FavoriteStar
           entity={performer}
           entityType="performer"
-          className={CLASSNAME_STAR}
+          className="absolute right-2 top-2"
         />
       </div>
-      <Card.Footer>
-        <h5 className="my-1">
+      <div className="p-2">
+        <h5 className="flex items-center gap-1.5 truncate text-sm font-medium">
           <GenderIcon gender={performer.gender} />
           <PerformerName performer={performer} />
         </h5>
-      </Card.Footer>
+      </div>
     </Link>
   </Card>
 );

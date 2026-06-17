@@ -5,11 +5,11 @@ import {
 import { debounce } from "lodash-es";
 import type { FC } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
-import Select from "react-select";
 import { Icon } from "src/components/fragments";
 import { List } from "src/components/list";
 import PerformerCard from "src/components/performerCard";
 import SceneCard from "src/components/sceneCard";
+import { SelectCombobox } from "src/components/ui/combobox";
 import { GenderFilterTypes } from "src/constants";
 import {
   GenderFilterEnum,
@@ -80,15 +80,14 @@ export const ScenePairings: FC<Props> = ({ id }) => {
         defaultValue={params.query}
         className="w-auto"
       />
-      <Select
-        id="performer-gender"
+      <SelectCombobox
+        inputId="performer-gender"
         options={genderOptions}
-        defaultValue={genderOptions.find((o) => o.value === gender)}
+        value={gender}
         placeholder="Gender"
         isClearable
-        onChange={(e) => setParams("gender", e?.value ?? undefined)}
-        classNamePrefix="react-select"
-        className="performer-filter ms-2"
+        onChange={(v) => setParams("gender", v ?? undefined)}
+        className="ms-2 w-40"
       />
       <InputGroup className="performer-sort ms-2 me-3">
         <Form.Select

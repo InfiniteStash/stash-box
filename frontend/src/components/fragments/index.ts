@@ -7,7 +7,6 @@ export { default as Icon } from "./Icon";
 export { default as LoadingIndicator } from "./LoadingIndicator";
 export { default as PerformerName } from "./PerformerName";
 export { SearchHint } from "./SearchHint";
-export { SearchInput } from "./SearchInput";
 export { default as SiteLink } from "./SiteLink";
 export { default as TagLink } from "./TagLink";
 export { Thumbnail } from "./Thumbnail";

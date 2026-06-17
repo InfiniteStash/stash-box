@@ -5,7 +5,7 @@ import type { FC } from "react";
 import { Button, Form } from "react-bootstrap";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import Select from "react-select";
+import { MultiCombobox, SelectCombobox } from "src/components/ui/combobox";
 import {
   type SiteCreateInput,
   type SiteQuery,
@@ -134,16 +134,10 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
           control={control}
           name="valid_types"
           defaultValue={(site?.valid_types ?? []) as string[]}
-          render={({ field: { onChange } }) => (
-            <Select
-              classNamePrefix="react-select"
-              className={cx({ "is-invalid": errors.valid_types })}
-              defaultValue={(site?.valid_types ?? []).map((s) => ({
-                value: s as string,
-                label: capitalize(s),
-              }))}
-              isMulti
-              onChange={(values) => onChange(values.map((v) => v.value))}
+          render={({ field: { onChange, value } }) => (
+            <MultiCombobox
+              values={value ?? []}
+              onChange={onChange}
               options={validSites.map((s) => ({
                 value: s,
                 label: capitalize(s),
@@ -164,17 +158,15 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
           control={control}
           name="category_id"
           defaultValue={site?.category?.id ?? null}
-          render={({ field: { onChange } }) => (
-            <Select
-              classNamePrefix="react-select"
-              defaultValue={
-                site?.category
-                  ? { value: site.category.id, label: site.category.name }
-                  : null
-              }
+          render={({ field: { onChange, value } }) => (
+            <SelectCombobox
+              value={value != null ? String(value) : undefined}
               isClearable
-              onChange={(option) => onChange(option?.value ?? null)}
-              options={categories}
+              onChange={(v) => onChange(v != null ? Number(v) : null)}
+              options={categories.map((c) => ({
+                value: String(c.value),
+                label: c.label,
+              }))}
               placeholder="Category the site belongs to"
             />
           )}

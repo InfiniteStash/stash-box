@@ -1,7 +1,7 @@
 import { screen, waitFor } from "@testing-library/react";
 import { ConfigDocument, RoleEnum } from "src/graphql";
 import { renderForm } from "src/test/renderForm";
-import { selectReactSelect } from "src/test/selectors";
+import { selectComboboxOption } from "src/test/selectors";
 import { describe, expect, it, vi } from "vitest";
 import UserEditForm from "../UserEditForm";
 
@@ -56,7 +56,7 @@ describe("UserEditForm", () => {
       const email = screen.getByPlaceholderText("Email");
       await user.clear(email);
       await user.type(email, "new@example.com");
-      await selectReactSelect(user, RoleEnum.VOTE);
+      await selectComboboxOption(user, RoleEnum.VOTE, RoleEnum.VOTE);
       await user.click(screen.getByRole("button", { name: "Save" }));
       await waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
       const [arg] = callback.mock.calls[0];

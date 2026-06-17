@@ -1,9 +1,11 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import cx from "classnames";
 import type { FC } from "react";
-import { Button, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
+import { Button } from "src/components/ui/button";
+import { FieldError, FormGroup, Label } from "src/components/ui/field";
+import { Input } from "src/components/ui/input";
+import { Select } from "src/components/ui/select";
 import { ROUTE_CATEGORIES, ROUTE_CATEGORY } from "src/constants/route";
 
 import {
@@ -52,31 +54,34 @@ const TagForm: FC<TagProps> = ({ id, category, callback }) => {
   };
 
   return (
-    <Form className="TagForm col-6" onSubmit={handleSubmit(onSubmit)}>
-      <Form.Group controlId="name" className="mb-3">
-        <Form.Label>Name</Form.Label>
-        <Form.Control
+    <form className="TagForm w-full md:w-1/2" onSubmit={handleSubmit(onSubmit)}>
+      <FormGroup>
+        <Label htmlFor="name">Name</Label>
+        <Input
+          id="name"
           type="text"
-          className={cx({ "is-invalid": errors.name })}
           placeholder="Name"
-          {...register("name")}
+          aria-invalid={!!errors.name}
           defaultValue={category?.name ?? ""}
+          {...register("name")}
         />
-        <div className="invalid-feedback">{errors?.name?.message}</div>
-      </Form.Group>
+        <FieldError>{errors?.name?.message}</FieldError>
+      </FormGroup>
 
-      <Form.Group controlId="description" className="mb-3">
-        <Form.Label>Description</Form.Label>
-        <Form.Control
+      <FormGroup>
+        <Label htmlFor="description">Description</Label>
+        <Input
+          id="description"
           placeholder="Description"
           defaultValue={category?.description ?? ""}
           {...register("description")}
         />
-      </Form.Group>
+      </FormGroup>
 
-      <Form.Group className="mb-3">
-        <Form.Label>Group</Form.Label>
-        <Form.Select
+      <FormGroup>
+        <Label htmlFor="group">Group</Label>
+        <Select
+          id="group"
           defaultValue={category?.group ?? TagGroupEnum.ACTION}
           {...register("group")}
         >
@@ -85,14 +90,12 @@ const TagForm: FC<TagProps> = ({ id, category, callback }) => {
               .toLowerCase()
               .slice(1)}`}</option>
           ))}
-        </Form.Select>
-      </Form.Group>
+        </Select>
+      </FormGroup>
 
-      <Form.Group className="d-flex mb-3">
-        <Button type="submit" className="col-2">
-          Save
-        </Button>
-        <Button type="reset" className="ms-auto me-2">
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+        <Button type="submit">Save</Button>
+        <Button type="reset" className="sm:ml-auto sm:mr-2">
           Reset
         </Button>
         <Link to={createHref(id ? ROUTE_CATEGORY : ROUTE_CATEGORIES, { id })}>
@@ -100,8 +103,8 @@ const TagForm: FC<TagProps> = ({ id, category, callback }) => {
             Cancel
           </Button>
         </Link>
-      </Form.Group>
-    </Form>
+      </div>
+    </form>
   );
 };
 
