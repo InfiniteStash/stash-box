@@ -1,8 +1,13 @@
-import cx from "classnames";
 import { type ChangeEvent, type FC, useState } from "react";
-import { Form, Tab, Tabs } from "react-bootstrap";
 import type { UseFormRegister } from "react-hook-form";
 import EditComment from "src/components/editCard/EditComment";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "src/components/ui/tabs";
+import { Textarea } from "src/components/ui/textarea";
 import { useCurrentUser } from "src/hooks";
 
 interface IProps {
@@ -22,6 +27,7 @@ const NoteInput: FC<IProps> = ({
 }) => {
   const { user } = useCurrentUser();
   const [comment, setComment] = useState(initialValue);
+  const [tab, setTab] = useState("write");
 
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setComment(e.currentTarget.value);
@@ -32,29 +38,31 @@ const NoteInput: FC<IProps> = ({
   const now = new Date().toISOString();
 
   return (
-    <div className={cx("NoteInput", { "is-invalid": hasError })}>
-      <Tabs id="add-comment">
-        <Tab eventKey="write" title="Write" className="NoteInput-tab">
-          <Form.Control
-            as="textarea"
-            className={className}
-            onInput={handleChange}
-            rows={5}
-            defaultValue={initialValue}
-            {...textareaProps}
-          />
-        </Tab>
-        <Tab eventKey="preview" title="Preview" unmountOnExit mountOnEnter>
-          <EditComment
-            id={`${user?.id}-${now}`}
-            comment={comment}
-            date={now}
-            user={user}
-            preview
-          />
-        </Tab>
-      </Tabs>
-    </div>
+    <Tabs value={tab} onValueChange={setTab}>
+      <TabsList>
+        <TabsTrigger value="write">Write</TabsTrigger>
+        <TabsTrigger value="preview">Preview</TabsTrigger>
+      </TabsList>
+      <TabsContent value="write">
+        <Textarea
+          className={className}
+          onInput={handleChange}
+          rows={5}
+          defaultValue={initialValue}
+          aria-invalid={hasError}
+          {...textareaProps}
+        />
+      </TabsContent>
+      <TabsContent value="preview">
+        <EditComment
+          id={`${user?.id}-${now}`}
+          comment={comment}
+          date={now}
+          user={user}
+          preview
+        />
+      </TabsContent>
+    </Tabs>
   );
 };
 

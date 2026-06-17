@@ -1,9 +1,14 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import cx from "classnames";
 import type { FC } from "react";
-import { Button, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
+import { Button } from "src/components/ui/button";
+import {
+  FieldError as FieldErrorMessage,
+  FormGroup,
+  Label,
+} from "src/components/ui/field";
+import { Input } from "src/components/ui/input";
 import {
   ROUTE_SITE_CATEGORIES,
   ROUTE_SITE_CATEGORY,
@@ -57,48 +62,52 @@ const SiteCategoryForm: FC<SiteCategoryProps> = ({
   };
 
   return (
-    <Form className="SiteCategoryForm col-6" onSubmit={handleSubmit(onSubmit)}>
-      <Form.Group controlId="name" className="mb-3">
-        <Form.Label>Name</Form.Label>
-        <Form.Control
+    <form
+      className="SiteCategoryForm w-full md:w-1/2"
+      onSubmit={handleSubmit(onSubmit)}
+    >
+      <FormGroup>
+        <Label htmlFor="name">Name</Label>
+        <Input
+          id="name"
           type="text"
-          className={cx({ "is-invalid": errors.name })}
+          aria-invalid={!!errors.name}
           placeholder="Name"
           {...register("name")}
           defaultValue={category?.name ?? ""}
         />
-        <div className="invalid-feedback">{errors?.name?.message}</div>
-      </Form.Group>
+        <FieldErrorMessage>{errors?.name?.message}</FieldErrorMessage>
+      </FormGroup>
 
-      <Form.Group controlId="description" className="mb-3">
-        <Form.Label>Description</Form.Label>
-        <Form.Control
+      <FormGroup>
+        <Label htmlFor="description">Description</Label>
+        <Input
+          id="description"
           placeholder="Description"
           defaultValue={category?.description ?? ""}
           {...register("description")}
         />
-      </Form.Group>
+      </FormGroup>
 
-      <Form.Group controlId="sort_order" className="mb-3">
-        <Form.Label>Sort order</Form.Label>
-        <Form.Control
+      <FormGroup>
+        <Label htmlFor="sort_order">Sort order</Label>
+        <Input
+          id="sort_order"
           type="number"
-          className={cx({ "is-invalid": errors.sort_order })}
+          aria-invalid={!!errors.sort_order}
           defaultValue={category?.sort_order ?? 0}
           {...register("sort_order")}
         />
-        <div className="invalid-feedback">{errors?.sort_order?.message}</div>
-        <Form.Text>
+        <FieldErrorMessage>{errors?.sort_order?.message}</FieldErrorMessage>
+        <p className="text-sm text-muted-foreground">
           Categories are displayed in ascending sort order. Sites without a
           category are always shown last.
-        </Form.Text>
-      </Form.Group>
+        </p>
+      </FormGroup>
 
-      <Form.Group className="d-flex mb-3">
-        <Button type="submit" className="col-2">
-          Save
-        </Button>
-        <Button type="reset" className="ms-auto me-2">
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+        <Button type="submit">Save</Button>
+        <Button type="reset" className="sm:ml-auto">
           Reset
         </Button>
         <Link
@@ -110,8 +119,8 @@ const SiteCategoryForm: FC<SiteCategoryProps> = ({
             Cancel
           </Button>
         </Link>
-      </Form.Group>
-    </Form>
+      </div>
+    </form>
   );
 };
 

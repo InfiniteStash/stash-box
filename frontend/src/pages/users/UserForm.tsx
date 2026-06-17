@@ -1,10 +1,15 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import cx from "classnames";
 import type { FC } from "react";
-import { Button, Form, Row } from "react-bootstrap";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { Button } from "src/components/ui/button";
 import { MultiCombobox } from "src/components/ui/combobox";
+import {
+  FieldError as FieldErrorMessage,
+  FormGroup,
+  Label,
+} from "src/components/ui/field";
+import { Input } from "src/components/ui/input";
 import { RoleEnum, type UserUpdateInput } from "src/graphql";
 import * as yup from "yup";
 
@@ -74,79 +79,68 @@ const UserForm: FC<UserProps> = ({ user, callback, error }) => {
   };
 
   return (
-    <Form onSubmit={handleSubmit(onSubmit)}>
-      <Row>
-        <Form.Control type="hidden" value={user.id} />
-        <Form.Group controlId="username" className="col mb-3">
-          <Form.Label>Username</Form.Label>
-          <Form.Control
-            className={cx({ "is-invalid": errors.name })}
-            placeholder="Username"
-            defaultValue={user.name ?? ""}
-            {...register("name")}
-          />
-          <div className="invalid-feedback">{errors?.name?.message}</div>
-        </Form.Group>
-      </Row>
-      <Row>
-        <Form.Group controlId="email" className="col mb-3">
-          <Form.Label>Email</Form.Label>
-          <Form.Control
-            className={cx({ "is-invalid": errors.email })}
-            type="email"
-            placeholder="Email"
-            defaultValue={user.email ?? ""}
-            {...register("email")}
-          />
-          <div className="invalid-feedback">{errors?.email?.message}</div>
-        </Form.Group>
-      </Row>
-      <Row>
-        <Form.Group controlId="password" className="col mb-3">
-          <Form.Label>Password</Form.Label>
-          <Form.Control
-            className={cx({ "is-invalid": errors.password })}
-            type="password"
-            placeholder="Password"
-            defaultValue={user.password ?? ""}
-            {...register("password")}
-          />
-          <div className="invalid-feedback">{errors?.password?.message}</div>
-        </Form.Group>
-      </Row>
-      <Row>
-        <Form.Group className="col mb-3">
-          <Form.Label>Roles</Form.Label>
-          <Controller
-            name="roles"
-            control={control}
-            defaultValue={(user.roles ?? []) as string[]}
-            render={({ field: { onChange, value } }) => (
-              <MultiCombobox
-                inputId="roles"
-                options={roles}
-                values={value}
-                onChange={onChange}
-                placeholder="User roles"
-              />
-            )}
-          />
-        </Form.Group>
-      </Row>
-      <Row>
-        <div className="col">
-          <Button type="submit">Create</Button>
-          <Button
-            variant="secondary"
-            className="ms-2"
-            onClick={() => navigate(-1)}
-          >
-            Cancel
-          </Button>
-          <div className="invalid-feedback d-block">{error}</div>
-        </div>
-      </Row>
-    </Form>
+    <form onSubmit={handleSubmit(onSubmit)} className="w-full md:w-1/2">
+      <input type="hidden" value={user.id ?? ""} />
+      <FormGroup>
+        <Label htmlFor="username">Username</Label>
+        <Input
+          id="username"
+          aria-invalid={!!errors.name}
+          placeholder="Username"
+          defaultValue={user.name ?? ""}
+          {...register("name")}
+        />
+        <FieldErrorMessage>{errors?.name?.message}</FieldErrorMessage>
+      </FormGroup>
+      <FormGroup>
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          aria-invalid={!!errors.email}
+          type="email"
+          placeholder="Email"
+          defaultValue={user.email ?? ""}
+          {...register("email")}
+        />
+        <FieldErrorMessage>{errors?.email?.message}</FieldErrorMessage>
+      </FormGroup>
+      <FormGroup>
+        <Label htmlFor="password">Password</Label>
+        <Input
+          id="password"
+          aria-invalid={!!errors.password}
+          type="password"
+          placeholder="Password"
+          defaultValue={user.password ?? ""}
+          {...register("password")}
+        />
+        <FieldErrorMessage>{errors?.password?.message}</FieldErrorMessage>
+      </FormGroup>
+      <FormGroup>
+        <Label htmlFor="roles">Roles</Label>
+        <Controller
+          name="roles"
+          control={control}
+          defaultValue={(user.roles ?? []) as string[]}
+          render={({ field: { onChange, value } }) => (
+            <MultiCombobox
+              inputId="roles"
+              options={roles}
+              values={value}
+              onChange={onChange}
+              placeholder="User roles"
+            />
+          )}
+        />
+      </FormGroup>
+      <div className="mt-4 flex items-center gap-2">
+        <Button type="submit">Create</Button>
+        <Button variant="secondary" onClick={() => navigate(-1)}>
+          Cancel
+        </Button>
+      </div>
+      {error && <div className="mt-2 text-sm text-destructive">{error}</div>}
+    </form>
   );
 };
 

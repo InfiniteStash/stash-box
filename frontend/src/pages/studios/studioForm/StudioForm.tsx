@@ -1,9 +1,7 @@
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import { useLens } from "@hookform/lenses";
 import { yupResolver } from "@hookform/resolvers/yup";
-import cx from "classnames";
 import { type FC, useMemo, useState } from "react";
-import { Col, Form, Row, Tab, Tabs } from "react-bootstrap";
 import { Controller, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { renderStudioDetails } from "src/components/editCard/ModifyEdit";
@@ -12,6 +10,18 @@ import { EditNote, NavButtons, SubmitButtons } from "src/components/form";
 import { Icon } from "src/components/fragments";
 import MultiSelect from "src/components/multiSelect";
 import StudioSelect from "src/components/studioSelect";
+import {
+  FieldError as FieldErrorMessage,
+  FormGroup,
+  Label,
+} from "src/components/ui/field";
+import { Input } from "src/components/ui/input";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "src/components/ui/tabs";
 import URLInput from "src/components/urlInput";
 import {
   type ImageFragment,
@@ -98,27 +108,29 @@ const StudioForm: FC<StudioProps> = ({
   ].filter((e) => e.error) as { error: string; tab: string }[];
 
   return (
-    <Form className="StudioForm" onSubmit={handleSubmit(onSubmit)}>
-      <Tabs
-        activeKey={activeTab}
-        onSelect={(key) => key && setActiveTab(key)}
-        className="d-flex"
-      >
-        <Tab eventKey="details" title="Details" className="col-xl-6">
-          <Form.Group controlId="name" className="mb-3">
-            <Form.Label>Name</Form.Label>
-            <Form.Control
-              className={cx({ "is-invalid": errors.name })}
+    <form className="StudioForm" onSubmit={handleSubmit(onSubmit)}>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="links">Links</TabsTrigger>
+          <TabsTrigger value="images">Images</TabsTrigger>
+          <TabsTrigger value="confirm">Confirm</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="details" className="max-w-2xl">
+          <FormGroup>
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              aria-invalid={!!errors.name}
               placeholder="Name"
               {...register("name")}
             />
-            <Form.Control.Feedback type="invalid">
-              {errors?.name?.message}
-            </Form.Control.Feedback>
-          </Form.Group>
+            <FieldErrorMessage>{errors?.name?.message}</FieldErrorMessage>
+          </FormGroup>
 
-          <Form.Group controlId="aliases" className="mb-3">
-            <Form.Label htmlFor="studio-aliases-select">Aliases</Form.Label>
+          <FormGroup>
+            <Label htmlFor="studio-aliases-select">Aliases</Label>
             <Controller
               name="aliases"
               control={control}
@@ -131,14 +143,12 @@ const StudioForm: FC<StudioProps> = ({
                 />
               )}
             />
-            <Form.Control.Feedback type="invalid">
-              {errors?.aliases?.message}
-            </Form.Control.Feedback>
-          </Form.Group>
+            <FieldErrorMessage>{errors?.aliases?.message}</FieldErrorMessage>
+          </FormGroup>
 
           {showNetworkSelect && (
-            <Form.Group controlId="network" className="mb-3">
-              <Form.Label htmlFor="studio-network-select">Network</Form.Label>
+            <FormGroup>
+              <Label htmlFor="studio-network-select">Network</Label>
               <Controller
                 name="parent"
                 control={control}
@@ -153,26 +163,26 @@ const StudioForm: FC<StudioProps> = ({
                   />
                 )}
               />
-            </Form.Group>
+            </FormGroup>
           )}
 
           <NavButtons onNext={() => setActiveTab("links")} />
-        </Tab>
+        </TabsContent>
 
-        <Tab eventKey="links" title="Links" className="col-xl-9">
-          <Form.Group className="mb-3">
-            <Form.Label>Links</Form.Label>
+        <TabsContent value="links" className="max-w-4xl">
+          <FormGroup>
+            <Label>Links</Label>
             <URLInput
               lens={lens.focus("urls").defined()}
               type={ValidSiteTypeEnum.STUDIO}
               errors={errors.urls}
             />
-          </Form.Group>
+          </FormGroup>
 
           <NavButtons onNext={() => setActiveTab("images")} />
-        </Tab>
+        </TabsContent>
 
-        <Tab eventKey="images" title="Images" className="col-xl-6">
+        <TabsContent value="images" className="max-w-2xl">
           <EditImages
             lens={lens.focus("images").cast<ImageFragment[]>()}
             maxImages={1}
@@ -186,32 +196,29 @@ const StudioForm: FC<StudioProps> = ({
             disabled={!!file}
           />
 
-          <div className="d-flex">
-            {/* dummy element for feedback */}
-            <div className="ms-auto">
-              <span className={file ? "is-invalid" : ""} />
-              <Form.Control.Feedback type="invalid">
-                Upload or remove image to continue.
-              </Form.Control.Feedback>
-            </div>
-          </div>
-        </Tab>
+          {file && (
+            <p className="mt-2 text-right text-sm text-destructive">
+              Upload or remove image to continue.
+            </p>
+          )}
+        </TabsContent>
 
-        <Tab eventKey="confirm" title="Confirm" className="mt-3 col-xl-9">
+        <TabsContent value="confirm" className="max-w-4xl">
           {renderStudioDetails(newStudioChanges, oldStudioChanges, !!studio)}
-          <Row className="my-4">
-            <Col md={{ span: 8, offset: 4 }}>
-              <EditNote register={register} error={errors.note} />
-            </Col>
-          </Row>
+          <div className="my-4">
+            <EditNote register={register} error={errors.note} />
+          </div>
 
           {metadataErrors.length > 0 && (
-            <div className="text-end my-4">
-              <h6>
-                <Icon icon={faExclamationTriangle} color="red" />
-                <span className="ms-1">Errors</span>
+            <div className="my-4 text-right">
+              <h6 className="font-semibold">
+                <Icon
+                  icon={faExclamationTriangle}
+                  className="text-destructive"
+                />
+                <span className="ml-1">Errors</span>
               </h6>
-              <div className="d-flex flex-column text-danger">
+              <div className="flex flex-col text-destructive">
                 {metadataErrors.map(({ error, tab }) => (
                   <Link to="#" key={error} onClick={() => setActiveTab(tab)}>
                     {error}
@@ -222,9 +229,9 @@ const StudioForm: FC<StudioProps> = ({
           )}
 
           <SubmitButtons disabled={!!file || saving} />
-        </Tab>
+        </TabsContent>
       </Tabs>
-    </Form>
+    </form>
   );
 };
 

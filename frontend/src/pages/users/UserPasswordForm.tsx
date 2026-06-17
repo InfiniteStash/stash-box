@@ -1,9 +1,13 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import cx from "classnames";
 import type { FC } from "react";
-import { Button, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { Button } from "src/components/ui/button";
+import {
+  FieldError as FieldErrorMessage,
+  FormGroup,
+} from "src/components/ui/field";
+import { Input } from "src/components/ui/input";
 import * as yup from "yup";
 
 const schema = yup.object({
@@ -62,50 +66,46 @@ const UserForm: FC<UserProps> = ({ callback, error }) => {
   };
 
   return (
-    <Form onSubmit={handleSubmit(onSubmit)}>
-      <Form.Group controlId="existingPassword" className="mb-3">
-        <Form.Control
-          className={cx({ "is-invalid": errors.existingPassword })}
+    <form onSubmit={handleSubmit(onSubmit)} className="w-full md:w-1/2">
+      <FormGroup>
+        <Input
+          aria-invalid={!!errors.existingPassword}
           type="password"
           placeholder="Existing Password"
           {...register("existingPassword")}
         />
-        <div className="invalid-feedback">
+        <FieldErrorMessage>
           {errors?.existingPassword?.message}
-        </div>
-      </Form.Group>
-      <Form.Group controlId="newPassword" className="mb-3">
-        <Form.Control
-          className={cx({ "is-invalid": errors.newPassword })}
+        </FieldErrorMessage>
+      </FormGroup>
+      <FormGroup>
+        <Input
+          aria-invalid={!!errors.newPassword}
           type="password"
           placeholder="New Password"
           {...register("newPassword")}
         />
-        <div className="invalid-feedback">{errors?.newPassword?.message}</div>
-      </Form.Group>
-      <Form.Group controlId="confirmNewPassword" className="mb-3">
-        <Form.Control
-          className={cx({ "is-invalid": errors.confirmNewPassword })}
+        <FieldErrorMessage>{errors?.newPassword?.message}</FieldErrorMessage>
+      </FormGroup>
+      <FormGroup>
+        <Input
+          aria-invalid={!!errors.confirmNewPassword}
           type="password"
           placeholder="Confirm New Password"
           {...register("confirmNewPassword")}
         />
-        <div className="invalid-feedback">
+        <FieldErrorMessage>
           {errors?.confirmNewPassword?.message}
-        </div>
-      </Form.Group>
-      <div>
+        </FieldErrorMessage>
+      </FormGroup>
+      <div className="flex items-center gap-2">
         <Button type="submit">Save</Button>
-        <Button
-          variant="secondary"
-          className="ms-2"
-          onClick={() => navigate(-1)}
-        >
+        <Button variant="secondary" onClick={() => navigate(-1)}>
           Cancel
         </Button>
-        <div className="invalid-feedback d-block">{error}</div>
       </div>
-    </Form>
+      {error && <div className="mt-2 text-sm text-destructive">{error}</div>}
+    </form>
   );
 };
 

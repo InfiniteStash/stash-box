@@ -1,7 +1,8 @@
 import type { Lens } from "@hookform/lenses";
 import { type ChangeEvent, type FC, type KeyboardEvent, useState } from "react";
-import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { useFieldArray } from "react-hook-form";
+import { Button } from "src/components/ui/button";
+import { Label } from "src/components/ui/field";
 import { Input } from "src/components/ui/input";
 
 export type BodyModItem = {
@@ -57,44 +58,41 @@ const BodyModification: FC<BodyModificationProps> = ({
   };
 
   const modificationList = modifications.map((mod, index) => (
-    <Row key={mod.location} className="mb-1">
-      <InputGroup className="col">
-        <InputGroup.Text className="fw-bold">Location</InputGroup.Text>
-        <Form.Control defaultValue={mod.location} readOnly />
-        <Form.Control
-          defaultValue={mod.description ?? ""}
-          placeholder={descriptionPlaceholder}
-          onInput={(e: ChangeEvent<HTMLInputElement>) =>
-            update(index, {
-              location: mod.location,
-              description: e.currentTarget.value,
-            })
-          }
-        />
-        <Button variant="danger" onClick={() => remove(index)}>
-          Remove
-        </Button>
-      </InputGroup>
-    </Row>
+    <div key={mod.location} className="flex items-center gap-2">
+      <span className="whitespace-nowrap text-sm font-bold">Location</span>
+      <Input defaultValue={mod.location} readOnly className="w-40" />
+      <Input
+        defaultValue={mod.description ?? ""}
+        placeholder={descriptionPlaceholder}
+        className="flex-1"
+        onInput={(e: ChangeEvent<HTMLInputElement>) =>
+          update(index, {
+            location: mod.location,
+            description: e.currentTarget.value,
+          })
+        }
+      />
+      <Button variant="danger" size="sm" onClick={() => remove(index)}>
+        Remove
+      </Button>
+    </div>
   ));
 
   return (
-    <>
-      <Row className={CLASSNAME}>
-        <Col className="mb-3">
-          <Form.Label className="text-capitalize">{name}</Form.Label>
-          <Input
-            name={name}
-            placeholder={locationPlaceholder}
-            value={location}
-            onChange={(e) => setLocation(e.currentTarget.value)}
-            onKeyDown={handleKeyDown}
-            onBlur={addLocation}
-          />
-        </Col>
-      </Row>
-      {modificationList}
-    </>
+    <div className={`${CLASSNAME} mb-3`}>
+      <Label className="capitalize">{name}</Label>
+      <Input
+        name={name}
+        placeholder={locationPlaceholder}
+        value={location}
+        onChange={(e) => setLocation(e.currentTarget.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={addLocation}
+      />
+      {modificationList.length > 0 && (
+        <div className="mt-2 space-y-1">{modificationList}</div>
+      )}
+    </div>
   );
 };
 

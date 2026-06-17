@@ -4,9 +4,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useLens } from "@hookform/lenses";
 import { yupResolver } from "@hookform/resolvers/yup";
-import cx from "classnames";
 import { type FC, useMemo, useState } from "react";
-import { Button, Col, Form, InputGroup, Row, Tab, Tabs } from "react-bootstrap";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { renderSceneDetails } from "src/components/editCard/ModifyEdit";
@@ -19,7 +17,20 @@ import SearchField, {
 } from "src/components/searchField";
 import StudioSelect from "src/components/studioSelect";
 import TagSelect from "src/components/tagSelect";
+import { Button, buttonVariants } from "src/components/ui/button";
+import {
+  FieldError as FieldErrorMessage,
+  FormGroup,
+  Label,
+} from "src/components/ui/field";
 import { Input } from "src/components/ui/input";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "src/components/ui/tabs";
+import { Textarea } from "src/components/ui/textarea";
 import URLInput from "src/components/urlInput";
 import {
   type FingerprintAlgorithm,
@@ -30,6 +41,7 @@ import {
   ValidSiteTypeEnum,
 } from "src/graphql";
 import { useBeforeUnload } from "src/hooks/useBeforeUnload";
+import { cn as cx } from "src/lib/utils";
 import { formatDuration, parseDuration, performerHref } from "src/utils";
 import DiffScene from "./diff";
 import ExistingSceneAlert from "./ExistingSceneAlert";
@@ -37,7 +49,6 @@ import { type SceneFormData, SceneSchema } from "./schema";
 import type { InitialScene } from "./types";
 
 const CLASS_NAME = "SceneForm";
-const CLASS_NAME_PERFORMER_CHANGE = `${CLASS_NAME}-performer-change`;
 
 interface SceneProps {
   scene?: Scene | null;
@@ -183,36 +194,39 @@ const SceneForm: FC<SceneProps> = ({
   const currentPerformerIds = performerFields.map((p) => p.performerId);
 
   const performerList = performerFields.map((p, index) => (
-    <Row className="performer-item d-flex g-0" key={p.performerId}>
-      <Form.Control
+    <div
+      className="performer-item flex flex-col gap-2 md:flex-row md:items-center"
+      key={p.performerId}
+    >
+      <input
         type="hidden"
         defaultValue={p.performerId}
         {...register(`performers.${index}.performerId`)}
       />
 
-      <Col xs={6}>
-        <InputGroup className="flex-nowrap">
-          <Button variant="danger" onClick={() => handleRemove(index)}>
-            Remove
+      <div className="flex flex-1 items-center gap-1">
+        <Button variant="danger" size="sm" onClick={() => handleRemove(index)}>
+          Remove
+        </Button>
+        {isChanging === index ? (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setChange(undefined)}
+          >
+            Cancel
           </Button>
-          {isChanging === index ? (
-            <Button
-              className={CLASS_NAME_PERFORMER_CHANGE}
-              variant="primary"
-              onClick={() => setChange(undefined)}
-            >
-              Cancel
-            </Button>
-          ) : (
-            <Button
-              className={CLASS_NAME_PERFORMER_CHANGE}
-              variant="primary"
-              onClick={() => setChange(index)}
-            >
-              Change
-            </Button>
-          )}
-          {isChanging === index ? (
+        ) : (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setChange(index)}
+          >
+            Change
+          </Button>
+        )}
+        {isChanging === index ? (
+          <div className="flex-1">
             <SearchField
               autoFocus
               onClick={(res) =>
@@ -224,60 +238,60 @@ const SceneForm: FC<SceneProps> = ({
               searchType={SearchType.Performer}
               studioId={fieldData.studio?.parent?.id ?? fieldData.studio?.id}
             />
-          ) : (
-            <>
-              <InputGroup.Text className="flex-grow-1 text-start text-truncate">
-                <GenderIcon gender={p.gender as GenderEnum} />
-                <span
-                  className={cx("performer-name text-truncate", {
-                    "text-decoration-line-through": p.deleted,
-                  })}
-                >
-                  <b>{p.name}</b>
-                  {p.disambiguation && (
-                    <small className="ms-1">({p.disambiguation})</small>
-                  )}
-                </span>
-              </InputGroup.Text>
-              <Button
-                variant="primary"
-                href={performerHref({ id: p.performerId })}
-                target="_blank"
+          </div>
+        ) : (
+          <>
+            <span className="flex flex-1 items-center gap-1 truncate">
+              <GenderIcon gender={p.gender as GenderEnum} />
+              <span
+                className={cx("truncate", {
+                  "line-through": p.deleted,
+                })}
               >
-                <Icon icon={faExternalLinkAlt} />
-              </Button>
+                <b>{p.name}</b>
+                {p.disambiguation && (
+                  <small className="ml-1">({p.disambiguation})</small>
+                )}
+              </span>
+            </span>
+            <a
+              href={performerHref({ id: p.performerId })}
+              target="_blank"
+              rel="noreferrer"
+              className={buttonVariants({ variant: "primary", size: "sm" })}
+            >
+              <Icon icon={faExternalLinkAlt} />
+            </a>
+          </>
+        )}
+      </div>
+
+      <div className="flex flex-1 items-center gap-2">
+        <span className="whitespace-nowrap text-sm text-muted-foreground">
+          Scene Alias
+        </span>
+        <Controller
+          name={`performers.${index}.alias`}
+          control={control}
+          render={({ field: { onChange } }) => (
+            <>
+              <Input
+                id={`performers.${index}.alias`}
+                list={`performers.${index}.alias-list`}
+                defaultValue={p.alias ?? ""}
+                onChange={(e) => onChange(e.currentTarget.value)}
+                placeholder={p.name}
+              />
+              <datalist id={`performers.${index}.alias-list`}>
+                {(p.aliases ?? []).map((alias) => (
+                  <option key={alias} value={alias} />
+                ))}
+              </datalist>
             </>
           )}
-        </InputGroup>
-      </Col>
-
-      <Col xs={{ span: 5, offset: 1 }}>
-        <InputGroup>
-          <InputGroup.Text>Scene Alias</InputGroup.Text>
-
-          <Controller
-            name={`performers.${index}.alias`}
-            control={control}
-            render={({ field: { onChange } }) => (
-              <>
-                <Input
-                  id={`performers.${index}.alias`}
-                  list={`performers.${index}.alias-list`}
-                  defaultValue={p.alias ?? ""}
-                  onChange={(e) => onChange(e.currentTarget.value)}
-                  placeholder={p.name}
-                />
-                <datalist id={`performers.${index}.alias-list`}>
-                  {(p.aliases ?? []).map((alias) => (
-                    <option key={alias} value={alias} />
-                  ))}
-                </datalist>
-              </>
-            )}
-          />
-        </InputGroup>
-      </Col>
-    </Row>
+        />
+      </div>
+    </div>
   ));
 
   const metadataErrors = [
@@ -296,73 +310,70 @@ const SceneForm: FC<SceneProps> = ({
   ].filter((e) => e.error) as { error: string; tab: string }[];
 
   return (
-    <Form className={CLASS_NAME} onSubmit={handleSubmit(onSubmit)}>
+    <form className={CLASS_NAME} onSubmit={handleSubmit(onSubmit)}>
       {isCreate && (
-        <Row>
-          <Col xs={9}>
-            <ExistingSceneAlert
-              title={fieldData.title}
-              studio_id={fieldData.studio?.id}
-              fingerprints={draftFingerprints}
-            />
-          </Col>
-        </Row>
+        <div className="max-w-4xl">
+          <ExistingSceneAlert
+            title={fieldData.title}
+            studio_id={fieldData.studio?.id}
+            fingerprints={draftFingerprints}
+          />
+        </div>
       )}
-      <Tabs activeKey={activeTab} onSelect={(key) => key && setActiveTab(key)}>
-        <Tab eventKey="details" title="Details" className="col-xl-9">
-          <Row>
-            <Form.Group controlId="title" className="col-8 mb-3">
-              <Form.Label>Title</Form.Label>
-              <Form.Control
-                as="input"
-                className={cx({ "is-invalid": errors.title })}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="links">Links</TabsTrigger>
+          <TabsTrigger value="images">Images</TabsTrigger>
+          <TabsTrigger value="confirm">Confirm</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="details" className="max-w-4xl">
+          <div className="grid grid-cols-1 gap-x-4 md:grid-cols-12">
+            <FormGroup className="md:col-span-8">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
                 type="text"
+                aria-invalid={!!errors.title}
                 placeholder="Title"
                 {...register("title", { required: true })}
               />
-              <Form.Control.Feedback type="invalid">
-                {errors?.title?.message}
-              </Form.Control.Feedback>
-            </Form.Group>
+              <FieldErrorMessage>{errors?.title?.message}</FieldErrorMessage>
+            </FormGroup>
 
-            <Form.Group controlId="date" className="col-2 mb-3">
-              <Form.Label>Date</Form.Label>
-              <Form.Control
-                as="input"
-                className={cx({ "is-invalid": errors.date })}
+            <FormGroup className="md:col-span-2">
+              <Label htmlFor="date">Date</Label>
+              <Input
+                id="date"
                 type="text"
+                aria-invalid={!!errors.date}
                 placeholder="YYYY-MM-DD"
                 {...register("date")}
               />
-              <Form.Control.Feedback type="invalid">
-                {errors?.date?.message}
-              </Form.Control.Feedback>
-              {/* <Form.Text>
-                If the precise date is unknown the day and/or month can be
-                omitted.
-              </Form.Text> */}
-            </Form.Group>
+              <FieldErrorMessage>{errors?.date?.message}</FieldErrorMessage>
+            </FormGroup>
 
-            <Form.Group controlId="duration" className="col-2 mb-3">
-              <Form.Label>Duration</Form.Label>
-              <Form.Control
-                as="input"
-                className={cx({ "is-invalid": errors.duration })}
+            <FormGroup className="md:col-span-2">
+              <Label htmlFor="duration">Duration</Label>
+              <Input
+                id="duration"
+                aria-invalid={!!errors.duration}
                 placeholder="Duration"
                 {...register("duration")}
               />
-              <Form.Control.Feedback type="invalid">
-                {errors?.duration?.message}
-              </Form.Control.Feedback>
-            </Form.Group>
-          </Row>
+              <FieldErrorMessage>{errors?.duration?.message}</FieldErrorMessage>
+            </FormGroup>
+          </div>
 
-          <Row>
-            <Form.Group className="col mb-3">
-              <Form.Label>Performers</Form.Label>
-              {performerList}
-              <div className="add-performer">
-                <span>Add performer:</span>
+          <FormGroup>
+            <Label>Performers</Label>
+            <div className="space-y-2">{performerList}</div>
+            <div className="add-performer mt-2 flex items-center gap-2">
+              <span className="whitespace-nowrap text-sm text-muted-foreground">
+                Add performer:
+              </span>
+              <div className="flex-1">
                 <SearchField
                   onClick={(res) =>
                     res.__typename === "Performer" && addPerformer(res)
@@ -374,15 +385,12 @@ const SceneForm: FC<SceneProps> = ({
                   }
                 />
               </div>
-            </Form.Group>
-          </Row>
+            </div>
+          </FormGroup>
 
-          <Row>
-            <Form.Group
-              controlId="studioId"
-              className="studio-select col-6 mb-3"
-            >
-              <Form.Label htmlFor="scene-studio-select">Studio</Form.Label>
+          <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2">
+            <FormGroup className="studio-select">
+              <Label htmlFor="scene-studio-select">Studio</Label>
               <Controller
                 name="studio"
                 control={control}
@@ -396,64 +404,59 @@ const SceneForm: FC<SceneProps> = ({
                   />
                 )}
               />
-              <Form.Control.Feedback type="invalid">
+              <FieldErrorMessage>
                 {errors.studio !== undefined ? "Studio is required" : null}
-              </Form.Control.Feedback>
-            </Form.Group>
+              </FieldErrorMessage>
+            </FormGroup>
 
-            <Form.Group controlId="code" className="col-6 mb-3">
-              <Form.Label>Studio Code</Form.Label>
-              <Form.Control
-                as="input"
+            <FormGroup>
+              <Label htmlFor="code">Studio Code</Label>
+              <Input
+                id="code"
                 type="text"
                 placeholder="Unique code used by studio to identify scene"
                 {...register("code")}
               />
-            </Form.Group>
-          </Row>
+            </FormGroup>
+          </div>
 
-          <Row>
-            <Form.Group controlId="details" className="col mb-3">
-              <Form.Label>Details</Form.Label>
-              <Form.Control
-                as="textarea"
-                className="description"
-                placeholder="Details"
-                {...register("details")}
-              />
-            </Form.Group>
-          </Row>
+          <FormGroup>
+            <Label htmlFor="details">Details</Label>
+            <Textarea
+              id="details"
+              placeholder="Details"
+              {...register("details")}
+            />
+          </FormGroup>
 
-          <Row>
-            <Form.Group controlId="director" className="col-4 mb-3">
-              <Form.Label>Director</Form.Label>
-              <Form.Control
-                as="input"
+          <div className="grid grid-cols-1 gap-x-4 md:grid-cols-12">
+            <FormGroup className="md:col-span-4">
+              <Label htmlFor="director">Director</Label>
+              <Input
+                id="director"
                 type="text"
                 placeholder="Director"
                 {...register("director")}
               />
-            </Form.Group>
+            </FormGroup>
 
-            <Form.Group controlId="production_date" className="col-2 mb-3">
-              <Form.Label>Production Date</Form.Label>
-              <Form.Control
-                as="input"
-                className={cx({ "is-invalid": errors.production_date })}
+            <FormGroup className="md:col-span-2">
+              <Label htmlFor="production_date">Production Date</Label>
+              <Input
+                id="production_date"
                 type="text"
+                aria-invalid={!!errors.production_date}
                 placeholder="YYYY-MM-DD"
                 {...register("production_date")}
               />
-              <Form.Control.Feedback type="invalid">
+              <FieldErrorMessage>
                 {errors?.production_date?.message}
-              </Form.Control.Feedback>
-            </Form.Group>
+              </FieldErrorMessage>
+            </FormGroup>
+          </div>
 
-            <Form.Group className="col-6 mb-3" />
-          </Row>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Tags</Form.Label>
+          <FormGroup>
+            <Label>Tags</Label>
             <Controller
               name="tags"
               control={control}
@@ -461,12 +464,12 @@ const SceneForm: FC<SceneProps> = ({
                 <TagSelect tags={value} onChange={onChange} />
               )}
             />
-          </Form.Group>
+          </FormGroup>
 
           <NavButtons onNext={() => setActiveTab("links")} />
-        </Tab>
+        </TabsContent>
 
-        <Tab eventKey="links" title="Links" className="col-xl-9">
+        <TabsContent value="links" className="max-w-4xl">
           <URLInput
             lens={lens.focus("urls").defined()}
             type={ValidSiteTypeEnum.SCENE}
@@ -474,9 +477,9 @@ const SceneForm: FC<SceneProps> = ({
           />
 
           <NavButtons onNext={() => setActiveTab("images")} />
-        </Tab>
+        </TabsContent>
 
-        <Tab eventKey="images" title="Images">
+        <TabsContent value="images">
           <EditImages
             lens={lens.focus("images").cast<ImageFragment[]>()}
             maxImages={1}
@@ -490,31 +493,29 @@ const SceneForm: FC<SceneProps> = ({
             disabled={!!file}
           />
 
-          <div className="d-flex">
-            {/* dummy element for feedback */}
-            <div className="ms-auto">
-              <span className={file ? "is-invalid" : ""} />
-              <Form.Control.Feedback type="invalid">
-                Upload or remove image to continue.
-              </Form.Control.Feedback>
-            </div>
-          </div>
-        </Tab>
-        <Tab eventKey="confirm" title="Confirm" className="mt-2 col-xl-9">
+          {file && (
+            <p className="mt-2 text-right text-sm text-destructive">
+              Upload or remove image to continue.
+            </p>
+          )}
+        </TabsContent>
+
+        <TabsContent value="confirm" className="max-w-4xl">
           {renderSceneDetails(newSceneChanges, oldSceneChanges, !!scene)}
-          <Row className="my-4">
-            <Col md={{ span: 8, offset: 4 }}>
-              <EditNote register={register} error={errors.note} />
-            </Col>
-          </Row>
+          <div className="my-4">
+            <EditNote register={register} error={errors.note} />
+          </div>
 
           {metadataErrors.length > 0 && (
-            <div className="text-end my-4">
-              <h6>
-                <Icon icon={faExclamationTriangle} color="red" />
-                <span className="ms-1">Errors</span>
+            <div className="my-4 text-right">
+              <h6 className="font-semibold">
+                <Icon
+                  icon={faExclamationTriangle}
+                  className="text-destructive"
+                />
+                <span className="ml-1">Errors</span>
               </h6>
-              <div className="d-flex flex-column text-danger">
+              <div className="flex flex-col text-destructive">
                 {metadataErrors.map(({ error, tab }) => (
                   <Link to="#" key={error} onClick={() => setActiveTab(tab)}>
                     {error}
@@ -525,9 +526,9 @@ const SceneForm: FC<SceneProps> = ({
           )}
 
           <SubmitButtons disabled={saving} />
-        </Tab>
+        </TabsContent>
       </Tabs>
-    </Form>
+    </form>
   );
 };
 

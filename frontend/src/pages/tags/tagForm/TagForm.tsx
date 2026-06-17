@@ -1,13 +1,18 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import cx from "classnames";
 import type { FC } from "react";
-import { Button, Form } from "react-bootstrap";
 import { Controller, type FieldError, useForm } from "react-hook-form";
 import { EditNote } from "src/components/form";
 import { LoadingIndicator } from "src/components/fragments";
 import MergeConflicts from "src/components/mergeConflicts";
 import MultiSelect from "src/components/multiSelect";
+import { Button } from "src/components/ui/button";
 import { SelectCombobox } from "src/components/ui/combobox";
+import {
+  FieldError as FieldErrorMessage,
+  FormGroup,
+  Label,
+} from "src/components/ui/field";
+import { Input } from "src/components/ui/input";
 import {
   type TagFragment as Tag,
   type TagEditDetailsInput,
@@ -77,7 +82,7 @@ const TagForm: FC<TagProps> = ({
     group: cat.group,
   }));
   return (
-    <Form className="TagForm w-50" onSubmit={handleSubmit(onSubmit)}>
+    <form className="TagForm w-full md:w-1/2" onSubmit={handleSubmit(onSubmit)}>
       {conflicts && conflicts.length > 0 && (
         <MergeConflicts
           conflicts={conflicts}
@@ -91,24 +96,29 @@ const TagForm: FC<TagProps> = ({
           }
         />
       )}
-      <Form.Group controlId="name" className="mb-3">
-        <Form.Label>Name</Form.Label>
-        <Form.Control
+      <FormGroup>
+        <Label htmlFor="name">Name</Label>
+        <Input
+          id="name"
           type="text"
-          className={cx({ "is-invalid": errors.name })}
+          aria-invalid={!!errors.name}
           placeholder="Name"
           {...register("name")}
         />
-        <div className="invalid-feedback">{errors?.name?.message}</div>
-      </Form.Group>
+        <FieldErrorMessage>{errors?.name?.message}</FieldErrorMessage>
+      </FormGroup>
 
-      <Form.Group controlId="description" className="mb-3">
-        <Form.Label>Description</Form.Label>
-        <Form.Control placeholder="Description" {...register("description")} />
-      </Form.Group>
+      <FormGroup>
+        <Label htmlFor="description">Description</Label>
+        <Input
+          id="description"
+          placeholder="Description"
+          {...register("description")}
+        />
+      </FormGroup>
 
-      <Form.Group className="mb-3">
-        <Form.Label htmlFor="tag-aliases-select">Aliases</Form.Label>
+      <FormGroup>
+        <Label htmlFor="tag-aliases-select">Aliases</Label>
         <Controller
           name="aliases"
           control={control}
@@ -121,10 +131,10 @@ const TagForm: FC<TagProps> = ({
             />
           )}
         />
-      </Form.Group>
+      </FormGroup>
 
-      <Form.Group className="mb-3">
-        <Form.Label htmlFor="tag-category-select">Category</Form.Label>
+      <FormGroup>
+        <Label htmlFor="tag-category-select">Category</Label>
         <Controller
           name="category"
           control={control}
@@ -142,26 +152,26 @@ const TagForm: FC<TagProps> = ({
             />
           )}
         />
-        <div className="invalid-feedback">
+        <FieldErrorMessage>
           {(errors?.category as FieldError | undefined)?.message}
-        </div>
-      </Form.Group>
+        </FieldErrorMessage>
+      </FormGroup>
 
       <EditNote register={register} error={errors.note} />
 
-      <Form.Group className="d-flex mb-3">
-        <Button type="submit" disabled className="d-none" aria-hidden="true" />
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+        <Button type="submit" disabled className="hidden" aria-hidden="true" />
         <Button type="submit" disabled={saving}>
           Submit Edit
         </Button>
-        <Button type="reset" className="ms-auto me-2">
+        <Button type="reset" className="sm:ml-auto">
           Reset
         </Button>
         <Button variant="danger" onClick={() => history.back()}>
           Cancel
         </Button>
-      </Form.Group>
-    </Form>
+      </div>
+    </form>
   );
 };
 

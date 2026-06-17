@@ -16,14 +16,15 @@ const selectCategory = async (
 ) => {
   const labels = screen.getAllByText("Category");
   const labelEl = labels.find((el) => el.tagName === "LABEL") ?? labels[0];
-  const categoryGroup = labelEl.closest(".mb-3") as HTMLElement;
+  const categoryGroup = (labelEl.closest(".mb-3") ??
+    labelEl.parentElement) as HTMLElement;
   await selectComboboxOption(user, label, label, categoryGroup);
 };
 
 const aliasContainer = () => {
   const labels = screen.getAllByText("Aliases");
   const labelEl = labels.find((el) => el.tagName === "LABEL") ?? labels[0];
-  return labelEl.closest(".mb-3") as HTMLElement;
+  return (labelEl.closest(".mb-3") ?? labelEl.parentElement) as HTMLElement;
 };
 
 const baseTag: TagFragment = {
