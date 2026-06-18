@@ -1,30 +1,21 @@
 import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
-import { Button, OverlayTrigger, Popover } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
+import { Tooltip } from "src/components/ui/tooltip";
 
 interface Props {
   message: string;
 }
 
-const Help: FC<Props> = ({ message }) => {
-  const renderContent = () => (
-    <Popover id="help">
-      <Popover.Body>{message}</Popover.Body>
-    </Popover>
-  );
-
-  return (
-    <OverlayTrigger
-      overlay={renderContent()}
-      placement="bottom"
-      trigger="hover"
+const Help: FC<Props> = ({ message }) => (
+  <Tooltip content={message} side="bottom">
+    <button
+      type="button"
+      className="text-muted-foreground transition-colors hover:text-foreground"
     >
-      <Button variant="link" className="minimal">
-        <Icon icon={faQuestionCircle} />
-      </Button>
-    </OverlayTrigger>
-  );
-};
+      <Icon icon={faQuestionCircle} />
+    </button>
+  </Tooltip>
+);
 
 export default Help;

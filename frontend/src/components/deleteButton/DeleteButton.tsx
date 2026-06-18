@@ -1,7 +1,7 @@
 import { type FC, useState } from "react";
-import { Button } from "react-bootstrap";
 
 import Modal from "src/components/modal";
+import { Button } from "src/components/ui/button";
 import { useCurrentUser } from "src/hooks";
 
 interface DeleteButtonProps {

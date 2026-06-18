@@ -1,9 +1,8 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import cx from "classnames";
 import type { FC } from "react";
-import { Badge, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
+import { cn } from "src/lib/utils";
 
 interface IProps {
   title: string;
@@ -22,16 +21,32 @@ const TagLink: FC<IProps> = ({
   onRemove,
   disabled = false,
 }) => (
-  <Badge className={cx("tag-item", className)} bg="none">
-    <abbr title={description || undefined}>
-      {link && !disabled ? <Link to={link}>{title}</Link> : title}
+  <span
+    className={cn(
+      "tag-item inline-flex items-center gap-1 rounded bg-secondary px-2 py-0.5 text-sm",
+      className,
+    )}
+  >
+    <abbr title={description || undefined} className="no-underline">
+      {link && !disabled ? (
+        <Link to={link} className="text-link hover:underline">
+          {title}
+        </Link>
+      ) : (
+        title
+      )}
     </abbr>
     {onRemove && (
-      <Button onClick={onRemove}>
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={`Remove ${title}`}
+        className="text-muted-foreground hover:text-foreground"
+      >
         <Icon icon={faXmark} />
-      </Button>
+      </button>
     )}
-  </Badge>
+  </span>
 );
 
 export default TagLink;

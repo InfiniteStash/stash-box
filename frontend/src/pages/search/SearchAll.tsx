@@ -1,5 +1,4 @@
 import type { FC } from "react";
-import { Col, Row } from "react-bootstrap";
 import { useSearchParams } from "react-router-dom";
 import { LoadingIndicator } from "src/components/fragments";
 import { useSearchAll } from "src/graphql";
@@ -22,21 +21,21 @@ export const SearchAll: FC = () => {
   if (!data) return null;
 
   return (
-    <Row>
-      <Col xs={6}>
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div>
         <h3>Performers</h3>
         <div>
           {data.searchPerformers.performers.map((p) => (
             <PerformerCard performer={p} key={p.id} />
           ))}
         </div>
-      </Col>
-      <Col xs={6}>
+      </div>
+      <div>
         <h3>Scenes</h3>
         {data.searchScenes.scenes.map((s) => (
           <SceneCard scene={s} key={s.id} />
         ))}
-      </Col>
-    </Row>
+      </div>
+    </div>
   );
 };

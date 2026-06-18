@@ -1,12 +1,12 @@
 import { CombinedGraphQLErrors } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
-import cx from "classnames";
 import { type FC, useState } from "react";
-import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ErrorMessage } from "src/components/fragments";
 import Title from "src/components/title";
+import { Button } from "src/components/ui/button";
+import { Input } from "src/components/ui/input";
 import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
 import { useChangePassword } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
@@ -90,60 +90,51 @@ const ResetPassword: FC = () => {
   return (
     <div className="LoginPrompt">
       <Title page="Reset Password" />
-      <Form
-        className="align-self-center col-8 mx-auto"
+      <form
+        className="mx-auto w-full max-w-xl self-center"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <Form.Control type="hidden" value={key} {...register("resetKey")} />
+        <input type="hidden" value={key} {...register("resetKey")} />
 
-        <Form.Group controlId="password" className="mt-2">
+        <div className="mt-2">
           <h3>Reset Password</h3>
-          <hr className="my-4" />
-          <Row>
-            <Col>
-              <Form.Group controlId="newPassword" className="mb-3">
-                <Form.Control
-                  className={cx({ "is-invalid": errors.newPassword })}
-                  type="password"
-                  placeholder="New Password"
-                  {...register("newPassword")}
-                />
-                <div className="invalid-feedback">
-                  {errors?.newPassword?.message}
-                </div>
-              </Form.Group>
-              <Form.Group controlId="confirmNewPassword" className="mb-3">
-                <Form.Control
-                  className={cx({ "is-invalid": errors.confirmNewPassword })}
-                  type="password"
-                  placeholder="Confirm New Password"
-                  {...register("confirmNewPassword")}
-                />
-                <div className="invalid-feedback">
-                  {errors?.confirmNewPassword?.message}
-                </div>
-              </Form.Group>
-            </Col>
-          </Row>
-        </Form.Group>
+          <hr className="my-4 border-border" />
+          <div className="mb-3">
+            <Input
+              type="password"
+              placeholder="New Password"
+              aria-invalid={!!errors.newPassword}
+              {...register("newPassword")}
+            />
+            <div className="text-sm text-destructive">
+              {errors?.newPassword?.message}
+            </div>
+          </div>
+          <div className="mb-3">
+            <Input
+              type="password"
+              placeholder="Confirm New Password"
+              aria-invalid={!!errors.confirmNewPassword}
+              {...register("confirmNewPassword")}
+            />
+            <div className="text-sm text-destructive">
+              {errors?.confirmNewPassword?.message}
+            </div>
+          </div>
+        </div>
 
         {errorList.map((error) => (
-          <Row key={error} className="text-end text-danger">
-            <div>{error}</div>
-          </Row>
+          <div key={error} className="text-right text-destructive">
+            {error}
+          </div>
         ))}
 
-        <Row>
-          <Col
-            xs={{ span: 3, offset: 9 }}
-            className="justify-content-end mt-2 d-flex"
-          >
-            <Button type="submit" disabled={loading}>
-              Set Password
-            </Button>
-          </Col>
-        </Row>
-      </Form>
+        <div className="mt-2 flex justify-end">
+          <Button type="submit" disabled={loading}>
+            Set Password
+          </Button>
+        </div>
+      </form>
     </div>
   );
 };

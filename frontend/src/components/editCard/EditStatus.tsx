@@ -1,6 +1,6 @@
 import type { FC } from "react";
-import { Badge, type BadgeProps } from "react-bootstrap";
 import { Tooltip } from "src/components/fragments";
+import { Badge } from "src/components/ui/badge";
 import { EditStatusTypes } from "src/constants/enums";
 import { VoteStatusEnum } from "src/graphql";
 import { formatDateTime } from "src/utils";
@@ -11,7 +11,7 @@ interface Props {
 }
 
 const EditStatus: FC<Props> = ({ closed, status }) => {
-  let editVariant: BadgeProps["bg"] = "warning";
+  let editVariant: "warning" | "danger" | "success" = "warning";
   if (
     status === VoteStatusEnum.REJECTED ||
     status === VoteStatusEnum.IMMEDIATE_REJECTED ||
@@ -58,7 +58,7 @@ const EditStatus: FC<Props> = ({ closed, status }) => {
 
   return (
     <Tooltip text={tooltipContent}>
-      <Badge className="text-uppercase" bg={editVariant}>
+      <Badge className="uppercase" variant={editVariant}>
         {EditStatusTypes[status]}
       </Badge>
     </Tooltip>

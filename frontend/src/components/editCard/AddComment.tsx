@@ -1,9 +1,8 @@
 import { CombinedGraphQLErrors } from "@apollo/client";
-import cx from "classnames";
 import { type FC, useState } from "react";
-import { Button, Form } from "react-bootstrap";
 
 import { NoteInput } from "src/components/form";
+import { Button } from "src/components/ui/button";
 import { useEditComment } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
 
@@ -20,11 +19,11 @@ const AddComment: FC<IProps> = ({ editID }) => {
 
   if (!showInput)
     return (
-      <div className="d-flex">
-        {!showInput && isEditor && (
+      <div className="flex">
+        {isEditor && (
           <Button
-            className="ms-auto minimal"
-            variant="link"
+            className="ml-auto"
+            variant="minimal"
             onClick={() => setShowInput(true)}
           >
             Add Comment
@@ -49,32 +48,23 @@ const AddComment: FC<IProps> = ({ editID }) => {
   };
 
   return (
-    <Form.Group className="mb-3">
-      <NoteInput
-        className={cx({ "is-invalid": error })}
-        onChange={(text) => setComment(text)}
-      />
-      <Form.Control.Feedback type="invalid" className="text-end">
-        {error}
-      </Form.Control.Feedback>
-      <div className="d-flex mt-2">
-        <Button
-          variant="secondary"
-          className="ms-auto"
-          onClick={() => setShowInput(false)}
-        >
+    <div className="mb-3">
+      <NoteInput hasError={!!error} onChange={(text) => setComment(text)} />
+      {error && (
+        <div className="mt-1 text-right text-sm text-destructive">{error}</div>
+      )}
+      <div className="mt-2 flex justify-end gap-2">
+        <Button variant="secondary" onClick={() => setShowInput(false)}>
           Cancel
         </Button>
         <Button
-          variant="primary"
-          className="ms-2"
           disabled={saving || !comment.trim()}
           onClick={handleSaveComment}
         >
           Save
         </Button>
       </div>
-    </Form.Group>
+    </div>
   );
 };
 

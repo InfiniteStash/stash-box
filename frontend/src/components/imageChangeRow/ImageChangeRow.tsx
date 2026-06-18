@@ -1,5 +1,4 @@
 import type { FC } from "react";
-import { Col, Row } from "react-bootstrap";
 import { DeletedImage } from "src/components/fragments";
 import ImageComponent from "src/components/image";
 
@@ -11,7 +10,6 @@ type Image = {
 };
 
 const CLASSNAME = "ImageChangeRow";
-const CLASSNAME_IMAGE = `${CLASSNAME}-image`;
 
 export interface ImageChangeRowProps {
   newImages?: (Image | null)[] | null;
@@ -25,16 +23,17 @@ const Images: FC<{
   const lightboxImages = (images ?? []).filter((image) => image !== null);
 
   return (
-    <>
+    <div className="flex flex-wrap">
       {(images ?? []).map((image, i) =>
         image === null ? (
           // biome-ignore lint/suspicious/noArrayIndexKey: Image is deleted, no other key
           <DeletedImage key={`deleted-${i}`} />
         ) : (
-          <div key={image.id} className={CLASSNAME_IMAGE}>
+          <div key={image.id} className="m-[5px]">
             <ImageComponent
               images={image}
               alt=""
+              className="h-[150px] w-auto"
               lightboxImages={lightboxImages}
               lightboxShowTags
               size={300}
@@ -46,7 +45,7 @@ const Images: FC<{
           </div>
         ),
       )}
-    </>
+    </div>
   );
 };
 
@@ -54,38 +53,29 @@ const ImageChangeRow: FC<ImageChangeRowProps> = ({
   newImages,
   oldImages,
   showDiff = false,
-}) => {
-  if (!newImages?.length && !oldImages?.length) {
-    return null;
-  }
-
-  return (
-    <Row className={CLASSNAME}>
-      <b className="col-2 text-end">Images</b>
+}) =>
+  (newImages ?? []).length > 0 || (oldImages ?? []).length > 0 ? (
+    <div className={`ChangeRow ${CLASSNAME} grid grid-cols-12 gap-x-3`}>
+      <b className="col-span-2 text-right">Images</b>
       {showDiff && (
-        <Col xs={5}>
+        <div className="col-span-5">
           {(oldImages ?? []).length > 0 && (
             <>
               <h6>Removed</h6>
-              <div className={CLASSNAME}>
-                <Images images={oldImages} />
-              </div>
+              <Images images={oldImages} />
             </>
           )}
-        </Col>
+        </div>
       )}
-      <Col xs={showDiff ? 5 : 10}>
+      <div className={showDiff ? "col-span-5" : "col-span-10"}>
         {(newImages ?? []).length > 0 && (
           <>
             {showDiff && <h6>Added</h6>}
-            <div className={CLASSNAME}>
-              <Images images={newImages} />
-            </div>
+            <Images images={newImages} />
           </>
         )}
-      </Col>
-    </Row>
-  );
-};
+      </div>
+    </div>
+  ) : null;
 
 export default ImageChangeRow;

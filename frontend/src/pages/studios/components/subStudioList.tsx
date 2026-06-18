@@ -1,7 +1,8 @@
 import { type FC, useState } from "react";
-import { Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { List } from "src/components/list";
+import { Card, CardBody } from "src/components/ui/card";
+import { Input } from "src/components/ui/input";
 import { SortDirectionEnum, StudioSortEnum, useSubStudios } from "src/graphql";
 import { useDebouncedCallback, usePagination } from "src/hooks";
 import { studioHref } from "src/utils";
@@ -34,7 +35,7 @@ export const SubStudioList: FC<Props> = ({ id }) => {
   const debouncedSetFilter = useDebouncedCallback(setFilter, 200);
 
   const filters = (
-    <Form.Control
+    <Input
       id="sub-studio-name"
       onChange={(e) => debouncedSetFilter(e.currentTarget.value)}
       placeholder="Filter by name"
@@ -53,15 +54,17 @@ export const SubStudioList: FC<Props> = ({ id }) => {
       listCount={data?.findStudio?.sub_studios.count}
     >
       <Card>
-        <Card.Body>
+        <CardBody>
           <ul>
             {studios?.map((s) => (
               <li key={s.id}>
-                <Link to={studioHref(s)}>{s.name}</Link>
+                <Link to={studioHref(s)} className="text-link hover:underline">
+                  {s.name}
+                </Link>
               </li>
             ))}
           </ul>
-        </Card.Body>
+        </CardBody>
       </Card>
     </List>
   );

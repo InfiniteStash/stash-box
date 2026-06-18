@@ -1,10 +1,10 @@
 import { faUndo, faXmark } from "@fortawesome/free-solid-svg-icons";
-import cx from "classnames";
 import type { FC } from "react";
-import { Button, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 import { Icon } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
+import { cn } from "src/lib/utils";
 import { useAmendment } from "./AmendmentContext";
 
 interface Change {
@@ -39,29 +39,37 @@ const AmendableLinkedChangeRow: FC<AmendableLinkedChangeRowProps> = ({
       return value.name;
     }
 
-    return <Link to={value.link}>{value.name}</Link>;
+    return (
+      <Link to={value.link} className="text-link hover:underline">
+        {value.name}
+      </Link>
+    );
   }
 
   if (!newEntity?.link && !oldEntity?.link) return null;
 
   return (
-    <Row
-      className={cx("mb-2", {
-        "opacity-50 text-decoration-line-through": isRemoved,
-      })}
-    >
-      <b className="col-2 text-end pt-1">{name}</b>
-      {showDiff && (
-        <Col xs={4} className="ms-auto" key={oldEntity?.name}>
-          <div className="EditDiff bg-danger">{getValue(oldEntity)}</div>
-        </Col>
+    <div
+      className={cn(
+        "mb-2 grid grid-cols-12 gap-x-3",
+        isRemoved && "line-through opacity-50",
       )}
-      <Col xs={showDiff ? 4 : 8} key={newEntity?.name}>
-        <div className={cx("EditDiff", { "bg-success": showDiff })}>
+    >
+      <b className="col-span-2 pt-1 text-right">{name}</b>
+      {showDiff && (
+        <div className="col-span-4" key={oldEntity?.name}>
+          <div className="EditDiff bg-destructive">{getValue(oldEntity)}</div>
+        </div>
+      )}
+      <div
+        className={showDiff ? "col-span-4" : "col-span-8"}
+        key={newEntity?.name}
+      >
+        <div className={cn("EditDiff", showDiff && "bg-success")}>
           {getValue(newEntity)}
         </div>
-      </Col>
-      <Col xs={2} className="text-end">
+      </div>
+      <div className="col-span-2 text-right">
         {!isRemoved && (
           <Button
             variant="danger"
@@ -82,8 +90,8 @@ const AmendableLinkedChangeRow: FC<AmendableLinkedChangeRowProps> = ({
             <Icon icon={faUndo} />
           </Button>
         )}
-      </Col>
-    </Row>
+      </div>
+    </div>
   );
 };
 

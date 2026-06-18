@@ -1,12 +1,12 @@
 import { faRobot } from "@fortawesome/free-solid-svg-icons";
-import cx from "classnames";
 import type { FC } from "react";
-import { Card, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon, Tooltip } from "src/components/fragments";
+import { Card, CardBody, CardHeader } from "src/components/ui/card";
 
 import { type EditFragment, OperationEnum } from "src/graphql";
 
+import { cn } from "src/lib/utils";
 import { editHref, formatDateTime, formatOrdinals, userHref } from "src/utils";
 import AddComment from "./AddComment";
 import EditComment from "./EditComment";
@@ -32,16 +32,19 @@ const EditCardComponent: FC<Props> = (props) => {
   const created = new Date(edit.created);
 
   return (
-    <Card className={cx(CLASSNAME, "mb-3")}>
-      <Card.Header className="row">
-        <div className="flex-column col-4">
-          <Link to={editHref(edit)}>
-            <h5 className="text-capitalize">{title.toLowerCase()}</h5>
+    <Card className={cn(CLASSNAME, "mb-3")}>
+      <CardHeader className="flex flex-row flex-wrap justify-between gap-4">
+        <div className="flex flex-col">
+          <Link to={editHref(edit)} className="text-link hover:underline">
+            <h5 className="capitalize">{title.toLowerCase()}</h5>
           </Link>
           <div>
-            <b className="me-2">Author:</b>
+            <b className="mr-2">Author:</b>
             {edit.user ? (
-              <Link to={userHref(edit.user)}>
+              <Link
+                to={userHref(edit.user)}
+                className="text-link hover:underline"
+              >
                 <span>{edit.user.name}</span>
               </Link>
             ) : (
@@ -54,34 +57,34 @@ const EditCardComponent: FC<Props> = (props) => {
                 placement="auto"
               >
                 <span>
-                  <Icon icon={faRobot} className="ms-2" />
+                  <Icon icon={faRobot} className="ml-2" />
                 </span>
               </Tooltip>
             )}
           </div>
           <div>
-            <b className="me-2">Created:</b>
+            <b className="mr-2">Created:</b>
             <span>{formatDateTime(created)}</span>
           </div>
           {edit.updated && edit.update_count > 0 && (
             <div>
-              <b className="me-2">Updated:</b>
+              <b className="mr-2">Updated:</b>
               <span>{formatDateTime(edit.updated)}</span>
-              <small className="text-muted align-text-top ms-2">{`${formatOrdinals(edit.update_count)} revision`}</small>
+              <small className="ml-2 align-text-top text-muted-foreground">{`${formatOrdinals(edit.update_count)} revision`}</small>
             </div>
           )}
         </div>
-        <div className="flex-column col-4 ms-auto text-end">
+        <div className="flex flex-col text-right">
           <div>
-            <b className="me-2">Status:</b>
+            <b className="mr-2">Status:</b>
             <EditStatus {...edit} />
             <EditExpiration edit={edit} />
             {!compact && <VoteBar edit={edit} />}
           </div>
         </div>
-      </Card.Header>
-      <hr />
-      <Card.Body>
+      </CardHeader>
+      <hr className="border-border" />
+      <CardBody>
         <EditHeader edit={edit} compact={compact} />
         {props.compact ? (
           showVotes && <Votes edit={edit} />
@@ -97,8 +100,8 @@ const EditCardComponent: FC<Props> = (props) => {
                 options={props.edit.options ?? undefined}
               />
             )}
-            <Row className="mt-2">
-              <Col md={{ offset: 4, span: 8 }}>
+            <div className="mt-2 grid grid-cols-12">
+              <div className="col-span-12 md:col-span-8 md:col-start-5">
                 {showVotes && <Votes edit={edit} />}
                 {(props.edit.comments ?? []).map((comment, index) => (
                   <EditComment
@@ -108,11 +111,11 @@ const EditCardComponent: FC<Props> = (props) => {
                   />
                 ))}
                 <AddComment editID={edit.id} />
-              </Col>
-            </Row>
+              </div>
+            </div>
           </>
         )}
-      </Card.Body>
+      </CardBody>
     </Card>
   );
 };

@@ -1,11 +1,12 @@
 import type { CombinedGraphQLErrors } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
-import cx from "classnames";
 import { type FC, useState } from "react";
-import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 import Title from "src/components/title";
+import { Button } from "src/components/ui/button";
+import { Label } from "src/components/ui/field";
+import { Input } from "src/components/ui/input";
 import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
 import { useActivateUser } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
@@ -72,65 +73,54 @@ const ActivateNewUserPage: FC = () => {
   return (
     <div className="LoginPrompt">
       <Title page="Active User" />
-      <Form
-        className="align-self-center col-8 mx-auto"
+      <form
+        className="mx-auto w-full max-w-xl self-center"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <Form.Control
+        <input
           type="hidden"
           value={query.get("key") ?? ""}
           {...register("activationKey")}
         />
 
-        <Form.Group controlId="name">
-          <h3>Register account</h3>
-          <hr className="my-4" />
-          <Row>
-            <Col xs={4}>
-              <Form.Label>Username:</Form.Label>
-            </Col>
-            <Col xs={8}>
-              <Form.Control
-                className={cx({ "is-invalid": errors?.name })}
-                type="text"
-                placeholder="Username"
-                {...register("name")}
-              />
-            </Col>
-          </Row>
-        </Form.Group>
+        <h3>Register account</h3>
+        <hr className="my-4 border-border" />
+        <div className="flex items-center gap-3">
+          <Label htmlFor="name" className="w-1/3">
+            Username:
+          </Label>
+          <Input
+            id="name"
+            type="text"
+            placeholder="Username"
+            aria-invalid={!!errors?.name}
+            {...register("name")}
+          />
+        </div>
 
-        <Form.Group controlId="password" className="mt-2">
-          <Row>
-            <Col xs={4}>
-              <Form.Label>Password:</Form.Label>
-            </Col>
-            <Col xs={8}>
-              <Form.Control
-                className={cx({ "is-invalid": errors?.password })}
-                type="password"
-                placeholder="Password"
-                {...register("password")}
-              />
-            </Col>
-          </Row>
-        </Form.Group>
+        <div className="mt-2 flex items-center gap-3">
+          <Label htmlFor="password" className="w-1/3">
+            Password:
+          </Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="Password"
+            aria-invalid={!!errors?.password}
+            {...register("password")}
+          />
+        </div>
 
         {errorList.map((error) => (
-          <Row key={error} className="text-end text-danger">
-            <div>{error}</div>
-          </Row>
+          <div key={error} className="text-right text-destructive">
+            {error}
+          </div>
         ))}
 
-        <Row>
-          <Col
-            xs={{ span: 3, offset: 9 }}
-            className="justify-content-end mt-2 d-flex"
-          >
-            <Button type="submit">Create Account</Button>
-          </Col>
-        </Row>
-      </Form>
+        <div className="mt-2 flex justify-end">
+          <Button type="submit">Create Account</Button>
+        </div>
+      </form>
     </div>
   );
 };

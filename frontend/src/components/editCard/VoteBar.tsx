@@ -1,16 +1,28 @@
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
-import cx from "classnames";
 import { type FC, useState } from "react";
-import { Button, Form } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
 import { useVote, VoteStatusEnum, VoteTypeEnum } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
+import { cn } from "src/lib/utils";
 import type { EditCardEdit } from "./types";
 
 const CLASSNAME = "VoteBar";
-const CLASSNAME_BUTTON = `${CLASSNAME}-button`;
-const CLASSNAME_VOTED = `${CLASSNAME}-voted`;
 const CLASSNAME_SAVE = `${CLASSNAME}-save`;
+
+const VOTE_OPTIONS = [
+  { value: VoteTypeEnum.ACCEPT, label: "Yes", active: "bg-success text-white" },
+  {
+    value: VoteTypeEnum.REJECT,
+    label: "No",
+    active: "bg-destructive text-white",
+  },
+  {
+    value: VoteTypeEnum.ABSTAIN,
+    label: "Abstain",
+    active: "bg-warning text-white",
+  },
+];
 
 interface Props {
   edit: EditCardEdit;
@@ -64,57 +76,27 @@ const VoteBar: FC<Props> = ({ edit }) => {
           </Button>
         )}
       </div>
-      <Form.Group
-        controlId={`${edit.id}-vote-yes`}
-        className={cx(CLASSNAME_BUTTON, {
-          [CLASSNAME_VOTED]: userVote?.vote === VoteTypeEnum.ACCEPT,
-          "bg-success": vote === VoteTypeEnum.ACCEPT,
-        })}
-        onChange={() => setVote(VoteTypeEnum.ACCEPT)}
-      >
-        <Form.Label>
-          <Form.Check
-            type="radio"
-            name={`${edit.id}-vote`}
-            defaultChecked={userVote?.vote === VoteTypeEnum.ACCEPT}
-          />
-          <span>Yes</span>
-        </Form.Label>
-      </Form.Group>
-      <Form.Group
-        controlId={`${edit.id}-vote-no`}
-        className={cx(CLASSNAME_BUTTON, {
-          [CLASSNAME_VOTED]: userVote?.vote === VoteTypeEnum.REJECT,
-          "bg-danger": vote === VoteTypeEnum.REJECT,
-        })}
-        onChange={() => setVote(VoteTypeEnum.REJECT)}
-      >
-        <Form.Label>
-          <Form.Check
-            type="radio"
-            name={`${edit.id}-vote`}
-            defaultChecked={userVote?.vote === VoteTypeEnum.REJECT}
-          />
-          <span>No</span>
-        </Form.Label>
-      </Form.Group>
-      <Form.Group
-        controlId={`${edit.id}-vote-abstain`}
-        className={cx(CLASSNAME_BUTTON, {
-          [CLASSNAME_VOTED]: userVote?.vote === VoteTypeEnum.ABSTAIN,
-          "bg-warning": vote === VoteTypeEnum.ABSTAIN,
-        })}
-        onChange={() => setVote(VoteTypeEnum.ABSTAIN)}
-      >
-        <Form.Label>
-          <Form.Check
-            type="radio"
-            name={`${edit.id}-vote`}
-            defaultChecked={userVote?.vote === VoteTypeEnum.ABSTAIN}
-          />
-          <span>Abstain</span>
-        </Form.Label>
-      </Form.Group>
+      <div className="flex overflow-hidden rounded-md border border-input">
+        {VOTE_OPTIONS.map(({ value, label, active }) => (
+          <label
+            key={value}
+            className={cn(
+              "cursor-pointer border-l border-input px-4 py-1.5 text-sm transition-colors first:border-l-0",
+              vote === value ? active : "hover:bg-accent",
+              userVote?.vote === value && "font-semibold",
+            )}
+          >
+            <input
+              type="radio"
+              name={`${edit.id}-vote`}
+              className="sr-only"
+              checked={vote === value}
+              onChange={() => setVote(value)}
+            />
+            {label}
+          </label>
+        ))}
+      </div>
     </div>
   );
 };

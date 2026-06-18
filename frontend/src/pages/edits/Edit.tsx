@@ -1,11 +1,11 @@
 import { faEdit, faGavel } from "@fortawesome/free-solid-svg-icons";
 import { type FC, useEffect, useState } from "react";
-import { Button } from "react-bootstrap";
 import { Link, useLocation, useParams } from "react-router-dom";
 import EditCard from "src/components/editCard";
 import { ErrorMessage, Icon, LoadingIndicator } from "src/components/fragments";
 import ModalComponent from "src/components/modal";
 import Title from "src/components/title";
+import { Button, buttonVariants } from "src/components/ui/button";
 import {
   EditOperationTypes,
   EditTargetTypes,
@@ -98,7 +98,7 @@ const EditComponent: FC = () => {
   const canCancel = isOwner || isModerator;
 
   const buttons = isPending && (isOwner || isModerator) && (
-    <div className="d-flex justify-content-end">
+    <div className="flex items-center justify-end gap-2">
       {isOwner && (
         <>
           <UpdateCount
@@ -106,10 +106,11 @@ const EditComponent: FC = () => {
             updateCount={edit.update_count}
           />
           {edit.updatable && (
-            <Link to={createHref(ROUTE_EDIT_UPDATE, edit)} className="me-2">
-              <Button variant="primary" disabled={mutating}>
-                Update Edit
-              </Button>
+            <Link
+              to={createHref(ROUTE_EDIT_UPDATE, edit)}
+              className={buttonVariants()}
+            >
+              Update Edit
             </Link>
           )}
         </>
@@ -117,7 +118,6 @@ const EditComponent: FC = () => {
       {canCancel && (
         <Button
           variant="danger"
-          className="me-2"
           disabled={showCancel || mutating}
           onClick={toggleCancelModal}
         >
@@ -137,15 +137,16 @@ const EditComponent: FC = () => {
   );
 
   const modButtons = isModerator && edit.closed && (
-    <div className="d-flex justify-content-end mb-2">
-      <Link to={createHref(ROUTE_EDIT_AMEND, edit)} className="me-2">
-        <Button variant="primary">
-          <Icon icon={faEdit} className="me-2" />
-          Amend Edit
-        </Button>
+    <div className="mb-2 flex justify-end gap-2">
+      <Link
+        to={createHref(ROUTE_EDIT_AMEND, edit)}
+        className={buttonVariants()}
+      >
+        <Icon icon={faEdit} className="mr-2" />
+        Amend Edit
       </Link>
       <Button variant="danger" onClick={() => setShowDelete(true)}>
-        <Icon icon={faGavel} className="me-2" />
+        <Icon icon={faGavel} className="mr-2" />
         Delete Edit
       </Button>
     </div>

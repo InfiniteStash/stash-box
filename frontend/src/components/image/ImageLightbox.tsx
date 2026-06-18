@@ -12,7 +12,9 @@ import {
   useRef,
   useState,
 } from "react";
-import { Button, Modal, Nav } from "react-bootstrap";
+import { Dialog as BaseDialog } from "@base-ui/react/dialog";
+import { Button } from "src/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "src/components/ui/tabs";
 import { Link, useNavigate } from "react-router-dom";
 import { Icon } from "src/components/fragments";
 import { imageHref } from "src/utils/route";
@@ -137,8 +139,8 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
   );
 
   return (
-    <Modal show fullscreen onHide={handleClose} dialogClassName="ImageLightbox">
-      <Modal.Body onClick={closeOnBackgroundClick}>
+    <BaseDialog.Root open onOpenChange={(open) => !open && handleClose()}><BaseDialog.Portal><BaseDialog.Backdrop className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md" /><BaseDialog.Popup className="ImageLightbox fixed inset-0 z-50 outline-none">
+      <div className="ImageLightbox-body" onClick={closeOnBackgroundClick}>
         <div className="ImageLightbox-main">
           <Image
             images={focused}
@@ -177,22 +179,16 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
         </div>
         {showCategorization ? (
           <div className="ImageLightbox-side">
-            <Nav
-              variant="tabs"
-              activeKey={sideTab}
-              onSelect={(key) =>
+            <Tabs
+              value={sideTab}
+              onValueChange={(key) =>
                 key &&
                 key !== sideTab &&
                 leave(() => setSideTab(key as "images" | "categorization"))
               }
             >
-              <Nav.Item>
-                <Nav.Link eventKey="images">Images</Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link eventKey="categorization">Categorization</Nav.Link>
-              </Nav.Item>
-            </Nav>
+              <TabsList><TabsTrigger value="images">Images</TabsTrigger><TabsTrigger value="categorization">Categorization</TabsTrigger></TabsList>
+            </Tabs>
             {sideTab === "categorization" ? (
               <>
                 <div className="ImageLightbox-editor-navigation">
@@ -244,8 +240,8 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
         >
           <Icon icon={faXmark} />
         </Button>
-      </Modal.Body>
-    </Modal>
+      </div>
+    </BaseDialog.Popup></BaseDialog.Portal></BaseDialog.Root>
   );
 };
 

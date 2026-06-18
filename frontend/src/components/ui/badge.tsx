@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import type { HTMLAttributes } from "react";
+import { forwardRef, type HTMLAttributes } from "react";
 import { cn } from "src/lib/utils";
 
 const badgeVariants = cva(
@@ -22,8 +22,15 @@ export interface BadgeProps
   extends HTMLAttributes<HTMLSpanElement>,
     VariantProps<typeof badgeVariants> {}
 
-export const Badge = ({ className, variant, ...props }: BadgeProps) => (
-  <span className={cn(badgeVariants({ variant }), className)} {...props} />
+export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
+  ({ className, variant, ...props }, ref) => (
+    <span
+      ref={ref}
+      className={cn(badgeVariants({ variant }), className)}
+      {...props}
+    />
+  ),
 );
+Badge.displayName = "Badge";
 
 export { badgeVariants };

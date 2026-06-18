@@ -2,9 +2,12 @@ import {
   faSortAmountDown,
   faSortAmountUp,
 } from "@fortawesome/free-solid-svg-icons";
-import { Button, Form, InputGroup } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
 import { SelectCombobox } from "src/components/ui/combobox";
+import { Label } from "src/components/ui/field";
+import { Select } from "src/components/ui/select";
+import { Switch } from "src/components/ui/switch";
 import {
   EditOperationTypes,
   EditStatusTypes,
@@ -126,11 +129,11 @@ const useEditFilter = ({
     ));
 
   const editFilter = (
-    <Form className="d-flex fw-bold mx-0">
-      <Form.Group className="me-2 mb-3 d-flex flex-column">
-        <Form.Label>Order</Form.Label>
-        <InputGroup>
-          <Form.Select
+    <div className="flex flex-wrap items-end gap-x-2 font-bold">
+      <div className="mb-3 flex flex-col gap-1">
+        <Label>Order</Label>
+        <div className="flex gap-2">
+          <Select
             onChange={(e) => setParams("sort", e.currentTarget.value)}
             defaultValue={selectedSort}
           >
@@ -139,7 +142,7 @@ const useEditFilter = ({
                 {s.label}
               </option>
             ))}
-          </Form.Select>
+          </Select>
           <Button
             variant="secondary"
             onClick={() =>
@@ -159,11 +162,11 @@ const useEditFilter = ({
               }
             />
           </Button>
-        </InputGroup>
-      </Form.Group>
-      <Form.Group className="mx-2 mb-3 d-flex flex-column">
-        <Form.Label>Type</Form.Label>
-        <Form.Select
+        </div>
+      </div>
+      <div className="mb-3 flex flex-col gap-1">
+        <Label>Type</Label>
+        <Select
           onChange={(e) => setParams("type", e.currentTarget.value)}
           value={selectedType}
           disabled={!!fixedType}
@@ -172,11 +175,11 @@ const useEditFilter = ({
             All
           </option>
           {enumToOptions(EditTargetTypes)}
-        </Form.Select>
-      </Form.Group>
-      <Form.Group className="mx-2 mb-3 d-flex flex-column">
-        <Form.Label>Status</Form.Label>
-        <Form.Select
+        </Select>
+      </div>
+      <div className="mb-3 flex flex-col gap-1">
+        <Label>Status</Label>
+        <Select
           onChange={(e) => setParams("status", e.currentTarget.value)}
           value={selectedStatus}
           disabled={!!fixedStatus}
@@ -185,11 +188,11 @@ const useEditFilter = ({
             All
           </option>
           {enumToOptions(EditStatusTypes)}
-        </Form.Select>
-      </Form.Group>
-      <Form.Group className="mx-2 mb-3 d-flex flex-column">
-        <Form.Label>Operation</Form.Label>
-        <Form.Select
+        </Select>
+      </div>
+      <div className="mb-3 flex flex-col gap-1">
+        <Label>Operation</Label>
+        <Select
           onChange={(e) => setParams("operation", e.currentTarget.value)}
           value={selectedOperation}
           disabled={!!fixedOperation}
@@ -198,12 +201,12 @@ const useEditFilter = ({
             All
           </option>
           {enumToOptions(EditOperationTypes)}
-        </Form.Select>
-      </Form.Group>
+        </Select>
+      </div>
       {showVotedFilter && (
-        <Form.Group className="mx-2 mb-3 d-flex flex-column">
-          <Form.Label>Voted</Form.Label>
-          <Form.Select
+        <div className="mb-3 flex flex-col gap-1">
+          <Label>Voted</Label>
+          <Select
             onChange={(e) => setParams("voted", e.currentTarget.value)}
             value={selectedVoted}
             disabled={!!fixedVoted}
@@ -212,48 +215,43 @@ const useEditFilter = ({
               All
             </option>
             {enumToOptions(UserVotedFilterTypes)}
-          </Form.Select>
-        </Form.Group>
+          </Select>
+        </div>
       )}
       {showFavoriteOption && (
-        <Form.Group controlId="favorite" className="text-center">
-          <Form.Label>Favorites</Form.Label>
-          <Form.Check
-            className="mt-2"
-            type="switch"
+        <div className="mb-3 flex flex-col gap-1 text-center">
+          <Label>Favorites</Label>
+          <Switch
+            className="mt-2 justify-center"
             defaultChecked={favorite}
-            onChange={(e) =>
-              setParams("favorite", e.currentTarget.checked.toString())
+            onCheckedChange={(checked) =>
+              setParams("favorite", checked.toString())
             }
           />
-        </Form.Group>
+        </div>
       )}
-      <Form.Group controlId="bot" className="text-center ms-3">
-        <Form.Label>Bot Edits</Form.Label>
+      <div className="mb-3 ml-3 flex flex-col gap-1 text-center">
+        <Label>Bot Edits</Label>
         <SelectCombobox
           className="BotFilter"
           onChange={(v) => setParams("bot", v ?? "")}
           options={botOptions}
           value={selectedBot ? String(selectedBot) : undefined}
         />
-      </Form.Group>
+      </div>
       {fixedUserSubmitted === undefined && (
-        <Form.Group
-          controlId="include_user_submitted"
-          className="text-center ms-3"
-        >
-          <Form.Label>My Edits</Form.Label>
-          <Form.Check
-            className="mt-2"
-            type="switch"
+        <div className="mb-3 ml-3 flex flex-col gap-1 text-center">
+          <Label>My Edits</Label>
+          <Switch
+            className="mt-2 justify-center"
             defaultChecked={userSubmitted}
-            onChange={(e) =>
-              setParams("user_submitted", e.currentTarget.checked.toString())
+            onCheckedChange={(checked) =>
+              setParams("user_submitted", checked.toString())
             }
           />
-        </Form.Group>
+        </div>
       )}
-    </Form>
+    </div>
   );
 
   return {

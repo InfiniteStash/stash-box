@@ -1,6 +1,8 @@
 import { type FC, useState } from "react";
-import { Button, Form, Modal } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { Button } from "src/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "src/components/ui/dialog";
+import { Textarea } from "src/components/ui/textarea";
 import { EditOperationTypes, EditTargetTypes } from "src/constants";
 import { ROUTE_EDITS } from "src/constants/route";
 import type { EditFragment } from "src/graphql";
@@ -51,20 +53,18 @@ const DeleteEditModal: FC<Props> = ({ edit, show, onHide }) => {
   const editIdShort = edit.id.slice(0, 8);
 
   return (
-    <Modal show={show} onHide={handleClose}>
-      <Modal.Header closeButton>
-        <Modal.Title>
+    <Dialog open={show} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent>
+        <DialogTitle>
           Delete {editType} - {editIdShort} by {userName}
-        </Modal.Title>
-      </Modal.Header>
-      <Form onSubmit={handleSubmit}>
-        <Modal.Body>
-          <Form.Group>
-            <Form.Label>
+        </DialogTitle>
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="delete-edit-reason" className="mb-1 block">
               <strong>Reason for deletion (required):</strong>
-            </Form.Label>
-            <Form.Control
-              as="textarea"
+            </label>
+            <Textarea
+              id="delete-edit-reason"
               rows={4}
               value={deleteReason}
               onChange={(e) => setDeleteReason(e.target.value)}
@@ -72,23 +72,27 @@ const DeleteEditModal: FC<Props> = ({ edit, show, onHide }) => {
               required
               disabled={deleting}
             />
-          </Form.Group>
-          {error && <div className="text-danger mt-3">{error}</div>}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose} disabled={deleting}>
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="danger"
-            disabled={!deleteReason.trim() || deleting}
-          >
-            {deleting ? "Deleting..." : "Delete Edit"}
-          </Button>
-        </Modal.Footer>
-      </Form>
-    </Modal>
+          </div>
+          {error && <div className="mt-3 text-destructive">{error}</div>}
+          <div className="mt-4 flex justify-end gap-2">
+            <Button
+              variant="secondary"
+              onClick={handleClose}
+              disabled={deleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="danger"
+              disabled={!deleteReason.trim() || deleting}
+            >
+              {deleting ? "Deleting..." : "Delete Edit"}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 

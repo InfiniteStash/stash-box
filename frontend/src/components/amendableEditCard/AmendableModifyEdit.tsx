@@ -4,9 +4,7 @@ import {
   faUndo,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-import cx from "classnames";
 import type { FC } from "react";
-import { Button, Col, Row } from "react-bootstrap";
 import type {
   OldPerformerDetails,
   OldSceneDetails,
@@ -23,6 +21,7 @@ import {
   renderTag,
 } from "src/components/editCard/renderEntity";
 import { Icon } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
 import {
   BreastTypes,
   EthnicityTypes,
@@ -38,6 +37,7 @@ import type {
   GenderEnum,
   HairColorEnum,
 } from "src/graphql";
+import { cn } from "src/lib/utils";
 import {
   categoryHref,
   compareByName,
@@ -89,23 +89,24 @@ const AmendableBraSizeRow: FC<{
   };
 
   return (
-    <Row
-      className={cx("mb-2", {
-        "opacity-50 text-decoration-line-through": isRemoved,
-      })}
-    >
-      <b className="col-2 text-end pt-1">Bra Size</b>
-      {showDiff && (
-        <Col xs={4}>
-          <div className="EditDiff bg-danger">{oldValue}</div>
-        </Col>
+    <div
+      className={cn(
+        "mb-2 grid grid-cols-12 gap-x-3",
+        isRemoved && "line-through opacity-50",
       )}
-      <Col xs={showDiff ? 4 : 8}>
-        <div className={cx("EditDiff", { "bg-success": showDiff })}>
+    >
+      <b className="col-span-2 pt-1 text-right">Bra Size</b>
+      {showDiff && (
+        <div className="col-span-4">
+          <div className="EditDiff bg-destructive">{oldValue}</div>
+        </div>
+      )}
+      <div className={showDiff ? "col-span-4" : "col-span-8"}>
+        <div className={cn("EditDiff", showDiff && "bg-success")}>
           {newValue}
         </div>
-      </Col>
-      <Col xs={2} className="text-end">
+      </div>
+      <div className="col-span-2 text-right">
         {!isRemoved && (
           <Button
             variant="danger"
@@ -126,8 +127,8 @@ const AmendableBraSizeRow: FC<{
             <Icon icon={faUndo} />
           </Button>
         )}
-      </Col>
-    </Row>
+      </div>
+    </div>
   );
 };
 
@@ -194,13 +195,13 @@ const renderAmendablePerformerDetails = (
     )}
     {oldPerformerDetails?.name &&
       performerDetails.name !== oldPerformerDetails.name && (
-        <div className="d-flex mb-2 align-items-center">
+        <div className="mb-2 flex items-center">
           <Icon
             icon={setModifyAliases ? faCheck : faXmark}
             color={setModifyAliases ? "green" : "red"}
-            className="ms-auto"
+            className="ml-auto"
           />
-          <span className="ms-2">Set performance aliases to old name</span>
+          <span className="ml-2">Set performance aliases to old name</span>
         </div>
       )}
     <AmendableChangeRow
@@ -388,14 +389,14 @@ const renderAmendablePerformerDetails = (
       showDiff={showDiff}
     />
     {performerDetails.draft_id && (
-      <Row className="mb-2">
-        <Col xs={{ offset: 2 }}>
+      <div className="mb-2 grid grid-cols-12">
+        <div className="col-span-10 col-start-3">
           <h6>
             <Icon icon={faEdit} color="green" />
-            <span className="ms-1">Submitted by draft</span>
+            <span className="ml-1">Submitted by draft</span>
           </h6>
-        </Col>
-      </Row>
+        </div>
+      </div>
     )}
   </>
 );
@@ -510,14 +511,14 @@ const renderAmendableSceneDetails = (
       showDiff={showDiff}
     />
     {sceneDetails.draft_id && (
-      <Row className="mb-2">
-        <Col xs={{ offset: 2 }}>
+      <div className="mb-2 grid grid-cols-12">
+        <div className="col-span-10 col-start-3">
           <h6>
             <Icon icon={faEdit} color="green" />
-            <span className="ms-1">Submitted by draft</span>
+            <span className="ml-1">Submitted by draft</span>
           </h6>
-        </Col>
-      </Row>
+        </div>
+      </div>
     )}
   </>
 );

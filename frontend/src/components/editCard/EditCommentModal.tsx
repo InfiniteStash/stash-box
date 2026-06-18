@@ -1,7 +1,9 @@
 import { type FC, useState } from "react";
-import { Button, Form, Modal } from "react-bootstrap";
 
 import { NoteInput } from "src/components/form";
+import { Button } from "src/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "src/components/ui/dialog";
+import { Textarea } from "src/components/ui/textarea";
 import { useUpdateEditComment } from "src/graphql";
 
 interface Props {
@@ -46,47 +48,41 @@ const EditCommentModal: FC<Props> = ({ commentId, text, show, onHide }) => {
   };
 
   return (
-    <Modal show={show} onHide={handleClose}>
-      <Modal.Header closeButton>
-        <Modal.Title>Edit comment</Modal.Title>
-      </Modal.Header>
-      <Form onSubmit={handleSubmit}>
-        <Modal.Body>
-          <Form.Group className="mb-3">
-            <Form.Label>
+    <Dialog open={show} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent>
+        <DialogTitle>Edit comment</DialogTitle>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <div className="mb-1">
               <strong>Comment:</strong>
-            </Form.Label>
+            </div>
             <NoteInput initialValue={text} onChange={setComment} />
-          </Form.Group>
-          <Form.Group>
-            <Form.Label>
+          </div>
+          <div>
+            <label htmlFor="edit-comment-reason" className="mb-1 block">
               <strong>Reason (optional):</strong>
-            </Form.Label>
-            <Form.Control
-              as="textarea"
+            </label>
+            <Textarea
+              id="edit-comment-reason"
               rows={2}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Why is this comment being edited?"
               disabled={saving}
             />
-          </Form.Group>
-          {error && <div className="text-danger mt-3">{error}</div>}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose} disabled={saving}>
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={!comment.trim() || saving}
-          >
-            {saving ? "Saving..." : "Save"}
-          </Button>
-        </Modal.Footer>
-      </Form>
-    </Modal>
+          </div>
+          {error && <div className="mt-3 text-destructive">{error}</div>}
+          <div className="mt-4 flex justify-end gap-2">
+            <Button variant="secondary" onClick={handleClose} disabled={saving}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={!comment.trim() || saving}>
+              {saving ? "Saving..." : "Save"}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 

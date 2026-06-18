@@ -1,9 +1,8 @@
 import { faUndo, faXmark } from "@fortawesome/free-solid-svg-icons";
-import cx from "classnames";
-import type { PropsWithChildren } from "react";
-import { Button, Col, Row } from "react-bootstrap";
 
 import { Icon } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
+import { cn } from "src/lib/utils";
 import { useAmendment } from "./AmendmentContext";
 
 interface AmendableListChangeRowProps<T> {
@@ -27,7 +26,7 @@ const AmendableListChangeRow = <T,>({
   getKey,
   renderItem,
   showDiff,
-}: PropsWithChildren<AmendableListChangeRowProps<T>>) => {
+}: AmendableListChangeRowProps<T>) => {
   const {
     state,
     clearAddedItem,
@@ -42,10 +41,10 @@ const AmendableListChangeRow = <T,>({
   if ((added ?? []).length === 0 && (removed ?? []).length === 0) return null;
 
   return (
-    <Row className={`${CLASSNAME}-${name}`}>
-      <b className="col-2 text-end">{name}</b>
+    <div className={`${CLASSNAME}-${name} grid grid-cols-12 gap-x-3`}>
+      <b className="col-span-2 text-right">{name}</b>
       {showDiff && (
-        <Col xs={4}>
+        <div className="col-span-4">
           {(removed ?? []).length > 0 && (
             <>
               <h6>Removed</h6>
@@ -56,16 +55,17 @@ const AmendableListChangeRow = <T,>({
                     return (
                       <li
                         key={getKey(u)}
-                        className={cx("d-flex align-items-center", {
-                          "opacity-50 text-decoration-line-through": isRemoved,
-                        })}
+                        className={cn(
+                          "flex items-center",
+                          isRemoved && "line-through opacity-50",
+                        )}
                       >
-                        <span className="flex-grow-1">{renderItem(u)}</span>
+                        <span className="grow">{renderItem(u)}</span>
                         {!isRemoved && (
                           <Button
                             variant="danger"
                             size="sm"
-                            className="ms-2"
+                            className="ml-2"
                             onClick={() => clearRemovedItem(field, index)}
                             title="Remove this item from the edit"
                           >
@@ -76,7 +76,7 @@ const AmendableListChangeRow = <T,>({
                           <Button
                             variant="secondary"
                             size="sm"
-                            className="ms-2"
+                            className="ml-2"
                             onClick={() => restoreRemovedItem(field, index)}
                             title="Restore this item"
                           >
@@ -90,9 +90,9 @@ const AmendableListChangeRow = <T,>({
               </div>
             </>
           )}
-        </Col>
+        </div>
       )}
-      <Col xs={showDiff ? 4 : 8}>
+      <div className={showDiff ? "col-span-4" : "col-span-8"}>
         {(added ?? []).length > 0 && (
           <>
             {showDiff && <h6>Added</h6>}
@@ -103,16 +103,17 @@ const AmendableListChangeRow = <T,>({
                   return (
                     <li
                       key={getKey(u)}
-                      className={cx("d-flex align-items-center", {
-                        "opacity-50 text-decoration-line-through": isRemoved,
-                      })}
+                      className={cn(
+                        "flex items-center",
+                        isRemoved && "line-through opacity-50",
+                      )}
                     >
-                      <span className="flex-grow-1">{renderItem(u)}</span>
+                      <span className="grow">{renderItem(u)}</span>
                       {!isRemoved && (
                         <Button
                           variant="danger"
                           size="sm"
-                          className="ms-2"
+                          className="ml-2"
                           onClick={() => clearAddedItem(field, index)}
                           title="Remove this item from the edit"
                         >
@@ -123,7 +124,7 @@ const AmendableListChangeRow = <T,>({
                         <Button
                           variant="secondary"
                           size="sm"
-                          className="ms-2"
+                          className="ml-2"
                           onClick={() => restoreAddedItem(field, index)}
                           title="Restore this item"
                         >
@@ -137,9 +138,9 @@ const AmendableListChangeRow = <T,>({
             </div>
           </>
         )}
-      </Col>
-      <Col xs={2} />
-    </Row>
+      </div>
+      <div className="col-span-2" />
+    </div>
   );
 };
 

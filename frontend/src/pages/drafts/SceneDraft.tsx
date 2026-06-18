@@ -1,7 +1,7 @@
 import { type FC, useState } from "react";
-import { Alert, Col, Row } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { LoadingIndicator } from "src/components/fragments";
+import { Alert } from "src/components/ui/alert";
 import {
   type DraftQuery,
   FingerprintAlgorithm,
@@ -73,7 +73,7 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
     .filter(([, val]) => !!val)
     .map(([key, val]) => (
       <li key={key}>
-        <b className="me-2">{key}:</b>
+        <b className="mr-2">{key}:</b>
         <span>{val}</span>
       </li>
     ));
@@ -90,26 +90,29 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
       {isUpdate && scene?.findScene && (
         <h6>
           Scene:{" "}
-          <Link to={sceneHref(scene.findScene)}>{scene.findScene?.title}</Link>
+          <Link
+            to={sceneHref(scene.findScene)}
+            className="text-link hover:underline"
+          >
+            {scene.findScene?.title}
+          </Link>
         </h6>
       )}
-      <hr />
+      <hr className="border-border" />
       {remainder.length > 0 && (
         <>
           <h6>Unmatched data:</h6>
           <ul>{remainder}</ul>
-          <hr />
+          <hr className="border-border" />
         </>
       )}
       {phashMissing && (
-        <Row>
-          <Col xs={9}>
-            <Alert variant="warning">
-              <b>Warning</b>: The draft does not include a perceptual hash
-              (PHASH) for your scene, so it might not pass voting.
-            </Alert>
-          </Col>
-        </Row>
+        <div className="w-3/4">
+          <Alert variant="warning">
+            <b>Warning</b>: The draft does not include a perceptual hash (PHASH)
+            for your scene, so it might not pass voting.
+          </Alert>
+        </div>
       )}
       <SceneForm
         scene={scene?.findScene ?? undefined}
@@ -120,7 +123,7 @@ const SceneDraftAdd: FC<Props> = ({ draft }) => {
         draftFingerprints={draft.data.fingerprints}
       />
       {submissionError && (
-        <div className="text-danger text-end col-9">
+        <div className="w-3/4 text-right text-destructive">
           Error: {submissionError}
         </div>
       )}

@@ -1,11 +1,11 @@
 import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
-import cx from "classnames";
 import type { FC, MouseEvent } from "react";
-import { Button } from "react-bootstrap";
 
 import { Icon, Tooltip } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
 import { useSetFavorite } from "src/graphql";
+import { cn as cx } from "src/lib/utils";
 
 const CLASSNAME = "FavoriteStar";
 
@@ -48,10 +48,11 @@ export const FavoriteStar: FC<Props> = ({
       }
     >
       <Button
+        size="sm"
         disabled={!interactable || loading}
         onClick={handleClick}
         className={cx(CLASSNAME, className)}
-        variant="link"
+        variant="minimal"
       >
         <Icon
           icon={entity.is_favorite ? faStar : farStar}

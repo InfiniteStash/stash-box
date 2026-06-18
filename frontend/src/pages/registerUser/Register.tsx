@@ -1,13 +1,14 @@
 import type { CombinedGraphQLErrors } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
-import cx from "classnames";
 import { type FC, useState } from "react";
-import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import Title from "src/components/title";
+import { Button } from "src/components/ui/button";
+import { Label } from "src/components/ui/field";
+import { Input } from "src/components/ui/input";
 import { ROUTE_ACTIVATE, ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
 import { type ConfigQuery, useConfig, useNewUser } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
@@ -93,10 +94,12 @@ const Register: FC<Props> = ({ config }) => {
   if (awaitingActivation)
     return (
       <div className="LoginPrompt">
-        <div className="align-self-center col-8 mx-auto">
+        <div className="mx-auto w-full max-w-xl self-center">
           <h5>Invite key accepted</h5>
           <p>Please check your email to complete your registration.</p>
-          <a href={ROUTE_LOGIN}>Return to login</a>
+          <a href={ROUTE_LOGIN} className="text-link hover:underline">
+            Return to login
+          </a>
         </div>
       </div>
     );
@@ -108,63 +111,52 @@ const Register: FC<Props> = ({ config }) => {
   ].filter((err): err is string => err !== undefined);
 
   return (
-    <div className="LoginPrompt mx-auto d-flex">
+    <div className="LoginPrompt mx-auto flex">
       <Title page="Register Account" />
-      <Form
-        className="align-self-center col-8 mx-auto"
+      <form
+        className="mx-auto w-full max-w-xl self-center"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <Form.Group controlId="email">
-          <h3>Register account</h3>
-          <hr className="my-4" />
-          <Row>
-            <Col xs={4}>
-              <Form.Label>Email:</Form.Label>
-            </Col>
-            <Col xs={8}>
-              <Form.Control
-                className={cx({ "is-invalid": errors?.email })}
-                type="text"
-                placeholder="Email"
-                {...register("email")}
-              />
-            </Col>
-          </Row>
-        </Form.Group>
+        <h3>Register account</h3>
+        <hr className="my-4 border-border" />
+        <div className="flex items-center gap-3">
+          <Label htmlFor="email" className="w-1/3">
+            Email:
+          </Label>
+          <Input
+            id="email"
+            type="text"
+            placeholder="Email"
+            aria-invalid={!!errors?.email}
+            {...register("email")}
+          />
+        </div>
 
         {inviteRequired && (
-          <Form.Group controlId="inviteKey" className="mt-2">
-            <Row>
-              <Col xs={4}>
-                <Form.Label>Invite Key:</Form.Label>
-              </Col>
-              <Col xs={8}>
-                <Form.Control
-                  className={cx({ "is-invalid": errors?.inviteKey })}
-                  type="text"
-                  placeholder="Invite Key"
-                  {...register("inviteKey")}
-                />
-              </Col>
-            </Row>
-          </Form.Group>
+          <div className="mt-2 flex items-center gap-3">
+            <Label htmlFor="inviteKey" className="w-1/3">
+              Invite Key:
+            </Label>
+            <Input
+              id="inviteKey"
+              type="text"
+              placeholder="Invite Key"
+              aria-invalid={!!errors?.inviteKey}
+              {...register("inviteKey")}
+            />
+          </div>
         )}
 
         {errorList.map((error) => (
-          <Row key={error} className="text-end text-danger">
-            <div>{error}</div>
-          </Row>
+          <div key={error} className="text-right text-destructive">
+            {error}
+          </div>
         ))}
 
-        <Row>
-          <Col
-            xs={{ span: 2, offset: 10 }}
-            className="justify-content-end mt-2 d-flex"
-          >
-            <Button type="submit">Register</Button>
-          </Col>
-        </Row>
-      </Form>
+        <div className="mt-2 flex justify-end">
+          <Button type="submit">Register</Button>
+        </div>
+      </form>
     </div>
   );
 };

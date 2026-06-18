@@ -1,9 +1,11 @@
-import cx from "classnames";
 import { type FC, useState } from "react";
-import { Badge, Button, Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
+import { Badge } from "src/components/ui/badge";
+import { Button } from "src/components/ui/button";
+import { Card, CardBody, CardFooter } from "src/components/ui/card";
 import { useCurrentUser } from "src/hooks";
+import { cn as cx } from "src/lib/utils";
 import { formatDateTime, Markdown, userHref } from "src/utils";
 import EditCommentModal from "./EditCommentModal";
 import HideCommentModal from "./HideCommentModal";
@@ -41,25 +43,24 @@ const EditComment: FC<Props> = ({
   return (
     <Card
       id={`comment-${id}`}
-      className={cx(CLASSNAME, { "EditComment-hidden": hidden })}
+      className={cx(CLASSNAME, hidden && "EditComment-hidden")}
     >
-      <Card.Body className="pb-0">
+      <CardBody className="pb-0">
         <Markdown text={comment} unique={id} />
-      </Card.Body>
-      <Card.Footer className="d-flex align-items-center justify-content-end">
+      </CardBody>
+      <CardFooter className="flex flex-wrap items-center justify-end gap-1">
         {showControls && (
-          <span className="EditComment-actions me-auto">
+          <span className="EditComment-actions mr-auto flex gap-2">
             <Button
               size="sm"
-              variant="outline-danger"
-              className="me-2"
+              variant="danger"
               onClick={() => setShowEdit(true)}
             >
               Edit
             </Button>
             <Button
               size="sm"
-              variant="outline-danger"
+              variant="danger"
               disabled={isPrimary}
               title={
                 isPrimary ? "The submission comment can't be hidden" : undefined
@@ -71,23 +72,25 @@ const EditComment: FC<Props> = ({
           </span>
         )}
         {hidden && (
-          <Badge bg="danger" className="me-2">
+          <Badge variant="danger" className="mr-2">
             Hidden by moderator
           </Badge>
         )}
         {user ? (
-          <Link to={userHref(user)}>{user.name}</Link>
+          <Link to={userHref(user)} className="text-link hover:underline">
+            {user.name}
+          </Link>
         ) : (
           <span>Deleted User</span>
         )}
         <span className="mx-1">&bull;</span>
         <span>{formatDateTime(date, false)}</span>
         {updated && (
-          <span className="ms-1" title={formatDateTime(updated, false)}>
+          <span className="ml-1" title={formatDateTime(updated, false)}>
             (edited by moderator)
           </span>
         )}
-      </Card.Footer>
+      </CardFooter>
       {showControls && (
         <>
           <EditCommentModal
