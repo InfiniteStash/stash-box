@@ -8,7 +8,7 @@ import { Input } from "src/components/ui/input";
 import { ROUTE_FORGOT_PASSWORD, ROUTE_REGISTER } from "src/constants/route";
 import { getCredentialsSetting, getPlatformURL } from "src/utils/createClient";
 import * as yup from "yup";
-import "./App.scss";
+import "./styles/legacy.css";
 import { useCurrentUser } from "./hooks";
 
 const schema = yup.object({

@@ -40,7 +40,7 @@ const ImageComponent: FC<ImageProps> = ({
   if (!image?.url)
     return (
       <div className={`${CLASSNAME}-missing`}>
-        <Icon icon={faXmark} color="var(--bs-gray-400)" />
+        <Icon icon={faXmark} color="var(--muted-foreground)" />
         <div>{emptyMessage}</div>
       </div>
     );

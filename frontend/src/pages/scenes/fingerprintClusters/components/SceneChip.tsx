@@ -9,7 +9,7 @@ interface Props {
 }
 
 // Per-chip background color is data-driven (palette per scene id) so it stays
-// inline; everything else is in _styles.scss.
+// inline; everything else is in styles/legacy.css.
 export const SceneChip: FC<Props> = ({ color, isSeed, children, title }) => (
   <span
     title={title}
