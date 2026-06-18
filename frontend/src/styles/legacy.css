@@ -1,0 +1,830 @@
+/*
+ * Component styles ported from the old per-component SCSS during the Tailwind
+ * teardown. Plain CSS (no preprocessor): SCSS `&-` nesting is flattened to full
+ * selectors and `$vars` resolved to the theme tokens in tailwind.css. Only
+ * rules whose selectors are still rendered are kept; Bootstrap-component and
+ * react-select rules were dropped. Loaded after Tailwind, so utility classes
+ * still win on shared elements.
+ */
+
+/* ---- Gender icon colors (GenderIcon, used app-wide) ---- */
+.fa-mars {
+  color: #89cff0;
+}
+.fa-venus {
+  color: #f38cac;
+}
+.fa-transgender {
+  color: #c8a2c8;
+}
+
+/* ---- Global link affordance ---- */
+a[aria-current] {
+  font-weight: bold;
+}
+
+/* ---- LoadingIndicator / fragments ---- */
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.LoadingIndicator {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: 70vh;
+  justify-content: center;
+  width: 100%;
+  opacity: 1;
+  transition: opacity 1s linear;
+}
+.LoadingIndicator-delayed {
+  opacity: 0;
+}
+.LoadingIndicator-message {
+  margin-top: 1rem;
+}
+
+.ErrorMessage {
+  align-items: center;
+  height: 20rem;
+  justify-content: center;
+}
+.ErrorMessage-content {
+  display: inline-block;
+}
+
+.SiteLink {
+  align-items: baseline;
+  display: inline-flex;
+}
+.SiteLink-icon {
+  align-self: center;
+  border-radius: 3px;
+  height: 2ex;
+  width: 2ex;
+  margin-right: 5px;
+}
+.SiteLink-name {
+  font-size: 2ex;
+  font-weight: bold;
+}
+.SiteLink-name::after {
+  content: ":";
+  margin-right: 0.5rem;
+}
+.SiteLink-no-margin::after {
+  display: none;
+}
+
+.FavoriteStar {
+  padding: 0;
+  margin-top: -4px;
+}
+.FavoriteStar:disabled {
+  opacity: 1;
+}
+.FavoriteStar:focus {
+  box-shadow: none;
+}
+
+.SearchHint {
+  margin-left: 10px;
+  cursor: help;
+}
+
+.Thumbnail-empty {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  color: #ced4da;
+  background-color: var(--secondary);
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+.Thumbnail-empty .fa-icon {
+  height: 30px;
+  max-height: 30%;
+}
+
+/* ---- TagLink chip ---- */
+.tag-item {
+  background-color: #bfccd6;
+  color: #182026;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  margin: 5px;
+  padding: 2px 6px;
+}
+.tag-item:hover {
+  cursor: pointer;
+}
+
+/* ---- Image / ImageLightbox ---- */
+.Image {
+  position: relative;
+  display: flex;
+  max-height: 100%;
+  max-width: 100%;
+}
+.Image-image {
+  max-width: 100%;
+  max-height: 100%;
+  z-index: 1;
+}
+.Image .LoadingIndicator {
+  position: absolute;
+  background-color: #6c757d;
+  border-radius: 4px;
+  height: 100%;
+  width: 100%;
+  text-align: center;
+}
+.Image-error,
+.Image-missing {
+  position: absolute;
+  background-color: var(--secondary);
+  width: 100%;
+  height: 100%;
+  align-content: center;
+  text-align: center;
+  font-size: 24px;
+}
+.Image-error .fa-icon,
+.Image-missing .fa-icon {
+  border-radius: 4px;
+  width: 70px;
+  height: 70px;
+  max-width: 100%;
+  max-height: 100%;
+}
+.Image-magnify {
+  align-items: center;
+  background-color: rgb(0 0 0 / 15%);
+  color: rgb(255 255 255 / 85%);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  opacity: 0;
+  position: absolute;
+  transition: opacity 0.25s ease;
+  z-index: 2;
+}
+.Image-magnify .fa-icon {
+  filter: drop-shadow(0 0 4px rgb(0 0 0 / 50%));
+  height: 1.75rem;
+  width: 1.75rem;
+}
+.Image-count {
+  align-items: center;
+  background-color: rgb(0 0 0 / 65%);
+  border-radius: 4px;
+  bottom: 0.5rem;
+  color: var(--foreground);
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.15rem 0.6rem;
+  position: absolute;
+  right: 0.5rem;
+  z-index: 2;
+}
+button.Image {
+  background: none;
+  border: 0;
+  cursor: zoom-in;
+  padding: 0;
+}
+button.Image:hover .Image-magnify {
+  opacity: 1;
+}
+
+.ImageLightbox-body {
+  display: flex;
+  gap: 1rem;
+  height: 100%;
+  overflow: hidden;
+  padding: 1rem 88px;
+  position: relative;
+}
+.ImageLightbox-main {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+.ImageLightbox-main .Image {
+  flex: 1;
+  min-height: 0;
+}
+.ImageLightbox-main img {
+  object-fit: contain;
+  object-position: center;
+}
+.ImageLightbox-caption {
+  color: var(--foreground);
+  padding-top: 0.5rem;
+}
+.ImageLightbox-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  align-self: flex-start;
+  flex-shrink: 0;
+  margin-bottom: 0.25rem;
+}
+.ImageLightbox-close .fa-icon {
+  height: 2rem;
+  opacity: 0.6;
+  width: 2rem;
+}
+.ImageLightbox-close:hover .fa-icon {
+  opacity: 1;
+}
+.ImageLightbox-thumbs {
+  align-content: start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  overflow-y: auto;
+  padding-right: 0.75rem;
+  width: 500px;
+}
+.ImageLightbox-thumb {
+  background: none;
+  border: 2px solid rgb(255 255 255 / 70%);
+  border-radius: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  height: var(--thumb-height, 150px);
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+  width: auto;
+  max-width: 100%;
+}
+.ImageLightbox-thumb.selected {
+  border-color: var(--destructive);
+}
+.ImageLightbox-thumb img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+.ImageLightbox-thumb-dims {
+  background-color: rgb(0 0 0 / 65%);
+  border-radius: 3px 0 0;
+  bottom: 0;
+  color: var(--foreground);
+  font-size: 0.75rem;
+  padding: 0.1rem 0.4rem;
+  position: absolute;
+  right: 0;
+}
+
+/* ---- PerformerCard / SceneCard ---- */
+.PerformerCard-image {
+  align-items: center;
+  display: flex;
+  aspect-ratio: 2 / 3;
+}
+.PerformerCard-image img {
+  height: 100%;
+  image-rendering: smooth;
+  object-fit: cover;
+  object-position: top;
+  width: 100%;
+}
+.PerformerCard-image img[src=""] {
+  display: none;
+}
+.PerformerCard-star {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 1;
+}
+
+.SceneCard-body {
+  min-height: 150px;
+  padding: 0;
+}
+.SceneCard-image {
+  align-items: center;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  width: 100%;
+}
+.SceneCard-image img {
+  height: 100%;
+  image-rendering: smooth;
+  object-fit: cover;
+  object-position: center;
+  width: 100%;
+}
+.SceneCard-image .vertical-img {
+  background-color: rgb(0 0 0 / 50%);
+  object-fit: scale-down;
+}
+.SceneCard-studio-name {
+  max-width: 65%;
+}
+
+/* ---- List filters ---- */
+.URLList {
+  list-style-type: none;
+  padding: 0;
+}
+.URLList img {
+  width: 16px;
+}
+.FavoriteFilter {
+  width: 240px;
+}
+.BotFilter {
+  width: 120px;
+}
+
+/* ---- EditCard ---- */
+.EditComment {
+  background-color: rgb(16 22 26 / 30%);
+  margin-top: 1rem;
+}
+.EditComment-hidden {
+  opacity: 0.6;
+  border-style: dashed;
+}
+.EditComment blockquote {
+  border-left: 3px solid #bfccd6;
+  padding-left: 1rem;
+  margin-left: 0;
+  font-style: italic;
+  color: #bfccd6;
+}
+.EditDiff {
+  border-radius: 0.25rem;
+  height: 100%;
+  padding: 0.25rem 0.5rem;
+  white-space: pre-wrap;
+}
+.VoteBar {
+  display: flex;
+}
+.VoteBar-save {
+  margin-left: auto;
+  margin-right: 20px;
+}
+.EditVotes {
+  margin-bottom: 20px;
+  text-align: right;
+}
+.ListChangeRow-Tags ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+.ListChangeRow-Tags li {
+  display: inline-block;
+}
+
+/* ---- EditImages ---- */
+.EditImages-drop {
+  align-items: center;
+  border: 3px dashed var(--foreground);
+  border-radius: 10px;
+  display: flex;
+  height: 400px;
+  justify-content: center;
+  margin: auto;
+  position: relative;
+  width: 400px;
+}
+.EditImages-drop:hover {
+  background-color: #394b59;
+}
+.EditImages-placeholder {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  font-size: 2rem;
+  text-align: center;
+}
+.EditImages-placeholder .fa-images {
+  font-size: 4rem;
+}
+.EditImages-images {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.EditImages-input-container {
+  display: flex;
+  min-height: 200px;
+}
+.EditImages-image {
+  margin: auto;
+  max-height: 600px;
+  max-width: 100%;
+  position: relative;
+}
+.EditImages-image img {
+  max-height: 600px;
+  max-width: 100%;
+}
+.EditImages-image .LoadingIndicator {
+  display: none;
+  position: absolute;
+  text-align: center;
+  text-shadow: 2px 2px black;
+  top: 40%;
+}
+.EditImages-image-uploading img {
+  opacity: 0.5;
+}
+.EditImages-image-uploading .LoadingIndicator {
+  display: block;
+  opacity: 1;
+}
+.EditImages input[type="file"] {
+  cursor: pointer;
+  height: 100%;
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+/* ---- URLInput ---- */
+.URLInput {
+  width: 100%;
+}
+.URLInput ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+.URLInput li {
+  margin-bottom: 0.5rem;
+}
+
+/* ---- Form components ---- */
+.BodyModification-location {
+  display: inline-block;
+  margin-right: 5%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
+  width: 30%;
+}
+.BodyModification h6 {
+  text-transform: capitalize;
+}
+.ImageInput {
+  margin: 0.5rem;
+  position: relative;
+}
+.ImageInput-image {
+  border-radius: 3px;
+  height: 200px;
+}
+.ImageInput-remove {
+  z-index: 3;
+  left: 5px;
+  opacity: 0.6;
+  padding: 0 5px;
+  position: absolute;
+  top: 5px;
+}
+.ImageInput:hover .ImageInput-remove {
+  opacity: 1;
+}
+.NoteInput .EditComment {
+  margin-bottom: 0;
+}
+
+/* ---- Home ---- */
+.HomePage-scenes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-rows: auto auto;
+  grid-auto-rows: 0;
+  overflow: hidden;
+}
+
+/* ---- Notifications ---- */
+.Notification .SceneCard {
+  width: 300px;
+}
+.Notification-read-state {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-self: center;
+  align-items: center;
+  justify-content: center;
+}
+.Notification-read-state button {
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 4px 0;
+}
+.Notification-read-state button .fa-envelope {
+  display: block;
+}
+.Notification-read-state button .fa-envelope-open {
+  display: none;
+}
+.Notification-read-state button:hover {
+  border-color: white;
+}
+.Notification-read-state button:hover .fa-envelope {
+  display: none;
+}
+.Notification-read-state button:hover .fa-envelope-open {
+  display: block;
+  color: white;
+}
+
+/* ---- Performers ---- */
+.PerformerMerge .PerformerCard-image {
+  height: 8rem;
+  aspect-ratio: 1 / 1;
+}
+.PerformerMerge .TargetCard .PerformerCard-image {
+  border: 2px solid white;
+}
+.performer-photo {
+  height: 470px;
+  margin-top: 0.75rem;
+}
+.performer-photo .Image {
+  height: 100%;
+  margin: 0 auto;
+}
+.performer-photo .Image img {
+  border-radius: 3px;
+  object-fit: contain;
+  object-position: center;
+}
+
+/* ---- Scenes ---- */
+.scene-description {
+  white-space: pre-wrap;
+}
+.scene-tags {
+  margin-top: 1rem;
+}
+.user-submitted {
+  color: var(--success);
+  margin-left: 0.5rem;
+  padding: 0;
+  vertical-align: baseline;
+}
+.user-submitted .fa-circle-xmark {
+  display: none;
+}
+.user-submitted:hover {
+  cursor: pointer;
+  color: var(--destructive);
+}
+.user-submitted:hover .fa-circle-xmark {
+  display: inline;
+}
+.user-submitted:hover .fa-circle-check {
+  display: none;
+}
+.user-submitted .fa-spin {
+  animation-duration: 1.5s;
+  cursor: wait;
+  color: var(--warning);
+}
+.fingerprint-sort-header {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* ---- Studios ---- */
+.studio-photo {
+  flex-grow: 1;
+  margin-right: 1rem;
+  max-height: 100px;
+  text-align: right;
+}
+.studio-photo img {
+  max-height: 100%;
+  max-width: 32rem;
+}
+.sub-studio-list {
+  margin-bottom: 1rem;
+  max-height: 15rem;
+  overflow-y: auto;
+}
+.sub-studio-list ul {
+  column-count: 3;
+  margin-bottom: 0;
+}
+.StudioForm .EditImages-images {
+  flex: unset;
+  width: unset;
+}
+.StudioForm .EditImages-drop {
+  height: 200px;
+  padding: 1rem;
+}
+
+/* ---- Users ---- */
+.users-table {
+  table-layout: fixed;
+}
+.users-table .apikey {
+  width: 50%;
+  word-break: break-all;
+}
+
+/* ---- SceneForm ---- */
+.SceneForm .performer-item {
+  align-items: center;
+  display: flex;
+  margin: 0.5rem 0;
+}
+.SceneForm .performer-name {
+  flex-grow: 1;
+  width: 0;
+}
+.SceneForm .description {
+  height: 10rem;
+}
+
+/* ---- Search page ---- */
+.SearchPage-input {
+  font-size: 1.5rem;
+  position: relative;
+}
+.SearchPage-input input {
+  font-size: 1.5rem;
+  padding-left: 2.5rem;
+}
+.SearchPage-input .fa-magnifying-glass {
+  left: 0.6rem;
+  position: absolute;
+  top: 0.8rem;
+  z-index: 1;
+}
+.SearchPage-input .fa-magnifying-glass path {
+  fill: var(--muted-foreground);
+}
+.SearchPage-facets {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-right: auto;
+}
+.SearchPage-performer,
+.SearchPage-scene {
+  display: block;
+}
+.SearchPage-performer-image {
+  max-width: 4.67rem;
+  border-radius: 3px;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+.SearchPage-scene-image {
+  width: 12.44rem;
+  border-radius: 3px;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+.SearchPage .fa-icon {
+  margin-right: 10px;
+}
+
+/* ---- Fingerprint clusters ---- */
+.SceneChip {
+  display: inline-flex;
+  align-items: center;
+  color: #fff;
+  border-radius: 0.375rem;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  border: 2px solid transparent;
+}
+.SceneChip-seed {
+  border-color: #fff;
+}
+.ClusterPicker {
+  display: flex;
+  gap: 1rem;
+  min-height: 520px;
+}
+.ClusterPicker-list {
+  width: 320px;
+  flex-shrink: 0;
+  max-height: 620px;
+  overflow-y: auto;
+}
+.ClusterPicker-canvas {
+  flex-grow: 1;
+  min-width: 0;
+}
+.ClusterListItem {
+  text-align: left;
+  border: 0;
+  border-radius: 4px;
+  padding: 0.5rem;
+  width: 100%;
+  background-color: rgb(255 255 255 / 4%);
+  color: inherit;
+  cursor: pointer;
+}
+.ClusterListItem-active {
+  background-color: rgb(255 255 255 / 12%);
+}
+.ClusterDistanceSlider {
+  max-width: 320px;
+}
+.ClusterCanvas {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.ClusterCanvas-node {
+  cursor: pointer;
+}
+.ClusterMembersTable-oshash-summary > td {
+  padding-left: 2.5rem;
+}
+.ClusterMembersTable-oshash-row > td:first-child {
+  padding-left: 4rem;
+}
+.ClusterMembersTable-oshash-note {
+  opacity: 0.7;
+}
+.ClusterMoveModal table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.ClusterMoveModal-select-col {
+  width: 1px;
+}
+.ClusterMoveModal tr.is-target {
+  cursor: pointer;
+}
+.ClusterMoveModal tr.is-target td {
+  background-color: color-mix(in srgb, var(--primary) 25%, transparent);
+}
+.ClusterMoveModal tr.is-target td:first-child {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+.ClusterMoveModal tr.is-target td:last-child {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+/* ---- PerformerSelect layout ---- */
+.PerformerSelect-list {
+  margin: 0.5rem 0;
+}
+.PerformerSelect-container {
+  display: flex;
+}
+
+/* ---- Toast ---- */
+.ToastContainer {
+  position: fixed;
+  bottom: 30px;
+  right: 40px;
+  z-index: 10;
+}
+
+/* ---- Global page wrappers (from App.scss) ---- */
+.LoginPrompt {
+  height: 70vh;
+  width: 960px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+}
+.bullet-separator::before {
+  content: "\2022";
+  margin: 0 0.5rem;
+}
+.NarrowPage {
+  margin: auto;
+  max-width: 1200px;
+}

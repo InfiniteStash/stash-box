@@ -1,11 +1,7 @@
 /*
- * Tailwind entry for the Base UI migration.
- *
- * Bootstrap's stylesheet has been removed; preflight is now our reset.
- * Everything is imported UNLAYERED so single-class utilities (0,1,0) win by
- * specificity over the remaining legacy theme.scss element selectors (0,0,1)
- * that still style un-ported react-bootstrap pages. tailwind.css is imported
- * AFTER App.scss so preflight wins same-specificity ties over legacy.
+ * Tailwind entry. Bootstrap and all SCSS have been removed; preflight is the
+ * reset and the remaining component styles live in styles/legacy.css (plain
+ * CSS, imported before this file so utilities win same-specificity ties).
  * @source is required because importing the sub-files (instead of the full
  * `tailwindcss`) disables automatic content detection.
  */
