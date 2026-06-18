@@ -5,9 +5,9 @@ import {
   faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
-import { Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
 import { ROUTE_SCENES } from "src/constants/route";
 import type { Fingerprint } from "src/graphql";
 import { createHref, formatDate, formatDuration } from "src/utils";
@@ -54,9 +54,10 @@ export const FingerprintTableRow: FC<Props> = ({
     <tr>
       {isModerator && (
         <td>
-          <Form.Check
+          <input
             type="checkbox"
             checked={isSelected}
+            onChange={() => {}}
             onClick={(e: React.MouseEvent<HTMLInputElement>) =>
               onSelect(fingerprint.hash, e.shiftKey)
             }
@@ -64,9 +65,10 @@ export const FingerprintTableRow: FC<Props> = ({
         </td>
       )}
       <td>{fingerprint.algorithm}</td>
-      <td className="font-monospace">
+      <td className="font-mono">
         <Link
           to={`${createHref(ROUTE_SCENES)}?fingerprint=${fingerprint.hash}`}
+          className="text-link hover:underline"
         >
           {fingerprint.hash}
         </Link>

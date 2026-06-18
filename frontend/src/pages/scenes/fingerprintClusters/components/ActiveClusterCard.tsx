@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { Card } from "react-bootstrap";
+import { Card, CardBody } from "src/components/ui/card";
 import { useClusterPage } from "../ClusterPageContext";
 import { ClusterActionBar } from "./ClusterActionBar";
 import { ClusterMembersTable } from "./ClusterMembersTable";
@@ -9,10 +9,10 @@ export const ActiveClusterCard: FC = () => {
     useClusterPage();
   if (!activeCluster) return null;
   return (
-    <Card bg="dark" text="light" className="mb-3">
-      <Card.Body>
-        <div className="d-flex align-items-center gap-2 mb-2">
-          <span className="text-muted small">
+    <Card className="mb-3">
+      <CardBody>
+        <div className="mb-2 flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">
             Showing cluster {activeIndex + 1} of {clusters.length}
           </span>
         </div>
@@ -20,7 +20,7 @@ export const ActiveClusterCard: FC = () => {
         {isModerator && <ClusterActionBar />}
 
         <ClusterMembersTable />
-      </Card.Body>
+      </CardBody>
     </Card>
   );
 };

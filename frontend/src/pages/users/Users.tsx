@@ -1,9 +1,11 @@
 import { faUserEdit } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
-import { Button, Form, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import { List } from "src/components/list";
+import { buttonVariants } from "src/components/ui/button";
+import { Input } from "src/components/ui/input";
+import { Table } from "src/components/ui/table";
 import {
   ROUTE_USER,
   ROUTE_USER_ADD,
@@ -34,16 +36,18 @@ const UsersComponent: FC = () => {
 
   const users = data?.queryUsers.users.map((user) => (
     <tr key={user.id}>
-      <td className="text-nowrap">
-        <Link to={createHref(ROUTE_USER_EDIT, user)}>
-          <Button variant="secondary" className="minimal">
-            <Icon icon={faUserEdit} />
-          </Button>
+      <td className="whitespace-nowrap">
+        <Link
+          to={createHref(ROUTE_USER_EDIT, user)}
+          className={buttonVariants({ variant: "minimal", size: "sm" })}
+        >
+          <Icon icon={faUserEdit} />
         </Link>
-        <Link to={createHref(ROUTE_USER, user)}>
-          <Button variant="link">
-            <span>{user.name}</span>
-          </Button>
+        <Link
+          to={createHref(ROUTE_USER, user)}
+          className={buttonVariants({ variant: "link" })}
+        >
+          {user.name}
         </Link>
       </td>
       <td>{user.email}</td>
@@ -54,7 +58,7 @@ const UsersComponent: FC = () => {
   ));
 
   const filters = (
-    <Form.Control
+    <Input
       id="user-name"
       onChange={(e) => debouncedHandler("query", e.currentTarget.value)}
       placeholder="Filter by username"
@@ -65,10 +69,10 @@ const UsersComponent: FC = () => {
 
   return (
     <>
-      <div className="d-flex">
+      <div className="flex">
         <h3>Users</h3>
-        <Link to={ROUTE_USER_ADD} className="ms-auto">
-          <Button>Add User</Button>
+        <Link to={ROUTE_USER_ADD} className={`ml-auto ${buttonVariants()}`}>
+          Add User
         </Link>
       </div>
       <List
@@ -80,7 +84,7 @@ const UsersComponent: FC = () => {
         listCount={data?.queryUsers.count}
         filters={filters}
       >
-        <Table striped className="users-table" variant="dark">
+        <Table striped className="users-table">
           <thead>
             <tr>
               <th>Username</th>

@@ -1,11 +1,11 @@
 import { CombinedGraphQLErrors } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
-import cx from "classnames";
 import { type FC, useState } from "react";
-import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { ErrorMessage } from "src/components/fragments";
 import Title from "src/components/title";
+import { Button } from "src/components/ui/button";
+import { Input } from "src/components/ui/input";
 import type { User } from "src/context";
 import { UserChangeEmailStatus, useValidateChangeEmail } from "src/graphql";
 import { useQueryParams } from "src/hooks";
@@ -37,7 +37,7 @@ const ValidateChangeEmail: FC<{ user: User }> = () => {
   if (submitted)
     return (
       <div className="LoginPrompt">
-        <div className="align-self-center col-8 mx-auto">
+        <div className="mx-auto w-full max-w-xl self-center">
           <h5>Confirmation email sent</h5>
           <p>Please check your email to complete the email change.</p>
         </div>
@@ -78,40 +78,35 @@ const ValidateChangeEmail: FC<{ user: User }> = () => {
   return (
     <div className="LoginPrompt">
       <Title page="Confirm Email" />
-      <Form
-        className="align-self-center col-8 mx-auto"
+      <form
+        className="mx-auto w-full max-w-xl self-center"
         onSubmit={handleSubmit(onSubmit)}
       >
         <h5>Change email</h5>
         <p>Enter a new email address to complete email change.</p>
-        <Form.Control type="hidden" value={token} {...register("token")} />
+        <input type="hidden" value={token} {...register("token")} />
 
-        <Form.Group controlId="email" className="mt-2">
-          <Form.Control
-            className={cx({ "is-invalid": errors?.email })}
+        <div className="mt-2">
+          <Input
             type="email"
             placeholder="New email"
+            aria-invalid={!!errors?.email}
             {...register("email")}
           />
-        </Form.Group>
+        </div>
 
         {errorList.map((error) => (
-          <Row key={error} className="text-end text-danger">
-            <div>{error}</div>
-          </Row>
+          <div key={error} className="text-right text-destructive">
+            {error}
+          </div>
         ))}
 
-        <Row>
-          <Col
-            xs={{ span: 3, offset: 9 }}
-            className="justify-content-end mt-2 d-flex"
-          >
-            <Button type="submit" disabled={loading}>
-              Change Email
-            </Button>
-          </Col>
-        </Row>
-      </Form>
+        <div className="mt-2 flex justify-end">
+          <Button type="submit" disabled={loading}>
+            Change Email
+          </Button>
+        </div>
+      </form>
     </div>
   );
 };

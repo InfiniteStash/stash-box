@@ -1,8 +1,8 @@
 import { faTrashCan, faVideo } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
-import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
 import type {
   FingerprintAlgorithm,
   ScenesWithFingerprintsQuery,
@@ -28,7 +28,7 @@ const UserSceneLine: FC<Props> = ({ scene, deleteFingerprints }) => (
       <td>
         <Button
           variant="link"
-          className="text-danger"
+          className="text-destructive"
           onClick={() =>
             deleteFingerprints(
               scene.fingerprints.map((fp) => ({ ...fp, scene_id: scene.id })),
@@ -37,21 +37,23 @@ const UserSceneLine: FC<Props> = ({ scene, deleteFingerprints }) => (
         >
           <Icon
             icon={faTrashCan}
-            className="me-1"
+            className="mr-1"
             title="Delete all of your submitted fingerprints for this scene"
           />
         </Button>
       </td>
       <td>
-        <Link to={sceneHref(scene)}>{scene.title}</Link>
+        <Link to={sceneHref(scene)} className="text-link hover:underline">
+          {scene.title}
+        </Link>
       </td>
       <td>
         {scene.studio && (
           <Link
             to={studioHref(scene.studio)}
-            className="text-truncate SceneCard-studio-name"
+            className="SceneCard-studio-name truncate text-link hover:underline"
           >
-            <Icon icon={faVideo} className="me-1" />
+            <Icon icon={faVideo} className="mr-1" />
             {scene.studio.name}
           </Link>
         )}

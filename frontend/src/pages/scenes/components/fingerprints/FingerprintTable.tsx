@@ -4,9 +4,10 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { type FC, useMemo, useState } from "react";
-import { Button, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
+import { Button, buttonVariants } from "src/components/ui/button";
+import { Table } from "src/components/ui/table";
 import { ROUTE_SCENE_FINGERPRINT_CLUSTERS } from "src/constants/route";
 import { useCurrentUser } from "src/hooks";
 import { DeleteFingerprintsModal } from "./DeleteFingerprintsModal";
@@ -87,27 +88,26 @@ export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
 
   return (
     <div className="scene-fingerprints my-4">
-      <div className="d-flex justify-content-between align-items-center mb-3">
+      <div className="mb-3 flex items-center justify-between">
         <h4 className="mb-0">Fingerprints:</h4>
-        <div className="d-flex gap-2">
+        <div className="flex gap-2">
           {isEditor && scene.fingerprints.length > 0 && (
             <Link
               to={ROUTE_SCENE_FINGERPRINT_CLUSTERS.replace(":id", scene.id)}
-              className="btn btn-link btn-sm"
+              className={buttonVariants({ variant: "link", size: "sm" })}
             >
-              <Icon icon={faProjectDiagram} className="me-1" />
+              <Icon icon={faProjectDiagram} className="mr-1" />
               View clusters
             </Link>
           )}
           {isModerator && scene.fingerprints.length > 0 && (
             <>
               <Button
-                variant="primary"
                 size="sm"
                 disabled={selectedFingerprints.size === 0 || moving}
                 onClick={() => setShowMoveModal(true)}
               >
-                <Icon icon={faArrowRight} className="me-1" />
+                <Icon icon={faArrowRight} className="mr-1" />
                 Move Selected ({selectedFingerprints.size})
               </Button>
               <Button
@@ -116,7 +116,7 @@ export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
                 disabled={selectedFingerprints.size === 0 || deleting}
                 onClick={() => setShowDeleteModal(true)}
               >
-                <Icon icon={faTrash} className="me-1" />
+                <Icon icon={faTrash} className="mr-1" />
                 Delete Selected ({selectedFingerprints.size})
               </Button>
             </>
@@ -126,7 +126,7 @@ export const FingerprintTable: FC<FingerprintTableProps> = ({ scene }) => {
       {scene.fingerprints.length === 0 ? (
         <h6>No fingerprints found for this scene.</h6>
       ) : (
-        <Table striped variant="dark">
+        <Table striped>
           <FingerprintTableHeader
             isModerator={isModerator}
             sortColumn={sortColumn}
