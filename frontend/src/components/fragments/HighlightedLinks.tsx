@@ -18,10 +18,10 @@ interface Props {
   urls: URL[];
 }
 
-// The row floats right, so render in reverse sort order to keep the
-// first-sorted links anchored at the right edge as the list grows.
+// Right-aligned row; render in reverse sort order to keep the first-sorted
+// links anchored at the right edge as the list grows.
 const HighlightedLinks: FC<Props> = ({ urls }) => (
-  <div className="float-end">
+  <div className="flex items-center justify-end">
     {sortBy(
       urls.filter((u) => u.site.highlighted),
       [
