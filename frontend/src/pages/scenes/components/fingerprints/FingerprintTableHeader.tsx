@@ -4,7 +4,6 @@ import {
   faSortUp,
 } from "@fortawesome/free-solid-svg-icons";
 import { type FC, useEffect, useRef } from "react";
-import { Form } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
 import type { SortColumn, SortDirection } from "./types";
 
@@ -36,12 +35,12 @@ export const FingerprintTableHeader: FC<Props> = ({
 
   const renderSortIcon = (column: SortColumn) => {
     if (sortColumn !== column) {
-      return <Icon icon={faSort} className="ms-1 text-muted" />;
+      return <Icon icon={faSort} className="ml-1 text-muted-foreground" />;
     }
     return (
       <Icon
         icon={sortDirection === "asc" ? faSortUp : faSortDown}
-        className="ms-1 text-warning"
+        className="ml-1 text-warning"
       />
     );
   };
@@ -58,7 +57,7 @@ export const FingerprintTableHeader: FC<Props> = ({
       <tr>
         {isModerator && (
           <td>
-            <Form.Check
+            <input
               type="checkbox"
               ref={checkboxRef}
               checked={totalCount > 0 && selectedCount === totalCount}

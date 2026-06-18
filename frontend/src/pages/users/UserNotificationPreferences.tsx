@@ -1,8 +1,8 @@
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
-import { Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
 import { ROUTE_NOTIFICATIONS } from "src/constants/route";
 import {
   NotificationEnum,
@@ -52,24 +52,26 @@ export const UserNotificationPreferences: FC<Props> = ({ user }) => {
     const isUrgent = level === NotificationLevel.URGENT;
     return (
       <>
-        <h5 className="mt-4 d-flex align-items-center gap-2">
+        <h5 className="mt-4 flex items-center gap-2">
           <Icon
             icon={faCircle}
-            className={`text-${isUrgent ? "danger" : "primary"}`}
+            className={isUrgent ? "text-destructive" : "text-primary"}
             title={isUrgent ? "Urgent" : "Normal"}
           />
           {title}
         </h5>
         {Object.entries(entries).map(([key, value]) => (
-          <Form.Check
-            value={key}
-            defaultChecked={enabled && activeNotifications.includes(key)}
-            disabled={!enabled}
-            id={key}
-            label={value}
-            key={key}
-            name="subscriptions"
-          />
+          <label key={key} className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              value={key}
+              defaultChecked={enabled && activeNotifications.includes(key)}
+              disabled={!enabled}
+              id={key}
+              name="subscriptions"
+            />
+            <span>{value}</span>
+          </label>
         ))}
       </>
     );
@@ -77,13 +79,13 @@ export const UserNotificationPreferences: FC<Props> = ({ user }) => {
 
   return (
     <>
-      <Link to={ROUTE_NOTIFICATIONS}>
+      <Link to={ROUTE_NOTIFICATIONS} className="text-link hover:underline">
         <h6 className="mb-4">&larr; Notifications</h6>
       </Link>
       <h4>Active notification subscriptions</h4>
-      <hr />
+      <hr className="border-border" />
 
-      <Form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         {renderSection(
           "General",
           GeneralNotificationType,
@@ -102,15 +104,15 @@ export const UserNotificationPreferences: FC<Props> = ({ user }) => {
           isEditor,
           NotificationLevel.URGENT,
         )}
-        <div className="mt-4">
-          <Button type="reset" className="me-2">
+        <div className="mt-4 flex gap-2">
+          <Button variant="secondary" type="reset">
             Reset
           </Button>
           <Button type="submit" disabled={submitting}>
             Save
           </Button>
         </div>
-      </Form>
+      </form>
     </>
   );
 };

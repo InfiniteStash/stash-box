@@ -1,8 +1,8 @@
 import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
-import { Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
+import { Table } from "src/components/ui/table";
 import { ROUTE_SCENE } from "src/constants/route";
 import { useClusterPage } from "../ClusterPageContext";
 import type { Cluster, ClusterLinkedFingerprint, ClusterScene } from "../types";
@@ -38,7 +38,7 @@ const SceneCell: FC<{ submissions: SceneCellSubmission[] }> = ({
 }) => {
   const { paletteFor, seedSceneId } = useClusterPage();
   return (
-    <div className="d-flex flex-wrap gap-1">
+    <div className="flex flex-wrap gap-1">
       {submissions.map((s) => (
         <Link key={s.scene.id} to={ROUTE_SCENE.replace(":id", s.scene.id)}>
           <SceneChip
@@ -60,14 +60,14 @@ export const ClusterMembersTable: FC = () => {
     useClusterPage();
   if (!activeCluster) return null;
   return (
-    <Table size="sm" variant="dark" striped responsive>
+    <Table striped>
       <thead>
         <tr>
           <th>Hash</th>
           <th>Duration</th>
           <th>Scenes</th>
-          <th className="text-end">Submissions</th>
-          <th className="text-end">Reports</th>
+          <th className="text-right">Submissions</th>
+          <th className="text-right">Reports</th>
         </tr>
       </thead>
       <tbody>
@@ -81,7 +81,7 @@ export const ClusterMembersTable: FC = () => {
                 {isModerator && (
                   <input
                     type="checkbox"
-                    className="me-2"
+                    className="mr-2"
                     checked={selection.isSelected(m.hash)}
                     onChange={() => selection.toggle(m.hash)}
                   />
@@ -91,19 +91,19 @@ export const ClusterMembersTable: FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   title={`Find scenes with ${m.hash}`}
-                  className="text-decoration-none"
+                  className="no-underline"
                 >
                   <code>{m.hash}</code>
                 </Link>
               </td>
-              <td className="small">
+              <td className="text-sm">
                 {formatDurationCounts(memberDurationCounts(m))}
               </td>
               <td>
                 <SceneCell submissions={m.scene_submissions} />
               </td>
-              <td className="text-end">{memberTotalSubmissions(m)}</td>
-              <td className="text-end">{memberTotalReports(m)}</td>
+              <td className="text-right">{memberTotalSubmissions(m)}</td>
+              <td className="text-right">{memberTotalReports(m)}</td>
             </tr>,
           ];
           if (linkedOshashes.length > 0) {
@@ -111,24 +111,24 @@ export const ClusterMembersTable: FC = () => {
             rows.push(
               <tr
                 key={`${rowKey}::oshash-summary`}
-                className="ClusterMembersTable-oshash-summary text-muted"
+                className="ClusterMembersTable-oshash-summary text-muted-foreground"
               >
                 <td colSpan={5}>
                   <button
                     type="button"
                     onClick={() => expandedRows.toggle(rowKey)}
-                    className="btn btn-sm btn-link p-0 text-muted text-decoration-none"
+                    className="cursor-pointer border-0 bg-transparent p-0 text-muted-foreground no-underline"
                     aria-expanded={expanded}
                   >
                     <Icon
                       icon={expanded ? faCaretDown : faCaretRight}
-                      className="me-2"
+                      className="mr-2"
                     />
                     {linkedOshashes.length} linked OSHASH
                     {linkedOshashes.length === 1 ? "" : "es"} · {oshashSubCount}{" "}
                     submission
                     {oshashSubCount === 1 ? "" : "s"}
-                    <span className="ms-2 small ClusterMembersTable-oshash-note">
+                    <span className="ClusterMembersTable-oshash-note ml-2 text-sm">
                       (follows phash on move / delete)
                     </span>
                   </button>
@@ -140,7 +140,7 @@ export const ClusterMembersTable: FC = () => {
                 rows.push(
                   <tr
                     key={`${rowKey}::oshash::${o.hash}`}
-                    className="ClusterMembersTable-oshash-row text-muted"
+                    className="ClusterMembersTable-oshash-row text-muted-foreground"
                   >
                     <td>
                       <Link
@@ -148,7 +148,7 @@ export const ClusterMembersTable: FC = () => {
                         target="_blank"
                         rel="noopener noreferrer"
                         title={`Find scenes with ${o.hash}`}
-                        className="text-decoration-none"
+                        className="no-underline"
                       >
                         <code>↪ {o.hash}</code>
                       </Link>
@@ -165,8 +165,8 @@ export const ClusterMembersTable: FC = () => {
                         ]}
                       />
                     </td>
-                    <td className="text-end">{o.submissions}</td>
-                    <td className="text-end">{o.reports}</td>
+                    <td className="text-right">{o.submissions}</td>
+                    <td className="text-right">{o.reports}</td>
                   </tr>,
                 );
               }

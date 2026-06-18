@@ -1,8 +1,12 @@
 import { faArrowRight, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { type FC, useEffect, useMemo, useState } from "react";
-import { Alert, Button, Modal, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon, PerformerName } from "src/components/fragments";
+import { Alert } from "src/components/ui/alert";
+import { Badge } from "src/components/ui/badge";
+import { Button } from "src/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "src/components/ui/dialog";
+import { Table } from "src/components/ui/table";
 import { ROUTE_SCENE } from "src/constants/route";
 import { formatDuration } from "src/utils";
 import { useClusterPage } from "../ClusterPageContext";
@@ -107,11 +111,9 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
     );
 
   return (
-    <Modal show={show} onHide={onHide} size="xl" className="ClusterMoveModal">
-      <Modal.Header closeButton>
-        <Modal.Title>Move Cluster Fingerprints</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
+    <Dialog open={show} onOpenChange={(open) => !open && onHide()}>
+      <DialogContent className="ClusterMoveModal max-w-6xl">
+        <DialogTitle>Move Cluster Fingerprints</DialogTitle>
         <p>
           Consolidating <strong>{hashCount}</strong> fingerprint
           {hashCount === 1 ? "" : "s"} (<strong>{submissionCount}</strong> user
@@ -130,13 +132,13 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
             <summary className="mb-2">
               Selected fingerprint{selectedMembers.length === 1 ? "" : "s"}
             </summary>
-            <Table variant="dark" size="sm" className="mb-0">
+            <Table className="mb-0">
               <thead>
                 <tr>
                   <th>Hash</th>
                   <th>Duration</th>
                   <th>Scenes</th>
-                  <th className="text-end">Submissions</th>
+                  <th className="text-right">Submissions</th>
                 </tr>
               </thead>
               <tbody>
@@ -151,11 +153,11 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
                       <td>
                         <code>{m.hash}</code>
                       </td>
-                      <td className="small">
+                      <td className="text-sm">
                         {formatDurationCounts(durations)}
                       </td>
                       <td>
-                        <div className="d-flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1">
                           {m.scene_submissions.map((s) => (
                             <SceneChip
                               key={s.scene.id}
@@ -169,7 +171,7 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
                           ))}
                         </div>
                       </td>
-                      <td className="text-end">{totalSubs}</td>
+                      <td className="text-right">{totalSubs}</td>
                     </tr>
                   );
                 })}
@@ -179,20 +181,20 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
         )}
 
         {candidates.length === 0 ? (
-          <Alert variant="info" className="mb-0">
+          <Alert variant="primary" className="mb-0">
             This cluster has no scenes to move into.
           </Alert>
         ) : (
-          <Table variant="dark" size="sm" hover>
+          <Table>
             <thead>
               <tr>
                 <th className="ClusterMoveModal-select-col" />
                 <th>Scene</th>
                 <th>Performers</th>
                 <th>Studio</th>
-                <th className="text-end">Duration</th>
-                <th className="text-end">Fingerprints</th>
-                <th className="text-end">Submissions</th>
+                <th className="text-right">Duration</th>
+                <th className="text-right">Fingerprints</th>
+                <th className="text-right">Submissions</th>
               </tr>
             </thead>
             <tbody>
@@ -215,7 +217,7 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
                       />
                     </td>
                     <td>
-                      <div className="d-flex align-items-center gap-2">
+                      <div className="flex items-center gap-2">
                         <SceneChip
                           color={paletteFor(c.scene.id)}
                           isSeed={isSeed}
@@ -227,23 +229,23 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="text-light"
+                          className="text-link hover:underline"
                         >
                           <strong>{c.scene.title || "Untitled"}</strong>
                         </Link>
                         {c.scene.deleted && (
-                          <span className="badge bg-danger">deleted</span>
+                          <Badge variant="danger">deleted</Badge>
                         )}
                         {c.scene.release_date && (
-                          <span className="text-muted small">
+                          <span className="text-sm text-muted-foreground">
                             ({c.scene.release_date})
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="small">
+                    <td className="text-sm">
                       {c.scene.performers.length === 0 ? (
-                        <span className="text-muted">—</span>
+                        <span className="text-muted-foreground">—</span>
                       ) : (
                         c.scene.performers.map((p, i) => (
                           <span key={p.performer.id}>
@@ -256,18 +258,18 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
                         ))
                       )}
                     </td>
-                    <td className="small">
+                    <td className="text-sm">
                       {c.scene.studio?.name ?? (
-                        <span className="text-muted">—</span>
+                        <span className="text-muted-foreground">—</span>
                       )}
                     </td>
-                    <td className="text-end small">
+                    <td className="text-right text-sm">
                       {c.scene.duration
                         ? formatDuration(c.scene.duration)
                         : "—"}
                     </td>
-                    <td className="text-end">{c.memberCount}</td>
-                    <td className="text-end">
+                    <td className="text-right">{c.memberCount}</td>
+                    <td className="text-right">
                       <strong>{c.submissionCount}</strong>
                     </td>
                   </tr>
@@ -278,18 +280,18 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
         )}
 
         {allOnTarget ? (
-          <Alert variant="warning" className="mt-3 mb-0">
+          <Alert variant="warning" className="mb-0 mt-3">
             All selected fingerprints are already on the target scene; nothing
             to move.
           </Alert>
         ) : durationMismatches.length > 0 ? (
-          <Alert variant="warning" className="mt-3 mb-0">
+          <Alert variant="warning" className="mb-0 mt-3">
             <strong>Duration mismatch:</strong>{" "}
             {durationMismatches.length === 1
               ? "1 selected fingerprint differs"
               : `${durationMismatches.length} selected fingerprints differ`}{" "}
             from the target scene's duration by more than 5 seconds.
-            <ul className="mb-0 mt-1 small">
+            <ul className="mb-0 mt-1 text-sm">
               {durationMismatches.slice(0, 5).map((m) => (
                 <li key={m.hash}>
                   <code>{m.hash}</code>: {formatDuration(m.fpDuration)} (
@@ -303,34 +305,33 @@ export const ClusterMoveModal: FC<Props> = ({ show, onHide, onMove }) => {
             </ul>
           </Alert>
         ) : showDurationMatch ? (
-          <Alert variant="success" className="mt-3 mb-0">
+          <Alert variant="success" className="mb-0 mt-3">
             <strong>Durations match:</strong> all selected fingerprints match
             the target scene's duration within 5 seconds.
           </Alert>
         ) : null}
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
-          Cancel
-        </Button>
-        <Button
-          variant="primary"
-          onClick={handleMove}
-          disabled={moving || !target || allOnTarget}
-        >
-          {moving ? (
-            <>
-              <Icon icon={faSpinner} className="fa-spin me-1" />
-              Moving...
-            </>
-          ) : (
-            <>
-              <Icon icon={faArrowRight} className="me-1" />
-              Move to selected
-            </>
-          )}
-        </Button>
-      </Modal.Footer>
-    </Modal>
+        <div className="mt-4 flex justify-end gap-2">
+          <Button variant="secondary" onClick={onHide}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleMove}
+            disabled={moving || !target || allOnTarget}
+          >
+            {moving ? (
+              <>
+                <Icon icon={faSpinner} className="mr-1 fa-spin" />
+                Moving...
+              </>
+            ) : (
+              <>
+                <Icon icon={faArrowRight} className="mr-1" />
+                Move to selected
+              </>
+            )}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };

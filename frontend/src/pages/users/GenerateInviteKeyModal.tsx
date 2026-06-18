@@ -1,5 +1,9 @@
 import { type FC, useMemo, useState } from "react";
-import { Button, Form, Modal } from "react-bootstrap";
+import { Button } from "src/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "src/components/ui/dialog";
+import { Label } from "src/components/ui/field";
+import { Input } from "src/components/ui/input";
+import { Select } from "src/components/ui/select";
 import type { GenerateInviteCodeInput } from "src/graphql";
 import { formatDateTime } from "src/utils";
 
@@ -34,75 +38,70 @@ export const GenerateInviteKeyModal: FC<ModalProps> = ({ callback }) => {
   }, [keyExpireAmount, keyExpireUnit]);
 
   return (
-    <Modal show onHide={handleCancel}>
-      <Modal.Header closeButton>
-        <b>Generate Invite Keys</b>
-      </Modal.Header>
-      <Modal.Body>
-        <Form>
-          <Form.Group controlId="key-amount">
-            <Form.Label>Amount of Keys</Form.Label>
-            <Form.Control
-              value={keyAmount}
-              onChange={(e) =>
-                setKeyAmount(parseInt(e.currentTarget.value, 10))
-              }
-              type="number"
-              min={1}
-              max={100}
-              placeholder="Enter number of keys"
-            />
-          </Form.Group>
-          <Form.Group controlId="key-uses" className="mt-4">
-            <Form.Label>Uses per key</Form.Label>
-            <Form.Control
-              value={keyUses}
-              onChange={(e) => setKeyUses(parseInt(e.currentTarget.value, 10))}
-              type="number"
-              min={0}
-              max={100}
-              placeholder="Uses per key"
-            />
-            <Form.Text className="text-muted">
-              Enter 0 for unlimited uses.
-            </Form.Text>
-          </Form.Group>
-          <Form.Group controlId="key-expiration" className="mt-4">
-            <Form.Label>Expire time</Form.Label>
-            <Form.Control
-              type="number"
-              min={1}
-              value={keyExpireAmount}
-              onChange={(e) =>
-                setKeyExpireAmount(parseInt(e.currentTarget.value, 10))
-              }
-            />
-            <Form.Select
-              value={keyExpireUnit}
-              onChange={(e) => {
-                setKeyExpireUnit(parseInt(e.currentTarget.value, 10));
-              }}
-              className="mt-2"
-            >
-              <option value={minutesInSeconds}>Minutes</option>
-              <option value={hoursInSeconds}>Hours</option>
-              <option value={daysInSeconds}>Days</option>
-              <option value={yearsInSeconds}>Years</option>
-            </Form.Select>
-            <Form.Text className="text-muted">
-              Expires at {formatDateTime(expireTime)}
-            </Form.Text>
-          </Form.Group>
-        </Form>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="primary" onClick={handleAccept}>
-          Generate
-        </Button>
-        <Button variant="secondary" onClick={handleCancel}>
-          Cancel
-        </Button>
-      </Modal.Footer>
-    </Modal>
+    <Dialog open onOpenChange={(open) => !open && handleCancel()}>
+      <DialogContent>
+        <DialogTitle>Generate Invite Keys</DialogTitle>
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="key-amount">Amount of Keys</Label>
+          <Input
+            id="key-amount"
+            value={keyAmount}
+            onChange={(e) => setKeyAmount(parseInt(e.currentTarget.value, 10))}
+            type="number"
+            min={1}
+            max={100}
+            placeholder="Enter number of keys"
+          />
+        </div>
+        <div className="mt-4 flex flex-col gap-1">
+          <Label htmlFor="key-uses">Uses per key</Label>
+          <Input
+            id="key-uses"
+            value={keyUses}
+            onChange={(e) => setKeyUses(parseInt(e.currentTarget.value, 10))}
+            type="number"
+            min={0}
+            max={100}
+            placeholder="Uses per key"
+          />
+          <small className="text-muted-foreground">
+            Enter 0 for unlimited uses.
+          </small>
+        </div>
+        <div className="mt-4 flex flex-col gap-1">
+          <Label htmlFor="key-expiration">Expire time</Label>
+          <Input
+            id="key-expiration"
+            type="number"
+            min={1}
+            value={keyExpireAmount}
+            onChange={(e) =>
+              setKeyExpireAmount(parseInt(e.currentTarget.value, 10))
+            }
+          />
+          <Select
+            value={keyExpireUnit}
+            onChange={(e) => {
+              setKeyExpireUnit(parseInt(e.currentTarget.value, 10));
+            }}
+            className="mt-2"
+          >
+            <option value={minutesInSeconds}>Minutes</option>
+            <option value={hoursInSeconds}>Hours</option>
+            <option value={daysInSeconds}>Days</option>
+            <option value={yearsInSeconds}>Years</option>
+          </Select>
+          <small className="text-muted-foreground">
+            Expires at {formatDateTime(expireTime)}
+          </small>
+        </div>
+        <div className="mt-4 flex justify-end gap-2">
+          <Button onClick={handleAccept}>Generate</Button>
+          <Button variant="secondary" onClick={handleCancel}>
+            Cancel
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };

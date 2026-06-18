@@ -1,6 +1,7 @@
 import type { FC } from "react";
-import { Card, Form } from "react-bootstrap";
 import { LoadingIndicator } from "src/components/fragments";
+import { Card, CardBody } from "src/components/ui/card";
+import { Label } from "src/components/ui/field";
 import { SLIDER_MIN, SLIDER_STEP } from "../hooks/useClusterDistance";
 
 interface Props {
@@ -16,11 +17,15 @@ export const ClusterDistanceCard: FC<Props> = ({
   loading,
   onChange,
 }) => (
-  <Card bg="dark" text="light" className="mb-3">
-    <Card.Body>
-      <div className="d-flex align-items-center gap-3 flex-wrap">
-        <Form.Label className="mb-0">Distance: {distance}</Form.Label>
-        <Form.Range
+  <Card className="mb-3">
+    <CardBody>
+      <div className="flex flex-wrap items-center gap-3">
+        <Label htmlFor="cluster-distance" className="mb-0">
+          Distance: {distance}
+        </Label>
+        <input
+          id="cluster-distance"
+          type="range"
           className="ClusterDistanceSlider"
           min={SLIDER_MIN}
           max={max}
@@ -30,6 +35,6 @@ export const ClusterDistanceCard: FC<Props> = ({
         />
         {loading && <LoadingIndicator message="Computing clusters..." />}
       </div>
-    </Card.Body>
+    </CardBody>
   </Card>
 );

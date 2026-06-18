@@ -7,10 +7,12 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { sortBy } from "lodash-es";
 import { type FC, useState } from "react";
-import { Button, Col, Form, InputGroup, Row, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon, Tooltip } from "src/components/fragments";
 import Modal from "src/components/modal";
+import { Button, buttonVariants } from "src/components/ui/button";
+import { Input } from "src/components/ui/input";
+import { Table } from "src/components/ui/table";
 import { EditStatusTypes, VoteTypes } from "src/constants";
 import {
   ROUTE_USER_EDIT,
@@ -69,14 +71,12 @@ const UserInviteKeys: FC<UserInviteKeysProps> = ({
         {inviteCodes.map((ic) => (
           <tr key={ic.id}>
             <td>
-              <InputGroup className="mb-2">
-                <InputGroup.Text>
-                  <code>{ic.id}</code>
-                </InputGroup.Text>
+              <div className="mb-2 flex items-center gap-2">
+                <code>{ic.id}</code>
                 <Button onClick={() => navigator.clipboard?.writeText(ic.id)}>
                   Copy
                 </Button>
-              </InputGroup>
+              </div>
             </td>
             <td>{(ic.uses ?? 0) === 0 ? "unlimited" : ic.uses}</td>
             <td>
@@ -295,191 +295,179 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
   const voteCount = filterVotes(user.vote_count);
 
   return (
-    <Row className="justify-content-center">
-      <Col lg={10}>
-        <div className="d-flex">
-          <h3>{user.name}</h3>
-          {deleteModal}
-          {regenerateAPIKeyModal}
-          {generateInviteCodeModal}
-          {rescindCodeModal}
-          <div className="ms-auto">
-            <Link to={createHref(ROUTE_USER_EDITS, user)} className="ms-2">
-              <Button variant="secondary">User Edits</Button>
-            </Link>
-            {isOwner && (
-              <>
-                <Link to={ROUTE_USER_MY_FINGERPRINTS} className="ms-2">
-                  <Button variant="secondary">My Fingerprints</Button>
-                </Link>
-                <Link to={ROUTE_USER_PASSWORD} className="ms-2">
-                  <Button>Change Password</Button>
-                </Link>
-              </>
-            )}
-            {isOwner && (
-              <Button onClick={() => handleChangeEmail()} className="ms-2">
-                Change Email
+    <div className="mx-auto w-full max-w-5xl">
+      <div className="flex flex-wrap items-center gap-2">
+        <h3>{user.name}</h3>
+        {deleteModal}
+        {regenerateAPIKeyModal}
+        {generateInviteCodeModal}
+        {rescindCodeModal}
+        <div className="ml-auto flex flex-wrap gap-2">
+          <Link
+            to={createHref(ROUTE_USER_EDITS, user)}
+            className={buttonVariants({ variant: "secondary" })}
+          >
+            User Edits
+          </Link>
+          {isOwner && (
+            <>
+              <Link
+                to={ROUTE_USER_MY_FINGERPRINTS}
+                className={buttonVariants({ variant: "secondary" })}
+              >
+                My Fingerprints
+              </Link>
+              <Link to={ROUTE_USER_PASSWORD} className={buttonVariants()}>
+                Change Password
+              </Link>
+            </>
+          )}
+          {isOwner && (
+            <Button onClick={() => handleChangeEmail()}>Change Email</Button>
+          )}
+          {isAdmin && (
+            <>
+              <Link
+                to={createHref(ROUTE_USER_EDIT, user)}
+                className={buttonVariants()}
+              >
+                Edit User
+              </Link>
+              <Button
+                variant="danger"
+                disabled={showDelete || deleting}
+                onClick={toggleModal}
+              >
+                Delete User
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+      <hr className="border-border" />
+      {showPrivate && (
+        <>
+          <div className="grid grid-cols-12">
+            <div className="col-span-2">Email</div>
+            <div className="col-span-10">{user.email}</div>
+          </div>
+          <div className="grid grid-cols-12">
+            <div className="col-span-2">Roles</div>
+            <div className="col-span-10">{(user.roles ?? []).join(", ")}</div>
+          </div>
+          <div className="my-3 grid grid-cols-12 items-baseline">
+            <div className="col-span-2">API key</div>
+            <div className="col-span-10 flex gap-2">
+              <Input value={user.api_key ?? ""} disabled />
+              <Button
+                onClick={() =>
+                  navigator.clipboard?.writeText(user.api_key ?? "")
+                }
+              >
+                Copy to Clipboard
+              </Button>
+              <Tooltip text="Regenerate API Key" placement="top-end">
+                <Button
+                  variant="danger"
+                  disabled={showRegenerateAPIKey}
+                  onClick={() => setShowRegenerateAPIKey(true)}
+                >
+                  <Icon icon={faSyncAlt} />
+                </Button>
+              </Tooltip>
+            </div>
+          </div>
+          {endpointURL && (
+            <div className="my-3 grid grid-cols-12 items-baseline">
+              <div className="col-span-2">GraphQL Endpoint</div>
+              <div className="col-span-10 flex gap-2">
+                <Input value={endpointURL} disabled />
+                <Button
+                  onClick={() => navigator.clipboard?.writeText(endpointURL)}
+                >
+                  Copy to Clipboard
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Table>
+          <thead>
+            <tr>
+              <th>Edits</th>
+              <th>Count</th>
+              {showBotEdits && <th>Bot</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {editCount.map(([status, count, bot]) => (
+              <tr key={status}>
+                <td>{status}</td>
+                <td>{count}</td>
+                {showBotEdits && <td>{bot}</td>}
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+        <Table>
+          <thead>
+            <tr>
+              <th>Votes</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            {voteCount.map(([vote, count]) => (
+              <tr key={vote}>
+                <td>{vote}</td>
+                <td>{count}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </div>
+      {showPrivate && (
+        <div className="grid grid-cols-12 items-center">
+          <div className="col-span-2">Invite Tokens</div>
+          <div className="col-span-10 flex items-center gap-2">
+            {isAdmin && (
+              <Button onClick={() => handleRevokeInvite()}>
+                <Icon icon={faMinus} />
               </Button>
             )}
+            <span>{user.invite_tokens ?? 0}</span>
             {isAdmin && (
-              <>
-                <Link to={createHref(ROUTE_USER_EDIT, user)} className="ms-2">
-                  <Button>Edit User</Button>
-                </Link>
-                <Button
-                  className="ms-2"
-                  variant="danger"
-                  disabled={showDelete || deleting}
-                  onClick={toggleModal}
-                >
-                  Delete User
-                </Button>
-              </>
+              <Button onClick={() => handleGrantInvite()}>
+                <Icon icon={faPlus} />
+              </Button>
             )}
           </div>
         </div>
-        <hr />
-        {showPrivate && (
-          <>
-            <Row>
-              <Col xs={2}>Email</Col>
-              <Col>{user.email}</Col>
-            </Row>
-            <Row>
-              <Col xs={2}>Roles</Col>
-              <Col>{(user.roles ?? []).join(", ")}</Col>
-            </Row>
-            <Row className="my-3 align-items-baseline">
-              <Col xs={2}>API key</Col>
-              <Col xs={10}>
-                <InputGroup>
-                  <Form.Control value={user.api_key ?? ""} disabled />
-                  <Button
-                    onClick={() =>
-                      navigator.clipboard?.writeText(user.api_key ?? "")
-                    }
-                  >
-                    Copy to Clipboard
-                  </Button>
-                  <Tooltip text="Regenerate API Key" placement="top-end">
-                    <Button
-                      variant="danger"
-                      disabled={showRegenerateAPIKey}
-                      onClick={() => setShowRegenerateAPIKey(true)}
-                    >
-                      <Icon icon={faSyncAlt} />
-                    </Button>
-                  </Tooltip>
-                </InputGroup>
-              </Col>
-            </Row>
-            {endpointURL && (
-              <Row className="my-3 align-items-baseline">
-                <Col xs={2}>GraphQL Endpoint</Col>
-                <Col xs={10}>
-                  <InputGroup>
-                    <Form.Control value={endpointURL} disabled />
-                    <Button
-                      onClick={() =>
-                        navigator.clipboard?.writeText(endpointURL)
-                      }
-                    >
-                      Copy to Clipboard
-                    </Button>
-                  </InputGroup>
-                </Col>
-              </Row>
+      )}
+      {showPrivate && (
+        <div className="mt-3">
+          <div>Invite Keys</div>
+          <div className="my-2">
+            {isOwner && (
+              <Button
+                variant="link"
+                onClick={() => setShowGenerateInviteKey(true)}
+                disabled={user.invite_tokens === 0}
+              >
+                <Icon icon={faPlus} className="mr-2" />
+                Generate Key
+              </Button>
             )}
-          </>
-        )}
-        <Row>
-          <Col xs={6}>
-            <Table>
-              <thead>
-                <tr>
-                  <th>Edits</th>
-                  <th>Count</th>
-                  {showBotEdits && <th>Bot</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {editCount.map(([status, count, bot]) => (
-                  <tr key={status}>
-                    <td>{status}</td>
-                    <td>{count}</td>
-                    {showBotEdits && <td>{bot}</td>}
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Col>
-          <Col xs={6}>
-            <Table>
-              <thead>
-                <tr>
-                  <th>Votes</th>
-                  <th>Count</th>
-                </tr>
-              </thead>
-              <tbody>
-                {voteCount.map(([vote, count]) => (
-                  <tr key={vote}>
-                    <td>{vote}</td>
-                    <td>{count}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Col>
-        </Row>
-        {showPrivate && (
-          <Row>
-            <Col xs={2}>Invite Tokens</Col>
-            <InputGroup className="col">
-              {isAdmin && (
-                <Button onClick={() => handleRevokeInvite()}>
-                  <Icon icon={faMinus} />
-                </Button>
-              )}
-              <InputGroup.Text>{user.invite_tokens ?? 0}</InputGroup.Text>
-              {isAdmin && (
-                <Button onClick={() => handleGrantInvite()}>
-                  <Icon icon={faPlus} />
-                </Button>
-              )}
-            </InputGroup>
-          </Row>
-        )}
-        {showPrivate && (
-          <div>
-            <Row>
-              <Col xs={2}>Invite Keys</Col>
-            </Row>
-            <Row className="my-2">
-              <Col>
-                <div>
-                  {isOwner && (
-                    <Button
-                      variant="link"
-                      onClick={() => setShowGenerateInviteKey(true)}
-                      disabled={user.invite_tokens === 0}
-                    >
-                      <Icon icon={faPlus} className="me-2" />
-                      Generate Key
-                    </Button>
-                  )}
-                </div>
-                <UserInviteKeys
-                  inviteCodes={user.invite_codes ?? []}
-                  rescindInvite={(c) => setShowRescindCode(c)}
-                />
-              </Col>
-            </Row>
+            <UserInviteKeys
+              inviteCodes={user.invite_codes ?? []}
+              rescindInvite={(c) => setShowRescindCode(c)}
+            />
           </div>
-        )}
-      </Col>
-    </Row>
+        </div>
+      )}
+    </div>
   );
 };
 

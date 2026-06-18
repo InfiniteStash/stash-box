@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { Card } from "react-bootstrap";
+import { Card, CardBody } from "src/components/ui/card";
 import { useClusterPage } from "../ClusterPageContext";
 import { ClusterCanvas } from "./ClusterCanvas";
 import { ClusterList } from "./ClusterList";
@@ -7,8 +7,8 @@ import { ClusterList } from "./ClusterList";
 export const ClusterPickerCard: FC = () => {
   const { activeCluster, switchTo, selection } = useClusterPage();
   return (
-    <Card bg="dark" text="light" className="mb-3">
-      <Card.Body>
+    <Card className="mb-3">
+      <CardBody>
         <div className="ClusterPicker">
           <div className="ClusterPicker-list">
             <ClusterList
@@ -21,13 +21,13 @@ export const ClusterPickerCard: FC = () => {
             {activeCluster ? (
               <ClusterCanvas />
             ) : (
-              <div className="text-muted py-4 text-center">
+              <div className="py-4 text-center text-muted-foreground">
                 Select a cluster from the list to inspect it.
               </div>
             )}
           </div>
         </div>
-      </Card.Body>
+      </CardBody>
     </Card>
   );
 };

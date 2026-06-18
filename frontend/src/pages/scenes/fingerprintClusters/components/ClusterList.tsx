@@ -4,8 +4,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 import type { FC } from "react";
-import { Badge } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
+import { Badge } from "src/components/ui/badge";
 import { useClusterPage } from "../ClusterPageContext";
 import { clusterDurationLabel, clusterSceneSummaries } from "../utils";
 import { SceneChip } from "./SceneChip";
@@ -21,11 +21,13 @@ export const ClusterList: FC<Props> = ({ onSelect }) => {
   const { clusters, activeIndex, seedSceneId, paletteFor } = useClusterPage();
   if (clusters.length === 0) {
     return (
-      <div className="text-muted py-3 text-center">No clusters found.</div>
+      <div className="py-3 text-center text-muted-foreground">
+        No clusters found.
+      </div>
     );
   }
   return (
-    <div className="d-flex flex-column gap-2">
+    <div className="flex flex-col gap-2">
       {clusters.map((c, i) => {
         const isActive = i === activeIndex;
         const sceneSummaries = clusterSceneSummaries(c);
@@ -45,33 +47,33 @@ export const ClusterList: FC<Props> = ({ onSelect }) => {
               "ClusterListItem-active": isActive,
             })}
           >
-            <div className="d-flex align-items-center gap-2 mb-1">
+            <div className="mb-1 flex items-center gap-2">
               <strong>Cluster {i + 1}</strong>
               {warn && (
-                <Badge bg="warning" text="dark">
-                  <Icon icon={faExclamationTriangle} className="me-1" />
+                <Badge variant="warning">
+                  <Icon icon={faExclamationTriangle} className="mr-1" />
                   cross-scene
                 </Badge>
               )}
             </div>
-            <div className="small text-muted mb-2">
+            <div className="mb-2 text-sm text-muted-foreground">
               <div>
-                <span className="text-nowrap">
+                <span className="whitespace-nowrap">
                   {memberCount} phash{memberCount === 1 ? "" : "es"}
                 </span>
                 {" · "}
-                <span className="text-nowrap">
+                <span className="whitespace-nowrap">
                   {totalSubs} submission{totalSubs === 1 ? "" : "s"}
                 </span>
               </div>
               {durationLabel && (
                 <div>
-                  <Icon icon={faClock} className="me-1" />
+                  <Icon icon={faClock} className="mr-1" />
                   {durationLabel}
                 </div>
               )}
             </div>
-            <div className="d-flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-1">
               {sceneSummaries.map((s) => (
                 <SceneChip
                   key={s.scene.id}

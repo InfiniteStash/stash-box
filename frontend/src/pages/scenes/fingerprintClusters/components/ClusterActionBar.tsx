@@ -1,7 +1,7 @@
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
-import { Button } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
 import { useClusterPage } from "../ClusterPageContext";
 import { multiSceneHashes } from "../utils";
 
@@ -10,19 +10,18 @@ export const ClusterActionBar: FC = () => {
   const multiScene = multiSceneHashes(activeCluster);
   const selectedCount = selection.selectedHashes.size;
   return (
-    <div className="d-flex flex-wrap gap-2 mb-3 align-items-center">
+    <div className="mb-3 flex flex-wrap items-center gap-2">
       <Button
         size="sm"
-        variant="outline-secondary"
+        variant="secondary"
         onClick={selection.clear}
         disabled={selectedCount === 0}
       >
         Clear ({selectedCount})
       </Button>
-      <div className="ms-auto d-flex gap-2">
+      <div className="ml-auto flex gap-2">
         <Button
           size="sm"
-          variant="primary"
           onClick={() => {
             selection.clear();
             selection.setMany(multiScene, true);
@@ -32,12 +31,11 @@ export const ClusterActionBar: FC = () => {
           Select conflicting hashes ({multiScene.length})
         </Button>
         <Button
-          variant="primary"
           size="sm"
           disabled={selectedCount === 0 || moving}
           onClick={openMoveModal}
         >
-          <Icon icon={faArrowRight} className="me-1" />
+          <Icon icon={faArrowRight} className="mr-1" />
           Move hashes ({selectedCount})
         </Button>
       </div>

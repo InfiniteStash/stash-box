@@ -1,7 +1,7 @@
 import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
-import { Button } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
 import type { FingerprintAlgorithm } from "src/graphql";
 import { formatDuration } from "src/utils";
 
@@ -20,10 +20,10 @@ export const UserFingerprint: FC<Props> = ({
 }) => (
   <li>
     <div key={fingerprint.hash}>
-      <b className="me-2">{fingerprint.algorithm}</b>
+      <b className="mr-2">{fingerprint.algorithm}</b>
       {fingerprint.hash} ({formatDuration(fingerprint.duration)})
       <Button
-        className="text-danger ms-2"
+        className="ml-2 text-destructive"
         title="Submitted by you - click to remove submission"
         onClick={deleteFingerprint}
         variant="link"

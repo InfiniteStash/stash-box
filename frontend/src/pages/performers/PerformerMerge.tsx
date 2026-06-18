@@ -1,9 +1,9 @@
 import { type FC, useMemo, useState } from "react";
-import { Button, Col, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { Help, LoadingIndicator } from "src/components/fragments";
 import PerformerCard from "src/components/performerCard";
 import PerformerSelect from "src/components/performerSelect";
+import { Button } from "src/components/ui/button";
 import {
   type FullPerformerQuery,
   OperationEnum,
@@ -102,14 +102,14 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
       <h3>
         Merge performers into <em>{performer.name}</em>
       </h3>
-      <hr />
-      <div className="row">
-        <div className="col-6">
+      <hr className="border-border" />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div>
           {!mergeActive && (
             <>
               <label
                 htmlFor="performer-merge-source-select"
-                className="form-label"
+                className="mb-1 block text-sm"
               >
                 Merge sources
               </label>
@@ -124,31 +124,27 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
                 inputId="performer-merge-source-select"
               />
               {mergeSources.length > 0 && (
-                <Button onClick={toggleMerge} className="ms-auto">
+                <Button onClick={toggleMerge} className="ml-auto">
                   Continue
                 </Button>
               )}
             </>
           )}
           {mergeActive && (
-            <Row>
-              <Col xs={3}>
+            <div className="grid grid-cols-12 gap-4">
+              <div className="col-span-3">
                 <h6 className="text-center">Merge Target</h6>
                 <PerformerCard performer={performer} className="TargetCard" />
-              </Col>
-              <Col xs={9}>
-                <Row className="mt-4">
-                  {mergeSources.map((source) => (
-                    <Col xs={4} key={source.id}>
-                      <PerformerCard performer={source} />
-                    </Col>
-                  ))}
-                </Row>
-              </Col>
-            </Row>
+              </div>
+              <div className="col-span-9 mt-4 grid grid-cols-3 gap-4">
+                {mergeSources.map((source) => (
+                  <PerformerCard performer={source} key={source.id} />
+                ))}
+              </div>
+            </div>
           )}
         </div>
-        <div className="col-6">
+        <div>
           <p>
             Merging performers reassigns all scene performances of the sources
             to the target performer. The source <i>stashIds</i> will be
@@ -163,19 +159,24 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
       </div>
       {mergeActive && (
         <>
-          <Form.Check
-            id="merge-alias-updating"
-            checked={aliasUpdating}
-            onChange={() => setAliasUpdating(!aliasUpdating)}
-            label="Update scene performance aliases on merged performers to old performer name."
-            className="d-inline-block"
-          />
+          <label className="inline-flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="merge-alias-updating"
+              checked={aliasUpdating}
+              onChange={() => setAliasUpdating(!aliasUpdating)}
+            />
+            <span>
+              Update scene performance aliases on merged performers to old
+              performer name.
+            </span>
+          </label>
           <Help message={UPDATE_ALIAS_MESSAGE} />
           <h5 className="mt-4">
             Update performer metadata for <em>{performer.name}</em>
           </h5>
           {sourcesError ? (
-            <div className="text-danger">
+            <div className="text-destructive">
               Failed to load performer details: {sourcesError.message}
             </div>
           ) : sourcesReady ? (
@@ -190,7 +191,7 @@ const PerformerMerge: FC<Props> = ({ performer }) => {
             <LoadingIndicator message="Loading performer details..." />
           )}
           {submissionError && (
-            <div className="text-danger text-end col-9">
+            <div className="w-3/4 text-right text-destructive">
               Error: {submissionError}
             </div>
           )}

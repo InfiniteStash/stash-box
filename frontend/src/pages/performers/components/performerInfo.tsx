@@ -1,6 +1,5 @@
 import { faCodeMerge } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
-import { Button, Card, Col, Row, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import {
   FavoriteStar,
@@ -11,6 +10,9 @@ import {
   Tooltip,
 } from "src/components/fragments";
 import Image from "src/components/image";
+import { buttonVariants } from "src/components/ui/button";
+import { Card, CardBody, CardHeader } from "src/components/ui/card";
+import { Table } from "src/components/ui/table";
 import {
   BreastTypes,
   EthnicityTypes,
@@ -50,41 +52,44 @@ const Actions: FC<Props> = ({ performer }) => {
   if (!isEditor || performer.deleted) return null;
 
   return (
-    <Row className={CLASSNAME_ACTIONS}>
-      <Col xs={6}>
-        <div className="text-end">
-          <Link to={createHref(ROUTE_PERFORMER_EDIT, performer)}>
-            <Button>Edit</Button>
-          </Link>
+    <div className={CLASSNAME_ACTIONS}>
+      <div className="flex justify-end gap-2 md:w-1/2">
+        <Link
+          to={createHref(ROUTE_PERFORMER_EDIT, performer)}
+          className={buttonVariants()}
+        >
+          Edit
+        </Link>
+        <Tooltip
+          text={
+            <>
+              Merge other performers into <b>{performer.name}</b>
+            </>
+          }
+        >
           <Link
             to={createHref(ROUTE_PERFORMER_MERGE, performer)}
-            className="ms-2"
+            className={buttonVariants()}
           >
-            <Tooltip
-              text={
-                <>
-                  Merge other performers into <b>{performer.name}</b>
-                </>
-              }
-            >
-              <Button>Merge</Button>
-            </Tooltip>
+            Merge
           </Link>
-          <Link
-            to={createHref(ROUTE_PERFORMER_DELETE, performer)}
-            className="ms-2"
-          >
-            <Button variant="danger">Delete</Button>
-          </Link>
-        </div>
-      </Col>
-    </Row>
+        </Tooltip>
+        <Link
+          to={createHref(ROUTE_PERFORMER_DELETE, performer)}
+          className={buttonVariants({ variant: "danger" })}
+        >
+          Delete
+        </Link>
+      </div>
+    </div>
   );
 };
 
 const PerformerAge = ({ age }: { age?: number | null }): React.ReactNode => {
   if (!age) return "";
-  return <small className="text-muted ms-2">{`${age} years old`}</small>;
+  return (
+    <small className="ml-2 text-muted-foreground">{`${age} years old`}</small>
+  );
 };
 
 export const PerformerInfo: FC<Props> = ({ performer }) => {
@@ -96,10 +101,10 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
   return (
     <div className={CLASSNAME}>
       <Actions performer={performer} />
-      <Row>
-        <Col xs={6}>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div>
           <Card>
-            <Card.Header>
+            <CardHeader>
               <h3>
                 <GenderIcon gender={performer?.gender} />
                 <PerformerName performer={performer} />
@@ -107,22 +112,23 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
                   entity={performer}
                   entityType="performer"
                   interactable
-                  className="ps-2"
+                  className="pl-2"
                 />
               </h3>
               {mergedInto?.findPerformer && (
-                <h6 className="text-muted">
-                  <Icon icon={faCodeMerge} className="me-2 text-danger" />
+                <h6 className="text-muted-foreground">
+                  <Icon icon={faCodeMerge} className="mr-2 text-destructive" />
                   <span>Merged into </span>
                   <Link
                     to={createHref(ROUTE_PERFORMER, mergedInto.findPerformer)}
+                    className="text-link hover:underline"
                   >
                     <PerformerName performer={mergedInto.findPerformer} />
                   </Link>
                 </h6>
               )}
-            </Card.Header>
-            <Card.Body className="p-0">
+            </CardHeader>
+            <CardBody className="p-0">
               <Table striped>
                 <tbody>
                   <tr>
@@ -216,11 +222,11 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
                   </tr>
                 </tbody>
               </Table>
-            </Card.Body>
+            </CardBody>
           </Card>
           <HighlightedLinks urls={performer.urls} />
-        </Col>
-        <Col xs={6} className="performer-photo">
+        </div>
+        <div className="performer-photo">
           <Image
             images={performer.images}
             orientation="portrait"
@@ -228,8 +234,8 @@ export const PerformerInfo: FC<Props> = ({ performer }) => {
             alt="Performer"
             lightbox
           />
-        </Col>
-      </Row>
+        </div>
+      </div>
     </div>
   );
 };

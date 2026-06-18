@@ -1,9 +1,9 @@
 import { CombinedGraphQLErrors } from "@apollo/client";
 import { type FC, useState } from "react";
-import { Button, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { ErrorMessage } from "src/components/fragments";
 import Title from "src/components/title";
+import { Button } from "src/components/ui/button";
 import type { User } from "src/context";
 import { UserChangeEmailStatus, useConfirmChangeEmail } from "src/graphql";
 import { useQueryParams, useToast } from "src/hooks";
@@ -57,13 +57,13 @@ const ConfirmChangeEmail: FC<{ user: User }> = ({ user }) => {
   return (
     <div className="LoginPrompt">
       <Title page="Confirm Email change" />
-      <Form className="align-self-center col-8 mx-auto">
+      <form className="mx-auto w-full max-w-xl self-center">
         <h5>Confirm change email</h5>
         <p>Click the button to confirm email change.</p>
         <Button type="submit" disabled={loading} onClick={onSubmit}>
           Complete email change
         </Button>
-      </Form>
+      </form>
     </div>
   );
 };

@@ -1,8 +1,11 @@
 import { useLazyQuery } from "@apollo/client/react";
 import { faArrowRight, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { type FC, useState } from "react";
-import { Button, Form, Modal } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "src/components/ui/dialog";
+import { Label } from "src/components/ui/field";
+import { Input } from "src/components/ui/input";
 import { SceneDocument, type SceneQuery } from "src/graphql";
 import { useToast } from "src/hooks";
 import { extractIdFromUrl, formatDuration } from "src/utils";
@@ -72,39 +75,37 @@ export const MoveFingerprintsModal: FC<Props> = ({
   };
 
   return (
-    <Modal show={show} onHide={handleClose}>
-      <Modal.Header closeButton>
-        <Modal.Title>Move Fingerprint Submissions</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
+    <Dialog open={show} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent>
+        <DialogTitle>Move Fingerprint Submissions</DialogTitle>
         <p>Move {selectedCount} fingerprint submission(s) to another scene.</p>
-        <Form.Group className="mb-3">
-          <Form.Label>Target Scene ID</Form.Label>
-          <Form.Control
+        <div className="mb-3 flex flex-col gap-1">
+          <Label htmlFor="move-target-scene">Target Scene ID</Label>
+          <Input
+            id="move-target-scene"
             type="text"
             placeholder="Enter scene ID"
             value={targetSceneId}
             onChange={(e) => handleTargetSceneIdChange(e.target.value)}
           />
-        </Form.Group>
+        </div>
         {loadingScene && (
-          <div className="text-center my-3">
+          <div className="my-3 text-center">
             <Icon icon={faSpinner} className="fa-spin" /> Loading scene...
           </div>
         )}
         {targetScene && (
-          <div className="d-flex align-items-center p-3 border rounded">
+          <div className="flex items-center rounded border border-border p-3">
             {targetScene.images.length > 0 && (
               <img
                 src={targetScene.images[0].url}
                 alt={targetScene.title || "Scene"}
-                style={{ width: "120px", height: "80px", objectFit: "cover" }}
-                className="me-3"
+                className="mr-3 h-20 w-[120px] object-cover"
               />
             )}
             <div>
               <h6 className="mb-1">{targetScene.title || "Untitled"}</h6>
-              <small className="text-muted">
+              <small className="text-muted-foreground">
                 {targetScene.studio?.name && `${targetScene.studio.name} • `}
                 {targetScene.release_date}
                 {targetScene.duration
@@ -114,29 +115,25 @@ export const MoveFingerprintsModal: FC<Props> = ({
             </div>
           </div>
         )}
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
-          Cancel
-        </Button>
-        <Button
-          variant="primary"
-          onClick={handleMove}
-          disabled={moving || !targetScene}
-        >
-          {moving ? (
-            <>
-              <Icon icon={faSpinner} className="fa-spin me-1" />
-              Moving...
-            </>
-          ) : (
-            <>
-              <Icon icon={faArrowRight} className="me-1" />
-              Move
-            </>
-          )}
-        </Button>
-      </Modal.Footer>
-    </Modal>
+        <div className="mt-4 flex justify-end gap-2">
+          <Button variant="secondary" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleMove} disabled={moving || !targetScene}>
+            {moving ? (
+              <>
+                <Icon icon={faSpinner} className="mr-1 fa-spin" />
+                Moving...
+              </>
+            ) : (
+              <>
+                <Icon icon={faArrowRight} className="mr-1" />
+                Move
+              </>
+            )}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };

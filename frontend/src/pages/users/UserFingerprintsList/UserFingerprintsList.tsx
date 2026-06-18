@@ -3,11 +3,13 @@ import {
   faSortAmountUp,
 } from "@fortawesome/free-solid-svg-icons";
 import { type FC, useState } from "react";
-import { Button, Form, InputGroup, Row, Table } from "react-bootstrap";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import List from "src/components/list/List";
 import Modal from "src/components/modal";
 import TagFilter from "src/components/tagFilter";
+import { Button } from "src/components/ui/button";
+import { Select } from "src/components/ui/select";
+import { Table } from "src/components/ui/table";
 import {
   CriterionModifier,
   type FingerprintAlgorithm,
@@ -78,9 +80,9 @@ export const UserFingerprintsList: FC<Props> = ({
   if (!loading && !data) return <ErrorMessage error="Failed to load scenes." />;
 
   const filters = (
-    <InputGroup className="scene-sort w-auto">
+    <div className="scene-sort flex gap-2">
       <TagFilter tag={params.tag} onChange={(t) => setParams("tag", t?.id)} />
-      <Form.Select
+      <Select
         className="w-auto"
         onChange={(e) => setParams("sort", e.currentTarget.value.toLowerCase())}
         defaultValue={sort ?? "name"}
@@ -90,7 +92,7 @@ export const UserFingerprintsList: FC<Props> = ({
             {s.label}
           </option>
         ))}
-      </Form.Select>
+      </Select>
       <Button
         variant="secondary"
         onClick={() =>
@@ -110,7 +112,7 @@ export const UserFingerprintsList: FC<Props> = ({
           }
         />
       </Button>
-    </InputGroup>
+    </div>
   );
 
   const deleteFingerprints = (
@@ -156,28 +158,26 @@ export const UserFingerprintsList: FC<Props> = ({
         filters={filters}
         entityName="scenes"
       >
-        <Row>
-          <Table striped variant="dark">
-            <thead>
-              <tr>
-                <th style={{ width: "50px" }}></th>
-                <th>Title</th>
-                <th>Studio</th>
-                <th>Duration</th>
-                <th style={{ width: "120px" }}>Release Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data?.queryScenes.scenes.map((scene) => (
-                <UserSceneLine
-                  key={scene.id}
-                  scene={scene}
-                  deleteFingerprints={deleteFingerprints}
-                />
-              ))}
-            </tbody>
-          </Table>
-        </Row>
+        <Table striped>
+          <thead>
+            <tr>
+              <th className="w-[50px]"></th>
+              <th>Title</th>
+              <th>Studio</th>
+              <th>Duration</th>
+              <th className="w-[120px]">Release Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data?.queryScenes.scenes.map((scene) => (
+              <UserSceneLine
+                key={scene.id}
+                scene={scene}
+                deleteFingerprints={deleteFingerprints}
+              />
+            ))}
+          </tbody>
+        </Table>
       </List>
     </>
   );

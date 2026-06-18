@@ -71,7 +71,6 @@ export const SearchLayout: FC = () => {
           defaultValue={term}
           onChange={(e) => handleSearch(e.currentTarget.value)}
           placeholder="Search for performer or scene"
-          // biome-ignore lint/a11y/noAutofocus: search is the page's primary action
           autoFocus
         />
       </div>
