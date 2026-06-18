@@ -17,7 +17,7 @@ const render = (
   );
 
 const rowFor = (label: string) =>
-  screen.getByText(label).closest(".row") as HTMLElement;
+  screen.getByText(label).closest(".ChangeRow") as HTMLElement;
 
 const site = (id: string, name = `site-${id}`) => ({
   id,
@@ -78,7 +78,7 @@ describe("renderStudioDetails", () => {
     it("renders both old and new for renamed studio", () => {
       render({ name: "Renamed" }, { name: "Old" }, true);
       const row = rowFor("Name");
-      expect(row.querySelector(".bg-danger")).toHaveTextContent("Old");
+      expect(row.querySelector(".bg-destructive")).toHaveTextContent("Old");
       expect(row.querySelector(".bg-success")).toHaveTextContent("Renamed");
     });
 

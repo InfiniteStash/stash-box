@@ -83,28 +83,15 @@ button.Image {
   }
 }
 
-// Top-level because Modal portals to body
+// Top-level because the dialog portals to body
 .ImageLightbox {
-  transition: transform 0.25s ease-out;
-
-  .modal.fade & {
-    transform: scale(0.97);
-  }
-
-  .modal.show & {
-    transform: none;
-  }
-
-  .modal-content {
-    backdrop-filter: blur(6px);
-    background-color: rgba(0 0 0 / 75%);
-  }
-
-  .modal-body {
+  &-body {
     display: flex;
     gap: 1rem;
+    height: 100%;
     overflow: hidden;
     padding: 1rem 88px;
+    position: relative;
   }
 
   &-main {

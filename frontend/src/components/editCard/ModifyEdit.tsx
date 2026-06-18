@@ -1,6 +1,5 @@
 import { faCheck, faEdit, faXmark } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
-import { Col, Row } from "react-bootstrap";
 import ChangeRow from "src/components/changeRow";
 import { Icon } from "src/components/fragments";
 import ImageChangeRow from "src/components/imageChangeRow";
@@ -160,13 +159,13 @@ export const renderPerformerDetails = (
     )}
     {oldPerformerDetails?.name &&
       performerDetails.name !== oldPerformerDetails.name && (
-        <div className="d-flex mb-2 align-items-center">
+        <div className="mb-2 flex items-center">
           <Icon
             icon={setModifyAliases ? faCheck : faXmark}
             color={setModifyAliases ? "green" : "red"}
-            className="ms-auto"
+            className="ml-auto"
           />
-          <span className="ms-2">Set performance aliases to old name</span>
+          <span className="ml-2">Set performance aliases to old name</span>
         </div>
       )}
     <ChangeRow
@@ -340,14 +339,14 @@ export const renderPerformerDetails = (
       showDiff={showDiff}
     />
     {performerDetails.draft_id && (
-      <Row className="mb-2">
-        <Col xs={{ offset: 2 }}>
+      <div className="mb-2 grid grid-cols-12">
+        <div className="col-span-10 col-start-3">
           <h6>
             <Icon icon={faEdit} color="green" />
-            <span className="ms-1">Submitted by draft</span>
+            <span className="ml-1">Submitted by draft</span>
           </h6>
-        </Col>
-      </Row>
+        </div>
+      </div>
     )}
   </>
 );
@@ -508,14 +507,14 @@ export const renderSceneDetails = (
       showDiff={showDiff}
     />
     {sceneDetails.draft_id && (
-      <Row className="mb-2">
-        <Col xs={{ offset: 2 }}>
+      <div className="mb-2 grid grid-cols-12">
+        <div className="col-span-10 col-start-3">
           <h6>
             <Icon icon={faEdit} color="green" />
-            <span className="ms-1">Submitted by draft</span>
+            <span className="ml-1">Submitted by draft</span>
           </h6>
-        </Col>
-      </Row>
+        </div>
+      </div>
     )}
   </>
 );

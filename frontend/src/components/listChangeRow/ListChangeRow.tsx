@@ -1,7 +1,3 @@
-import type { PropsWithChildren } from "react";
-
-import { Col, Row } from "react-bootstrap";
-
 interface ListChangeRowProps<T> {
   added?: T[] | null;
   removed?: T[] | null;
@@ -21,12 +17,12 @@ const ListChangeRow = <T,>({
   getKey,
   renderItem,
   showDiff,
-}: PropsWithChildren<ListChangeRowProps<T>>) =>
+}: ListChangeRowProps<T>) =>
   (added ?? []).length > 0 || (removed ?? []).length > 0 ? (
-    <Row className={`${CLASSNAME}-${name}`}>
-      <b className="col-2 text-end">{name}</b>
+    <div className={`ChangeRow ${CLASSNAME}-${name} grid grid-cols-12 gap-x-3`}>
+      <b className="col-span-2 text-right">{name}</b>
       {showDiff && (
-        <Col xs={5}>
+        <div className="col-span-5">
           {(removed ?? []).length > 0 && (
             <>
               <h6>Removed</h6>
@@ -39,9 +35,9 @@ const ListChangeRow = <T,>({
               </div>
             </>
           )}
-        </Col>
+        </div>
       )}
-      <Col xs={showDiff ? 5 : 10}>
+      <div className={showDiff ? "col-span-5" : "col-span-10"}>
         {(added ?? []).length > 0 && (
           <>
             {showDiff && <h6>Added</h6>}
@@ -54,8 +50,8 @@ const ListChangeRow = <T,>({
             </div>
           </>
         )}
-      </Col>
-    </Row>
+      </div>
+    </div>
   ) : null;
 
 export default ListChangeRow;

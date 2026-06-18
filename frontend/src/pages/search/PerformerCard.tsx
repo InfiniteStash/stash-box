@@ -4,7 +4,6 @@ import {
   faVideo,
 } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
-import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import {
   FavoriteStar,
@@ -22,21 +21,21 @@ export type Performer = NonNullable<
 
 export const PerformerCard: FC<{ performer: Performer }> = ({ performer }) => (
   <Link to={performerHref(performer)} className="SearchPage-performer">
-    <Card>
+    <div className="flex flex-row gap-3 rounded-lg bg-card p-[10px] text-card-foreground hover:bg-accent">
       <Thumbnail
         orientation="portrait"
         image={getImage(performer.images, "portrait")}
         className="SearchPage-performer-image"
         size={300}
       />
-      <div className="ms-3">
+      <div>
         <h4>
           <GenderIcon gender={performer?.gender} />
           <PerformerName performer={performer} />
           <FavoriteStar
             entity={performer}
             entityType="performer"
-            className="ps-2"
+            className="pl-2"
           />
           {performer.aliases.length > 0 && (
             <h6>
@@ -63,6 +62,6 @@ export const PerformerCard: FC<{ performer: Performer }> = ({ performer }) => (
           </div>
         </div>
       </div>
-    </Card>
+    </div>
   </Link>
 );

@@ -1,5 +1,4 @@
 import type { FC } from "react";
-import { Col, Row } from "react-bootstrap";
 import { SiteLink } from "src/components/fragments";
 
 const CLASSNAME = "URLChangeRow";
@@ -15,15 +14,15 @@ export interface URL {
 
 const URLChanges: FC<{ urls: URL[] }> = ({ urls }) => (
   <div className={CLASSNAME}>
-    <ul className="ps-0">
+    <ul className="pl-0">
       {urls.map((url) => (
-        <li key={url.url} className="d-flex align-items-start">
+        <li key={url.url} className="flex items-start">
           <SiteLink site={url.site} />
           <a
             href={url.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="d-inline-block w-50 flex-grow-1 text-break"
+            className="inline-block w-1/2 grow break-words text-link hover:underline"
           >
             {url.url}
           </a>
@@ -41,27 +40,27 @@ interface URLChangeRowProps {
 
 const URLChangeRow: FC<URLChangeRowProps> = ({ newURLs, oldURLs, showDiff }) =>
   (newURLs ?? []).length > 0 || (oldURLs ?? []).length > 0 ? (
-    <Row className={CLASSNAME}>
-      <b className="col-2 text-end">Links</b>
+    <div className={`ChangeRow ${CLASSNAME} grid grid-cols-12 gap-x-3`}>
+      <b className="col-span-2 text-right">Links</b>
       {showDiff && (
-        <Col xs={5}>
+        <div className="col-span-5">
           {(oldURLs ?? []).length > 0 && (
             <>
               <h6>Removed</h6>
               <URLChanges urls={oldURLs ?? []} />
             </>
           )}
-        </Col>
+        </div>
       )}
-      <Col xs={showDiff ? 5 : 10}>
+      <div className={showDiff ? "col-span-5" : "col-span-10"}>
         {(newURLs ?? []).length > 0 && (
           <>
             {showDiff && <h6>Added</h6>}
             <URLChanges urls={newURLs ?? []} />
           </>
         )}
-      </Col>
-    </Row>
+      </div>
+    </div>
   ) : null;
 
 export default URLChangeRow;

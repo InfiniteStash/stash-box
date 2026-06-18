@@ -1,9 +1,12 @@
 import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
-import { Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { ErrorMessage, Icon, LoadingIndicator } from "src/components/fragments";
 import { List } from "src/components/list";
+import { Button, buttonVariants } from "src/components/ui/button";
+import { Label } from "src/components/ui/field";
+import { Select } from "src/components/ui/select";
+import { Switch } from "src/components/ui/switch";
 import { ROUTE_NOTIFICATION_SUBSCRIPTIONS } from "src/constants/route";
 import {
   NotificationEnum,
@@ -56,21 +59,19 @@ const Notifications: FC = () => {
 
   return (
     <>
-      <div className="d-flex">
-        <h3 className="me-4">Notifications</h3>
+      <div className="flex items-center">
+        <h3 className="mr-4">Notifications</h3>
         {user && (
           <>
             <Link
               to={userHref(user, ROUTE_NOTIFICATION_SUBSCRIPTIONS)}
-              className="ms-auto"
+              className={`ml-auto ${buttonVariants({ variant: "link" })}`}
             >
-              <Button variant="link">
-                <Icon icon={faEdit} className="me-2" />
-                Edit Subscriptions
-              </Button>
+              <Icon icon={faEdit} className="mr-2" />
+              Edit Subscriptions
             </Link>
             <Button
-              className="ms-2"
+              className="ml-2"
               onClick={() => markNotificationsRead()}
               disabled={
                 markingRead ||
@@ -89,33 +90,32 @@ const Notifications: FC = () => {
         listCount={data?.queryNotifications.count}
         filters={
           <>
-            <Form.Group className="mx-2 mb-3 d-flex flex-column">
-              <Form.Label>Notification Type</Form.Label>
-              <Form.Select
+            <div className="mx-2 mb-3 flex flex-col gap-1">
+              <Label>Notification Type</Label>
+              <Select
                 onChange={(e) =>
                   setParams("notification", e.currentTarget.value)
                 }
                 value={notification}
-                style={{ maxWidth: 250 }}
+                className="max-w-[250px]"
               >
                 <option value="all" key="all-types">
                   All
                 </option>
                 {enumToOptions(NotificationType)}
-              </Form.Select>
-            </Form.Group>
+              </Select>
+            </div>
 
-            <Form.Group controlId="unread" className="text-center">
-              <Form.Label>Unread Only</Form.Label>
-              <Form.Check
-                className="mt-2"
-                type="switch"
+            <div className="flex flex-col gap-1 text-center">
+              <Label>Unread Only</Label>
+              <Switch
+                className="mt-2 justify-center"
                 defaultChecked={unread}
-                onChange={(e) =>
-                  setParams("unread", e.currentTarget.checked.toString())
+                onCheckedChange={(checked) =>
+                  setParams("unread", checked.toString())
                 }
               />
-            </Form.Group>
+            </div>
           </>
         }
         loading={loading}

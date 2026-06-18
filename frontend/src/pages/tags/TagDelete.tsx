@@ -1,9 +1,9 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import type { FC } from "react";
-import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { EditNote } from "src/components/form";
+import { Button } from "src/components/ui/button";
 
 import {
   OperationEnum,
@@ -53,37 +53,33 @@ const TagDelete: FC<Props> = ({ tag }) => {
     });
 
   return (
-    <Form className="TagDeleteForm" onSubmit={handleSubmit(handleDelete)}>
-      <Row>
-        <h4>
-          Delete tag <em>{tag.name}</em>
-        </h4>
-      </Row>
-      <Form.Control type="hidden" value={tag.id} {...register("id")} />
-      <Row className="my-4">
-        <Col md={6}>
-          <EditNote register={register} error={errors.note} />
-          <div className="d-flex mt-2">
-            <Button
-              variant="danger"
-              className="ms-auto me-2"
-              onClick={() => navigate(-1)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled
-              className="d-none"
-              aria-hidden="true"
-            />
-            <Button type="submit" disabled={deleting}>
-              Submit Edit
-            </Button>
-          </div>
-        </Col>
-      </Row>
-    </Form>
+    <form className="TagDeleteForm" onSubmit={handleSubmit(handleDelete)}>
+      <h4>
+        Delete tag <em>{tag.name}</em>
+      </h4>
+      <input type="hidden" value={tag.id} {...register("id")} />
+      <div className="my-4 md:w-1/2">
+        <EditNote register={register} error={errors.note} />
+        <div className="mt-2 flex gap-2">
+          <Button
+            variant="danger"
+            className="ml-auto"
+            onClick={() => navigate(-1)}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled
+            className="hidden"
+            aria-hidden="true"
+          />
+          <Button type="submit" disabled={deleting}>
+            Submit Edit
+          </Button>
+        </div>
+      </div>
+    </form>
   );
 };
 

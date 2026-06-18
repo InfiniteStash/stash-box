@@ -1,5 +1,7 @@
 import type { FC, ReactNode } from "react";
-import { Button, Modal } from "react-bootstrap";
+
+import { Button } from "src/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "src/components/ui/dialog";
 
 interface ModalProps {
   callback: (status: boolean) => void;
@@ -29,20 +31,18 @@ const ModalComponent: FC<ModalProps & (MessageProps | ElementProps)> = ({
   const content = message || children;
 
   return (
-    <Modal show onHide={handleCancel}>
-      <Modal.Header closeButton>
-        <b>Warning</b>
-      </Modal.Header>
-      <Modal.Body>{content}</Modal.Body>
-      <Modal.Footer>
-        <Button variant="danger" onClick={handleAccept}>
-          {acceptTerm}
-        </Button>
-        <Button variant="primary" onClick={handleCancel}>
-          {cancelTerm}
-        </Button>
-      </Modal.Footer>
-    </Modal>
+    <Dialog open onOpenChange={(open) => !open && handleCancel()}>
+      <DialogContent>
+        <DialogTitle>Warning</DialogTitle>
+        <div>{content}</div>
+        <div className="mt-4 flex justify-end gap-2">
+          <Button variant="danger" onClick={handleAccept}>
+            {acceptTerm}
+          </Button>
+          <Button onClick={handleCancel}>{cancelTerm}</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

@@ -1,13 +1,13 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import cx from "classnames";
 import { type FC, useState } from "react";
-import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Button } from "src/components/ui/button";
+import { FieldError, FormGroup, Label } from "src/components/ui/field";
+import { Input } from "src/components/ui/input";
 import { ROUTE_FORGOT_PASSWORD, ROUTE_REGISTER } from "src/constants/route";
 import { getCredentialsSetting, getPlatformURL } from "src/utils/createClient";
 import * as yup from "yup";
-
 import "./App.scss";
 import { useCurrentUser } from "./hooks";
 
@@ -60,63 +60,57 @@ const Login: FC = () => {
 
   return (
     <div className="LoginPrompt">
-      <Form
-        className="align-self-center col-4 mx-auto"
+      <form
+        className="mx-auto w-full max-w-sm self-center"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <Form.Floating>
-          <Form.Control
-            className={cx({ "is-invalid": errors?.username })}
+        <FormGroup>
+          <Label htmlFor="username">Username</Label>
+          <Input
+            id="username"
             placeholder="Username"
+            aria-invalid={!!errors?.username}
             {...register("username")}
           />
-          <Form.Label>Username</Form.Label>
-          <div className="invalid-feedback text-end">
-            {errors?.username?.message}
-          </div>
-        </Form.Floating>
-        <Form.Floating className="my-3">
-          <Form.Control
+          <FieldError>{errors?.username?.message}</FieldError>
+        </FormGroup>
+        <FormGroup>
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
             type="password"
-            className={cx({ "is-invalid": errors?.password })}
             placeholder="Password"
+            aria-invalid={!!errors?.password}
             {...register("password")}
           />
-          <Form.Label>Password</Form.Label>
-          <div className="invalid-feedback text-end">
-            {errors?.password?.message}
+          <FieldError>{errors?.password?.message}</FieldError>
+        </FormGroup>
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <Link
+              to={ROUTE_REGISTER}
+              className="text-link text-sm hover:underline"
+            >
+              Register
+            </Link>
+            <Link
+              to={ROUTE_FORGOT_PASSWORD}
+              className="text-link text-sm hover:underline"
+            >
+              Forgot Password
+            </Link>
           </div>
-        </Form.Floating>
-        <Row>
-          <Col xs={9}>
-            <div>
-              <Link to={ROUTE_REGISTER}>
-                <small>Register</small>
-              </Link>
-            </div>
-            <div>
-              <Link to={ROUTE_FORGOT_PASSWORD}>
-                <small>Forgot Password</small>
-              </Link>
-            </div>
-          </Col>
-          <Col xs={3} className="d-flex justify-content-end">
-            <div>
-              <Button type="submit" className="login-button" disabled={loading}>
-                Login
-              </Button>
-            </div>
-          </Col>
-        </Row>
-        <Row>
-          <p className="col text-end text-danger">{loginError}</p>
-        </Row>
-        <Row>
-          <p className="col text-end text-success">
-            {Messages[msg ?? ""] ?? ""}
-          </p>
-        </Row>
-      </Form>
+          <Button type="submit" disabled={loading}>
+            Login
+          </Button>
+        </div>
+        {loginError && (
+          <p className="mt-2 text-right text-destructive">{loginError}</p>
+        )}
+        {Messages[msg ?? ""] && (
+          <p className="mt-2 text-right text-success">{Messages[msg ?? ""]}</p>
+        )}
+      </form>
     </div>
   );
 };

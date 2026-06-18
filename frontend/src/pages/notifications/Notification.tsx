@@ -4,9 +4,9 @@ import {
   faEnvelopeOpen,
 } from "@fortawesome/free-solid-svg-icons";
 import type React from "react";
-import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
 import {
   NotificationEnum,
   NotificationLevel,
@@ -123,7 +123,7 @@ const NotificationHeader = ({
       const editLink = (
         <Link
           to={editHref(notification.data.comment.edit)}
-          className="text-decoration-underline fst-italic"
+          className="italic underline"
         >
           edit
         </Link>
@@ -190,7 +190,7 @@ const NotificationHeader = ({
   };
 
   return (
-    <h5 className="d-flex gap-2 align-items-center">
+    <h5 className="flex items-center gap-2">
       <Icon
         icon={faCircle}
         variant={getUrgencyVariant()}

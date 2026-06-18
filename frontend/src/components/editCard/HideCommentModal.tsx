@@ -1,6 +1,8 @@
 import { type FC, useState } from "react";
-import { Button, Form, Modal } from "react-bootstrap";
 
+import { Button } from "src/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "src/components/ui/dialog";
+import { Textarea } from "src/components/ui/textarea";
 import { useHideEditComment } from "src/graphql";
 
 interface Props {
@@ -49,42 +51,40 @@ const HideCommentModal: FC<Props> = ({ commentId, hidden, show, onHide }) => {
   };
 
   return (
-    <Modal show={show} onHide={handleClose}>
-      <Modal.Header closeButton>
-        <Modal.Title>{action} comment</Modal.Title>
-      </Modal.Header>
-      <Form onSubmit={handleSubmit}>
-        <Modal.Body>
+    <Dialog open={show} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent>
+        <DialogTitle>{action} comment</DialogTitle>
+        <form onSubmit={handleSubmit}>
           <p>
             {hidden
               ? "This comment will be visible to everyone again."
               : "This comment will be hidden from everyone except moderators and its author."}
           </p>
-          <Form.Group>
-            <Form.Label>
+          <div>
+            <label htmlFor="hide-comment-reason" className="mb-1 block">
               <strong>Reason (optional):</strong>
-            </Form.Label>
-            <Form.Control
-              as="textarea"
+            </label>
+            <Textarea
+              id="hide-comment-reason"
               rows={2}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder={`Why is this comment being ${pastTense}?`}
               disabled={saving}
             />
-          </Form.Group>
-          {error && <div className="text-danger mt-3">{error}</div>}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose} disabled={saving}>
-            Cancel
-          </Button>
-          <Button type="submit" variant="danger" disabled={saving}>
-            {saving ? `${action.replace(/e$/, "")}ing...` : action}
-          </Button>
-        </Modal.Footer>
-      </Form>
-    </Modal>
+          </div>
+          {error && <div className="mt-3 text-destructive">{error}</div>}
+          <div className="mt-4 flex justify-end gap-2">
+            <Button variant="secondary" onClick={handleClose} disabled={saving}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="danger" disabled={saving}>
+              {saving ? `${action.replace(/e$/, "")}ing...` : action}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 

@@ -1,5 +1,4 @@
 import { type FC, useMemo, useState } from "react";
-import { Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { LoadingIndicator } from "src/components/fragments";
 import TagSelect from "src/components/tagSelect";
@@ -70,31 +69,29 @@ const TagMerge: FC<Props> = ({ tag }) => {
       <h3>
         Merge tags into <em>{tag.name}</em>
       </h3>
-      <hr />
-      <Row className="g-0">
-        <Col xs={6}>
-          <label htmlFor="tag-merge-source-select" className="form-label">
-            Merge sources
-          </label>
-          <TagSelect
-            tags={[]}
-            onChange={(tags) => setMergeSources(tags)}
-            message="Select tags to merge:"
-            excludeTags={[tag.id, ...mergeSources.map((t) => t.id)]}
-            inputId="tag-merge-source-select"
-          />
-        </Col>
-      </Row>
-      <hr className="my-4" />
+      <hr className="border-border" />
+      <div className="w-1/2">
+        <label htmlFor="tag-merge-source-select" className="mb-1 block text-sm">
+          Merge sources
+        </label>
+        <TagSelect
+          tags={[]}
+          onChange={(tags) => setMergeSources(tags)}
+          message="Select tags to merge:"
+          excludeTags={[tag.id, ...mergeSources.map((t) => t.id)]}
+          inputId="tag-merge-source-select"
+        />
+      </div>
+      <hr className="my-4 border-border" />
       <h5>
         Modify <em>{tag.name}</em>
       </h5>
-      <Row className="g-0">
+      <div>
         {submissionError && (
-          <div className="text-danger mb-2">Error: {submissionError}</div>
+          <div className="mb-2 text-destructive">Error: {submissionError}</div>
         )}
         {sourcesError ? (
-          <div className="text-danger">
+          <div className="text-destructive">
             Failed to load tag details: {sourcesError.message}
           </div>
         ) : sourcesReady ? (
@@ -108,7 +105,7 @@ const TagMerge: FC<Props> = ({ tag }) => {
         ) : (
           <LoadingIndicator message="Loading tag details..." />
         )}
-      </Row>
+      </div>
     </div>
   );
 };

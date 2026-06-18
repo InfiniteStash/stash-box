@@ -1,5 +1,7 @@
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { Toast } from "react-bootstrap";
+import { Icon } from "src/components/fragments";
+import { cn } from "src/lib/utils";
 
 interface Message {
   id: number;
@@ -14,21 +16,40 @@ const ToastContext = createContext<(item: Omit<Message, "id">) => void>(
   () => {},
 );
 
-const ToastMessage: React.FC<Message> = ({ id, content, variant }) => {
+const variantClasses: Record<NonNullable<Message["variant"]>, string> = {
+  success: "bg-success",
+  danger: "bg-destructive",
+  warning: "bg-warning",
+};
+
+const ToastMessage: React.FC<Message> = ({ content, variant }) => {
   const [show, setShow] = useState(true);
 
+  useEffect(() => {
+    const timer = setTimeout(() => setShow(false), DISPLAY_TIME);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!show) return null;
+
   return (
-    <Toast
-      autohide
-      key={id}
-      show={show}
-      onClose={() => setShow(false)}
-      className={`bg-${variant ?? "success"}`}
-      delay={DISPLAY_TIME}
+    <div
+      className={cn(
+        "mb-2 min-w-56 rounded-md text-white shadow-lg transition-opacity",
+        variantClasses[variant ?? "success"],
+      )}
     >
-      <Toast.Header />
-      <Toast.Body>{content}</Toast.Body>
-    </Toast>
+      <div className="flex justify-end p-3 pb-0">
+        <button
+          type="button"
+          onClick={() => setShow(false)}
+          className="cursor-pointer border-0 bg-transparent text-white/80 hover:text-white"
+        >
+          <Icon icon={faXmark} />
+        </button>
+      </div>
+      <div className="px-3 pb-3">{content}</div>
+    </div>
   );
 };
 
@@ -65,7 +86,6 @@ export const ToastProvider: React.FC<Props> = ({ children }) => {
   const [messages, setMessages] = useState<Message[]>([]);
 
   const addMessage = (message: Omit<Message, "id">) => {
-    console.log(messages);
     setMessages([...messages, { ...message, id: id.current++ }]);
   };
 

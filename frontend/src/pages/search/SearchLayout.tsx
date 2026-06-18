@@ -2,7 +2,6 @@ import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 import { debounce } from "lodash-es";
 import { type FC, useCallback, useEffect, useMemo, useRef } from "react";
-import { Badge, Form, Nav } from "react-bootstrap";
 import {
   NavLink,
   Outlet,
@@ -12,7 +11,14 @@ import {
 
 import { Icon } from "src/components/fragments";
 import Title from "src/components/title";
+import { Badge } from "src/components/ui/badge";
+import { Input } from "src/components/ui/input";
 import { useSearchAll } from "src/graphql";
+import { cn } from "src/lib/utils";
+
+const tabClass =
+  "-mb-px border-b-2 border-transparent px-4 py-2 text-muted-foreground hover:text-foreground";
+const activeTabClass = "border-primary text-foreground";
 
 const CLASSNAME = "SearchPage";
 const CLASSNAME_INPUT = `${CLASSNAME}-input`;
@@ -58,44 +64,49 @@ export const SearchLayout: FC = () => {
   return (
     <div className={CLASSNAME}>
       <Title page={term || "Search"} />
-      <Form.Group className={cx(CLASSNAME_INPUT, "mb-3")}>
+      <div className={cx(CLASSNAME_INPUT, "mb-3")}>
         <Icon icon={faMagnifyingGlass} />
-        <Form.Control
+        <Input
           ref={inputRef}
           defaultValue={term}
           onChange={(e) => handleSearch(e.currentTarget.value)}
           placeholder="Search for performer or scene"
+          // biome-ignore lint/a11y/noAutofocus: search is the page's primary action
           autoFocus
         />
-      </Form.Group>
+      </div>
 
-      <Nav variant="tabs" className="mb-3">
-        <Nav.Item>
-          <Nav.Link as={NavLink} to={`/search${query}`} end>
-            All
-          </Nav.Link>
-        </Nav.Item>
-        <Nav.Item>
-          <Nav.Link as={NavLink} to={`/search/performers${query}`}>
-            Performers
-            {performerCount !== undefined && (
-              <Badge bg="secondary" className="ms-2">
-                {performerCount}
-              </Badge>
-            )}
-          </Nav.Link>
-        </Nav.Item>
-        <Nav.Item>
-          <Nav.Link as={NavLink} to={`/search/scenes${query}`}>
-            Scenes
-            {sceneCount !== undefined && (
-              <Badge bg="secondary" className="ms-2">
-                {sceneCount}
-              </Badge>
-            )}
-          </Nav.Link>
-        </Nav.Item>
-      </Nav>
+      <nav className="mb-3 flex gap-1 border-b border-border">
+        <NavLink
+          to={`/search${query}`}
+          end
+          className={({ isActive }) => cn(tabClass, isActive && activeTabClass)}
+        >
+          All
+        </NavLink>
+        <NavLink
+          to={`/search/performers${query}`}
+          className={({ isActive }) => cn(tabClass, isActive && activeTabClass)}
+        >
+          Performers
+          {performerCount !== undefined && (
+            <Badge variant="secondary" className="ml-2">
+              {performerCount}
+            </Badge>
+          )}
+        </NavLink>
+        <NavLink
+          to={`/search/scenes${query}`}
+          className={({ isActive }) => cn(tabClass, isActive && activeTabClass)}
+        >
+          Scenes
+          {sceneCount !== undefined && (
+            <Badge variant="secondary" className="ml-2">
+              {sceneCount}
+            </Badge>
+          )}
+        </NavLink>
+      </nav>
 
       <Outlet />
     </div>

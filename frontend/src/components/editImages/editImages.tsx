@@ -1,13 +1,13 @@
 import { CombinedGraphQLErrors } from "@apollo/client";
 import { faImages } from "@fortawesome/free-solid-svg-icons";
 import type { Lens } from "@hookform/lenses";
-import cx from "classnames";
 import { type ChangeEvent, type FC, useState } from "react";
-import { Button, Col, Form, Row } from "react-bootstrap";
 import { useFieldArray } from "react-hook-form";
 import { Image as ImageInput } from "src/components/form";
 import { Icon, LoadingIndicator } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
 import { type ImageFragment as Image, useAddImage } from "src/graphql";
+import { cn } from "src/lib/utils";
 
 const CLASSNAME = "EditImages";
 const CLASSNAME_IMAGES = `${CLASSNAME}-images`;
@@ -100,8 +100,8 @@ const EditImages: FC<EditImagesProps> = ({
   const isDisabled = maxImages !== undefined && images.length >= maxImages;
 
   return (
-    <Row className={`${CLASSNAME} w-100`}>
-      <Col xs={7} className={CLASSNAME_IMAGES}>
+    <div className={`${CLASSNAME} grid w-full grid-cols-12`}>
+      <div className={`${CLASSNAME_IMAGES} col-span-7`}>
         {images.map((i, index) => (
           <ImageInput
             image={i}
@@ -110,14 +110,12 @@ const EditImages: FC<EditImagesProps> = ({
             key={i.id}
           />
         ))}
-      </Col>
-      <Col xs={5} className={CLASSNAME_INPUT}>
+      </div>
+      <div className={`${CLASSNAME_INPUT} col-span-5`}>
         <div className={CLASSNAME_INPUT_CONTAINER}>
           {file ? (
             <div
-              className={cx(CLASSNAME_IMAGE, {
-                [CLASSNAME_UPLOADING]: uploading,
-              })}
+              className={cn(CLASSNAME_IMAGE, uploading && CLASSNAME_UPLOADING)}
             >
               <img src={imageData} alt="" />
               <LoadingIndicator message="Uploading image..." />
@@ -125,7 +123,7 @@ const EditImages: FC<EditImagesProps> = ({
           ) : (
             !isDisabled && (
               <div className={CLASSNAME_DROP}>
-                <Form.Control
+                <input
                   type="file"
                   onChange={onFileChange}
                   accept={[
@@ -144,10 +142,10 @@ const EditImages: FC<EditImagesProps> = ({
             )
           )}
         </div>
-        <Row className="text-end text-danger">
+        <div className="text-right text-destructive">
           <div>{error}</div>
-        </Row>
-        <div className="mt-4 d-flex">
+        </div>
+        <div className="mt-4 flex">
           {file && (
             <>
               <Button
@@ -160,7 +158,7 @@ const EditImages: FC<EditImagesProps> = ({
               <Button
                 onClick={() => handleAddImage()}
                 disabled={!file || uploading}
-                className="ms-2"
+                className="ml-2"
               >
                 Upload
               </Button>
@@ -170,13 +168,13 @@ const EditImages: FC<EditImagesProps> = ({
             variant="danger"
             onClick={() => original && replace(original)}
             disabled={original === undefined}
-            className="ms-auto mt-auto"
+            className="ml-auto mt-auto"
           >
             Reset Images
           </Button>
         </div>
-      </Col>
-    </Row>
+      </div>
+    </div>
   );
 };
 

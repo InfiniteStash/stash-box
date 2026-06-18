@@ -27,7 +27,7 @@ const render = (
   );
 
 const rowFor = (label: string) =>
-  screen.getByText(label).closest(".row") as HTMLElement;
+  screen.getByText(label).closest(".ChangeRow") as HTMLElement;
 
 const site = (id: string) => ({
   id,
@@ -154,10 +154,12 @@ describe("renderPerformerDetails", () => {
         true,
       );
       const nameRow = rowFor("Name");
-      expect(nameRow.querySelector(".bg-danger")).toHaveTextContent("Jane");
+      expect(nameRow.querySelector(".bg-destructive")).toHaveTextContent(
+        "Jane",
+      );
       expect(nameRow.querySelector(".bg-success")).toHaveTextContent("Janet");
       const bra = rowFor("Bra Size");
-      expect(bra.querySelector(".bg-danger")).toHaveTextContent("32C");
+      expect(bra.querySelector(".bg-destructive")).toHaveTextContent("32C");
       expect(bra.querySelector(".bg-success")).toHaveTextContent("34D");
     });
 
@@ -180,19 +182,25 @@ describe("renderPerformerDetails", () => {
         true,
       );
       const gender = rowFor("Gender");
-      expect(gender.querySelector(".bg-danger")).toHaveTextContent("Female");
+      expect(gender.querySelector(".bg-destructive")).toHaveTextContent(
+        "Female",
+      );
       expect(gender.querySelector(".bg-success")).toHaveTextContent("Male");
       const breast = rowFor("Breast Type");
-      expect(breast.querySelector(".bg-danger")).toHaveTextContent("Natural");
+      expect(breast.querySelector(".bg-destructive")).toHaveTextContent(
+        "Natural",
+      );
       expect(breast.querySelector(".bg-success")).toHaveTextContent("N/A");
       const eye = rowFor("Eye Color");
-      expect(eye.querySelector(".bg-danger")).toHaveTextContent("Blue");
+      expect(eye.querySelector(".bg-destructive")).toHaveTextContent("Blue");
       expect(eye.querySelector(".bg-success")).toHaveTextContent("Brown");
       const hair = rowFor("Hair Color");
-      expect(hair.querySelector(".bg-danger")).toHaveTextContent("Blond");
+      expect(hair.querySelector(".bg-destructive")).toHaveTextContent("Blond");
       expect(hair.querySelector(".bg-success")).toHaveTextContent("Black");
       const eth = rowFor("Ethnicity");
-      expect(eth.querySelector(".bg-danger")).toHaveTextContent("Caucasian");
+      expect(eth.querySelector(".bg-destructive")).toHaveTextContent(
+        "Caucasian",
+      );
       expect(eth.querySelector(".bg-success")).toHaveTextContent("Asian");
     });
 
@@ -208,10 +216,12 @@ describe("renderPerformerDetails", () => {
         true,
       );
       const tats = rowFor("Tattoos");
-      expect(tats.querySelector(".bg-danger")).toHaveTextContent("leg");
+      expect(tats.querySelector(".bg-destructive")).toHaveTextContent("leg");
       expect(tats.querySelector(".bg-success")).toHaveTextContent("arm (rose)");
       const pierc = rowFor("Piercings");
-      expect(pierc.querySelector(".bg-danger")).toHaveTextContent("ear (stud)");
+      expect(pierc.querySelector(".bg-destructive")).toHaveTextContent(
+        "ear (stud)",
+      );
       expect(pierc.querySelector(".bg-success")).toHaveTextContent("nose");
     });
 
@@ -237,7 +247,7 @@ describe("renderPerformerDetails", () => {
     it("formats nationality from ISO code on both sides", () => {
       render({ country: "JP" }, { country: "US" }, true);
       const row = rowFor("Nationality");
-      expect(row.querySelector(".bg-danger")).toHaveTextContent(
+      expect(row.querySelector(".bg-destructive")).toHaveTextContent(
         "United States",
       );
       expect(row.querySelector(".bg-success")).toHaveTextContent("Japan");
@@ -253,7 +263,7 @@ describe("renderPerformerDetails", () => {
         true,
       );
       const text = screen.getByText("Set performance aliases to old name");
-      const wrapper = text.closest(".d-flex") as HTMLElement;
+      const wrapper = text.closest(".flex") as HTMLElement;
       const icon = wrapper.querySelector("svg");
       expect(icon).not.toBeNull();
       expect(icon?.getAttribute("color")).toBe("green");
@@ -263,7 +273,7 @@ describe("renderPerformerDetails", () => {
     it("shows the indicator with a red xmark when setModifyAliases is false", () => {
       render({ name: "Janet" }, { name: "Jane" }, true, false);
       const text = screen.getByText("Set performance aliases to old name");
-      const wrapper = text.closest(".d-flex") as HTMLElement;
+      const wrapper = text.closest(".flex") as HTMLElement;
       const icon = wrapper.querySelector("svg");
       expect(icon?.getAttribute("color")).toBe("red");
     });

@@ -1,7 +1,6 @@
-import cx from "classnames";
 import type { FC } from "react";
-import { Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import { cn } from "src/lib/utils";
 
 interface Change {
   name: string | null | undefined;
@@ -30,25 +29,32 @@ const LinkedChangeRow: FC<LinkedChangeRowProps> = ({
       return value.name;
     }
 
-    return <Link to={value.link}>{value.name}</Link>;
+    return (
+      <Link to={value.link} className="text-link hover:underline">
+        {value.name}
+      </Link>
+    );
   }
 
   if (!newEntity?.link && !oldEntity?.link) return null;
 
   return (
-    <Row className="mb-2">
-      <b className="col-2 text-end pt-1">{name}</b>
+    <div className="ChangeRow mb-2 grid grid-cols-12 gap-x-3">
+      <b className="col-span-2 pt-1 text-right">{name}</b>
       {showDiff && (
-        <Col xs={5} className="ms-auto" key={oldEntity?.name}>
-          <div className="EditDiff bg-danger">{getValue(oldEntity)}</div>
-        </Col>
+        <div className="col-span-5" key={oldEntity?.name}>
+          <div className="EditDiff bg-destructive">{getValue(oldEntity)}</div>
+        </div>
       )}
-      <Col xs={showDiff ? 5 : 10} key={newEntity?.name}>
-        <div className={cx("EditDiff", { "bg-success": showDiff })}>
+      <div
+        className={showDiff ? "col-span-5" : "col-span-10"}
+        key={newEntity?.name}
+      >
+        <div className={cn("EditDiff", showDiff && "bg-success")}>
           {getValue(newEntity)}
         </div>
-      </Col>
-    </Row>
+      </div>
+    </div>
   );
 };
 

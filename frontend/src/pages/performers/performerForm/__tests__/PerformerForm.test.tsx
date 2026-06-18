@@ -493,7 +493,7 @@ describe("PerformerForm", () => {
       const { user } = renderEdit(callback);
       await user.click(screen.getByRole("tab", { name: "Links" }));
       const removeBtn = (await waitFor(() => {
-        const el = document.querySelector(".URLInput li button.btn-danger");
+        const el = document.querySelector(".URLInput li button");
         if (!el) throw new Error("Remove button not ready");
         return el;
       })) as HTMLButtonElement;

@@ -3,11 +3,13 @@ import {
   faSortAmountUp,
 } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
-import { Button, Form, InputGroup } from "react-bootstrap";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import SceneCard from "src/components/sceneCard";
 import TagFilter from "src/components/tagFilter";
+import { Button } from "src/components/ui/button";
 import { SelectCombobox } from "src/components/ui/combobox";
+import { Select } from "src/components/ui/select";
+import { Switch } from "src/components/ui/switch";
 import {
   CriterionModifier,
   FavoriteFilter,
@@ -95,8 +97,8 @@ const SceneList: FC<Props> = ({
       {!tagsFilter && (
         <TagFilter tag={params.tag} onChange={(t) => setParams("tag", t?.id)} />
       )}
-      <InputGroup className="scene-sort w-auto">
-        <Form.Select
+      <div className="scene-sort flex gap-2">
+        <Select
           className="w-auto"
           onChange={(e) =>
             setParams("sort", e.currentTarget.value.toLowerCase())
@@ -108,7 +110,7 @@ const SceneList: FC<Props> = ({
               {s.label}
             </option>
           ))}
-        </Form.Select>
+        </Select>
         <Button
           variant="secondary"
           onClick={() =>
@@ -128,25 +130,22 @@ const SceneList: FC<Props> = ({
             }
           />
         </Button>
-      </InputGroup>
+      </div>
       {favoriteFilter === "performer" || favoriteFilter === "studio" ? (
-        <Form.Group controlId="favorite" className="ms-3">
-          <Form.Check
-            className="mt-2"
-            type="switch"
-            label={`Only favorite ${favoriteFilter}s`}
-            defaultChecked={!!favorite}
-            onChange={(e) =>
-              setParams(
-                "favorite",
-                e.currentTarget.checked ? favoriteFilter.toUpperCase() : "NONE",
-              )
-            }
-          />
-        </Form.Group>
+        <Switch
+          className="ml-3"
+          label={`Only favorite ${favoriteFilter}s`}
+          defaultChecked={!!favorite}
+          onCheckedChange={(checked) =>
+            setParams(
+              "favorite",
+              checked ? favoriteFilter.toUpperCase() : "NONE",
+            )
+          }
+        />
       ) : favoriteFilter === "all" ? (
         <SelectCombobox
-          className="ms-4 w-44"
+          className="ml-4 w-44"
           onChange={(v) => setParams("favorite", v ?? "NONE")}
           placeholder="Favorite filter"
           isClearable

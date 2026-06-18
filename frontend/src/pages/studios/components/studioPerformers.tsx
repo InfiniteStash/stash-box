@@ -4,12 +4,15 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { debounce } from "lodash-es";
 import type { FC } from "react";
-import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
 import { List } from "src/components/list";
 import PerformerCard from "src/components/performerCard";
 import SceneCard from "src/components/sceneCard";
+import { Button } from "src/components/ui/button";
 import { SelectCombobox } from "src/components/ui/combobox";
+import { Input } from "src/components/ui/input";
+import { Select } from "src/components/ui/select";
+import { Switch } from "src/components/ui/switch";
 import { GenderFilterTypes } from "src/constants";
 import {
   GenderFilterEnum,
@@ -73,7 +76,7 @@ export const StudioPerformers: FC<Props> = ({ id }) => {
 
   const filters = (
     <>
-      <Form.Control
+      <Input
         id="performer-name"
         onChange={(e) => debouncedHandler("query", e.currentTarget.value)}
         placeholder="Filter performer name"
@@ -87,10 +90,10 @@ export const StudioPerformers: FC<Props> = ({ id }) => {
         placeholder="Gender"
         isClearable
         onChange={(v) => setParams("gender", v ?? undefined)}
-        className="ms-2 w-40"
+        className="ml-2 w-40"
       />
-      <InputGroup className="performer-sort ms-2 me-3">
-        <Form.Select
+      <div className="performer-sort ml-2 mr-3 flex gap-2">
+        <Select
           onChange={(e) =>
             setParams("sort", e.currentTarget.value.toLowerCase())
           }
@@ -101,7 +104,7 @@ export const StudioPerformers: FC<Props> = ({ id }) => {
               {s.label}
             </option>
           ))}
-        </Form.Select>
+        </Select>
         <Button
           variant="secondary"
           onClick={() =>
@@ -121,18 +124,12 @@ export const StudioPerformers: FC<Props> = ({ id }) => {
             }
           />
         </Button>
-      </InputGroup>
-      <Form.Group controlId="favorite">
-        <Form.Check
-          className="mt-2"
-          type="switch"
-          label="Only favorites"
-          defaultChecked={favorite}
-          onChange={(e) =>
-            setParams("favorite", e.currentTarget.checked.toString())
-          }
-        />
-      </Form.Group>
+      </div>
+      <Switch
+        label="Only favorites"
+        defaultChecked={favorite}
+        onCheckedChange={(checked) => setParams("favorite", checked.toString())}
+      />
     </>
   );
 
@@ -147,21 +144,19 @@ export const StudioPerformers: FC<Props> = ({ id }) => {
       listCount={data?.queryPerformers?.count}
     >
       {performers?.map((p, i) => (
-        <Row key={p.id}>
-          <Col xs={3} key={p.id}>
-            <PerformerCard performer={p} />
-          </Col>
-          <Col xs={9}>
-            <Row>
+        <div key={p.id}>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
+            <div className="md:col-span-3">
+              <PerformerCard performer={p} />
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:col-span-9">
               {p.scenes.map((s) => (
-                <Col xs={4} key={s.id}>
-                  <SceneCard scene={s} />
-                </Col>
+                <SceneCard scene={s} key={s.id} />
               ))}
-            </Row>
-          </Col>
-          {i < performers.length - 1 && <hr />}
-        </Row>
+            </div>
+          </div>
+          {i < performers.length - 1 && <hr className="my-4 border-border" />}
+        </div>
       ))}
     </List>
   );

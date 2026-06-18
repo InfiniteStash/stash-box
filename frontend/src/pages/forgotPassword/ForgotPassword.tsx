@@ -1,11 +1,12 @@
 import type { CombinedGraphQLErrors } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
-import cx from "classnames";
 import { type FC, useState } from "react";
-import { Button, Col, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import Title from "src/components/title";
+import { Button } from "src/components/ui/button";
+import { Label } from "src/components/ui/field";
+import { Input } from "src/components/ui/input";
 import { ROUTE_HOME } from "src/constants/route";
 import { useResetPassword } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
@@ -53,13 +54,15 @@ const ForgotPassword: FC = () => {
   if (resetEmail)
     return (
       <div className="LoginPrompt">
-        <div className="align-self-center col-8 mx-auto">
+        <div className="mx-auto w-full max-w-xl self-center">
           <h5>Pasword reset</h5>
           <p>
             If a matching account was found an email was sent to {resetEmail} to
             allow you to reset your password.
           </p>
-          <a href="/login">Return to login</a>
+          <a href="/login" className="text-link hover:underline">
+            Return to login
+          </a>
         </div>
       </div>
     );
@@ -69,45 +72,37 @@ const ForgotPassword: FC = () => {
   );
 
   return (
-    <div className="LoginPrompt mx-auto d-flex">
+    <div className="LoginPrompt mx-auto flex">
       <Title page="Forgot Password" />
-      <Form
-        className="align-self-center col-8 mx-auto"
+      <form
+        className="mx-auto w-full max-w-xl self-center"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <Form.Group controlId="email">
-          <Row>
-            <Col xs={4}>
-              <Form.Label>Email:</Form.Label>
-            </Col>
-            <Col xs={8}>
-              <Form.Control
-                className={cx({ "is-invalid": errors?.email })}
-                type="text"
-                placeholder="Email"
-                {...register("email")}
-              />
-            </Col>
-          </Row>
-        </Form.Group>
+        <div className="flex items-center gap-3">
+          <Label htmlFor="email" className="w-1/3">
+            Email:
+          </Label>
+          <Input
+            id="email"
+            type="text"
+            placeholder="Email"
+            aria-invalid={!!errors?.email}
+            {...register("email")}
+          />
+        </div>
 
-        <Row>
-          <Col
-            xs={{ span: 3, offset: 9 }}
-            className="justify-content-end mt-2 d-flex"
-          >
-            <Button type="submit" disabled={loading}>
-              Reset Password
-            </Button>
-          </Col>
-        </Row>
+        <div className="mt-2 flex justify-end">
+          <Button type="submit" disabled={loading}>
+            Reset Password
+          </Button>
+        </div>
 
         {errorList.map((error) => (
-          <Row key={error} className="text-end text-danger">
-            <div>{error}</div>
-          </Row>
+          <div key={error} className="text-right text-destructive">
+            {error}
+          </div>
         ))}
-      </Form>
+      </form>
     </div>
   );
 };

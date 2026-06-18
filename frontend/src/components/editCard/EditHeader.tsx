@@ -1,6 +1,5 @@
 import { faCheck, faVideo, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { type FC, useMemo } from "react";
-import { Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon } from "src/components/fragments";
 import { OperationEnum } from "src/graphql";
@@ -15,20 +14,28 @@ import {
 } from "src/utils";
 import type { EditCardEdit, EditCardTarget } from "./types";
 
+const linkClass = "text-link hover:underline";
+
 const renderTargetLink = (obj?: EditCardTarget | null) => {
   if (!obj) return null;
 
   if (isPerformer(obj)) {
     return (
-      <Link to={performerHref(obj)}>
+      <Link to={performerHref(obj)} className={linkClass}>
         {obj.name}
         {obj.disambiguation && (
-          <small className="text-muted ms-1">({obj.disambiguation})</small>
+          <small className="ml-1 text-muted-foreground">
+            ({obj.disambiguation})
+          </small>
         )}
       </Link>
     );
   } else {
-    return <Link to={getEditTargetRoute(obj)}>{getEditTargetName(obj)}</Link>;
+    return (
+      <Link to={getEditTargetRoute(obj)} className={linkClass}>
+        {getEditTargetName(obj)}
+      </Link>
+    );
   }
 };
 
@@ -37,12 +44,18 @@ const renderTargetAddendum = (obj?: EditCardTarget | null) => {
     return (
       <>
         <span className="mx-2">•</span>
-        <Icon icon={faVideo} className="me-1" />
-        <Link to={studioHref(obj.studio)}>{obj.studio.name}</Link>
+        <Icon icon={faVideo} className="mr-1" />
+        <Link to={studioHref(obj.studio)} className={linkClass}>
+          {obj.studio.name}
+        </Link>
       </>
     );
   return null;
 };
+
+const Label: FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="col-span-2 text-right font-bold">{children}</div>
+);
 
 interface EditHeaderProps {
   edit: EditCardEdit;
@@ -56,13 +69,11 @@ const EditHeader: FC<EditHeaderProps> = ({ edit, compact = false }) => {
         if (!edit.target) return null;
         return (
           <>
-            <Col xs={2} className="fw-bold text-end">
-              Modifying {edit.target_type.toLowerCase()}
-            </Col>
-            <Col>
+            <Label>Modifying {edit.target_type.toLowerCase()}</Label>
+            <div className="col-span-10">
               {renderTargetLink(edit.target)}
               {renderTargetAddendum(edit.target)}
-            </Col>
+            </div>
           </>
         );
 
@@ -70,13 +81,11 @@ const EditHeader: FC<EditHeaderProps> = ({ edit, compact = false }) => {
         if (edit.applied) {
           return (
             <>
-              <Col xs={2} className="fw-bold text-end">
-                Created {edit.target_type.toLowerCase()}
-              </Col>
-              <Col className="ps-3">
+              <Label>Created {edit.target_type.toLowerCase()}</Label>
+              <div className="col-span-10 pl-3">
                 {renderTargetLink(edit.target)}
                 {renderTargetAddendum(edit.target)}
-              </Col>
+              </div>
             </>
           );
         }
@@ -85,21 +94,22 @@ const EditHeader: FC<EditHeaderProps> = ({ edit, compact = false }) => {
         if (compact && isSceneEdit(edit.details) && edit.details.title) {
           return (
             <>
-              <Col xs={2} className="fw-bold text-end">
-                Creating {edit.target_type.toLowerCase()}
-              </Col>
-              <Col className="ps-3">
+              <Label>Creating {edit.target_type.toLowerCase()}</Label>
+              <div className="col-span-10 pl-3">
                 <span>{edit.details.title}</span>
                 {edit.details.studio && (
                   <>
                     <span className="mx-2">•</span>
-                    <Icon icon={faVideo} className="me-1" />
-                    <Link to={studioHref(edit.details.studio)}>
+                    <Icon icon={faVideo} className="mr-1" />
+                    <Link
+                      to={studioHref(edit.details.studio)}
+                      className={linkClass}
+                    >
                       {edit.details.studio.name}
                     </Link>
                   </>
                 )}
-              </Col>
+              </div>
             </>
           );
         }
@@ -109,64 +119,54 @@ const EditHeader: FC<EditHeaderProps> = ({ edit, compact = false }) => {
       case OperationEnum.MERGE:
         if (!edit.target) return null;
         return (
-          <Col className="lh-base">
-            <Row>
-              <Col xs={2} className="fw-bold text-end">
-                Merge
-              </Col>
-              <Col xs={10}>
-                {edit.merge_sources?.map((target) => (
-                  <div key={target.id}>
-                    {renderTargetLink(target)}
-                    {renderTargetAddendum(edit.target)}
-                  </div>
-                ))}
-              </Col>
-            </Row>
-            <Row>
-              <Col xs={2} className="fw-bold text-end">
-                Into
-              </Col>
-              <Col xs={10}>
-                {renderTargetLink(edit.target)}
-                {renderTargetAddendum(edit.target)}
-              </Col>
-            </Row>
-            {isPerformer(edit.target) && (
-              <Row>
-                <div className="offset-2 d-flex align-items-center">
-                  <Icon
-                    icon={edit.options?.set_merge_aliases ? faCheck : faXmark}
-                    color={edit.options?.set_merge_aliases ? "green" : "red"}
-                  />
-                  <span className="ms-1">
-                    Set performance aliases to old name
-                  </span>
+          <div className="col-span-12 grid grid-cols-12 gap-x-2 gap-y-1">
+            <Label>Merge</Label>
+            <div className="col-span-10">
+              {edit.merge_sources?.map((target) => (
+                <div key={target.id}>
+                  {renderTargetLink(target)}
+                  {renderTargetAddendum(edit.target)}
                 </div>
-              </Row>
+              ))}
+            </div>
+            <Label>Into</Label>
+            <div className="col-span-10">
+              {renderTargetLink(edit.target)}
+              {renderTargetAddendum(edit.target)}
+            </div>
+            {isPerformer(edit.target) && (
+              <div className="col-span-10 col-start-3 flex items-center">
+                <Icon
+                  icon={edit.options?.set_merge_aliases ? faCheck : faXmark}
+                  color={edit.options?.set_merge_aliases ? "green" : "red"}
+                />
+                <span className="ml-1">
+                  Set performance aliases to old name
+                </span>
+              </div>
             )}
-          </Col>
+          </div>
         );
 
       case OperationEnum.DESTROY:
         if (!edit.target) return null;
         return (
           <>
-            <Col xs={2} className="fw-bold text-end">
-              Deleting
-            </Col>
-            <Col>
-              <span className="EditDiff bg-danger">
+            <Label>Deleting</Label>
+            <div className="col-span-10">
+              <span className="EditDiff bg-destructive">
                 {renderTargetLink(edit.target)}
               </span>
               {renderTargetAddendum(edit.target)}
-            </Col>
+            </div>
           </>
         );
     }
   }, [edit, compact]);
 
-  return header ? <Row className="mb-4">{header}</Row> : null;
+  return header ? (
+    <div className="mb-4 grid grid-cols-12 gap-x-2">{header}</div>
+  ) : null;
 };
 
 export default EditHeader;

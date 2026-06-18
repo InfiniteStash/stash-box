@@ -1,6 +1,5 @@
 import cx from "classnames";
 import type { FC } from "react";
-import { Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { LoadingIndicator } from "src/components/fragments";
 
@@ -37,16 +36,10 @@ const ScenesComponent: FC = () => {
   if (loadingTrending) return <LoadingIndicator message="Loading..." />;
 
   const scenes = (sceneData?.queryScenes?.scenes ?? []).map((scene) => (
-    <Col key={scene.id}>
-      <SceneCard scene={scene} />
-    </Col>
+    <SceneCard scene={scene} key={scene.id} />
   ));
   const trendingScenes = (trendingData?.queryScenes?.scenes ?? []).map(
-    (scene) => (
-      <Col key={scene.id}>
-        <SceneCard scene={scene} />
-      </Col>
-    ),
+    (scene) => <SceneCard scene={scene} key={scene.id} />,
   );
 
   return (
@@ -54,19 +47,27 @@ const ScenesComponent: FC = () => {
       {trendingScenes.length > 0 && (
         <>
           <h4>
-            <Link to={`${ROUTE_SCENES}?sort=trending`}>Trending scenes</Link>
+            <Link
+              to={`${ROUTE_SCENES}?sort=trending`}
+              className="text-link hover:underline"
+            >
+              Trending scenes
+            </Link>
           </h4>
-          <Row className={CLASSNAME_SCENES}>{trendingScenes}</Row>
+          <div className={`${CLASSNAME_SCENES} gap-4`}>{trendingScenes}</div>
         </>
       )}
       {!loadingRecent && (
         <>
           <h4>
-            <Link to={`${ROUTE_SCENES}?sort=created_at`}>
+            <Link
+              to={`${ROUTE_SCENES}?sort=created_at`}
+              className="text-link hover:underline"
+            >
               Recently added scenes
             </Link>
           </h4>
-          <Row className={CLASSNAME_SCENES}>{scenes}</Row>
+          <div className={`${CLASSNAME_SCENES} gap-4`}>{scenes}</div>
         </>
       )}
     </div>

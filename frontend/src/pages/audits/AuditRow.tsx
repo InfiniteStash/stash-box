@@ -4,10 +4,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
 import { useState } from "react";
-import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 import { Icon } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
 import { ROUTE_USER } from "src/constants/route";
 import { createHref, formatDateTime } from "src/utils";
 import AmendmentAuditDetails from "./AmendmentAuditDetails";
@@ -44,7 +44,7 @@ const AuditRow: FC<AuditRowProps> = ({ audit }) => {
   return (
     <>
       <tr>
-        <td className="text-nowrap" style={{ width: "40px" }}>
+        <td className="w-10 whitespace-nowrap">
           <Button
             variant="link"
             size="sm"
@@ -54,11 +54,16 @@ const AuditRow: FC<AuditRowProps> = ({ audit }) => {
             <Icon icon={expanded ? faChevronDown : faChevronRight} />
           </Button>
         </td>
-        <td className="text-nowrap">{formatDateTime(audit.created_at)}</td>
+        <td className="whitespace-nowrap">
+          {formatDateTime(audit.created_at)}
+        </td>
         <td>{actionLabel}</td>
         <td>
           {audit.user ? (
-            <Link to={createHref(ROUTE_USER, audit.user)}>
+            <Link
+              to={createHref(ROUTE_USER, audit.user)}
+              className="text-link hover:underline"
+            >
               {audit.user.name}
             </Link>
           ) : (
@@ -74,12 +79,12 @@ const AuditRow: FC<AuditRowProps> = ({ audit }) => {
             audit.target_id
           )}
         </td>
-        <td className="text-truncate" style={{ maxWidth: "300px" }}>
+        <td className="max-w-[300px] truncate">
           {audit.reason || <em>No reason provided</em>}
         </td>
       </tr>
-      <tr className={expanded ? "" : "d-none"}>
-        <td colSpan={6} className="p-0 border-0">
+      <tr className={expanded ? "" : "hidden"}>
+        <td colSpan={6} className="border-0 p-0">
           {audit.action === "EDIT_DELETE" && (
             <DeleteAuditDetails data={audit.data} />
           )}

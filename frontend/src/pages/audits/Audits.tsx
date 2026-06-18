@@ -1,8 +1,8 @@
 import type { FC } from "react";
-import { Table } from "react-bootstrap";
 import { ErrorMessage } from "src/components/fragments";
 import { List } from "src/components/list";
 import Title from "src/components/title";
+import { Table } from "src/components/ui/table";
 import { useModAudits } from "src/graphql";
 import { usePagination } from "src/hooks";
 import AuditRow from "./AuditRow";
@@ -37,10 +37,10 @@ const AuditsComponent: FC = () => {
         loading={loading}
         listCount={data?.queryModAudits.count}
       >
-        <Table striped className="audits-table" variant="dark">
+        <Table striped className="audits-table">
           <thead>
             <tr>
-              <th style={{ width: "40px" }}></th>
+              <th className="w-10"></th>
               <th>Date</th>
               <th>Action</th>
               <th>User</th>

@@ -1,10 +1,12 @@
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 import type { Lens } from "@hookform/lenses";
 import { type FC, useRef, useState } from "react";
-import { Button, Form, InputGroup } from "react-bootstrap";
 import type { FieldError, FieldErrorsImpl, Merge } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
 import { Icon } from "src/components/fragments";
+import { Button, buttonVariants } from "src/components/ui/button";
+import { Input } from "src/components/ui/input";
+import { Select } from "src/components/ui/select";
 
 import { type SiteQuery, useSites, type ValidSiteTypeEnum } from "src/graphql";
 import { cleanURL } from "src/utils";
@@ -107,7 +109,7 @@ const URLInput: FC<URLInputProps> = ({ lens, type, errors }) => {
     }
   };
 
-  const handleSiteSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSiteSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const site = sites.find((s) => s.id === e.currentTarget.value);
     if (site) setSelectedSite(site);
   };
@@ -117,34 +119,39 @@ const URLInput: FC<URLInputProps> = ({ lens, type, errors }) => {
       <ul>
         {urls.map((u, i) => (
           <li key={u.url}>
-            <InputGroup>
+            <div className="flex items-center gap-2">
               <Button variant="danger" onClick={() => remove(i)}>
                 Remove
               </Button>
-              <InputGroup.Text>
-                <b>{u.site.name}</b>
-              </InputGroup.Text>
-              <InputGroup.Text className="overflow-hidden">
+              <b className="whitespace-nowrap">{u.site.name}</b>
+              <span className="grow overflow-hidden text-ellipsis">
                 {u.url}
-              </InputGroup.Text>
-              <Button variant="primary" href={u.url} target="_blank">
+              </span>
+              <a
+                href={u.url}
+                target="_blank"
+                rel="noreferrer"
+                className={buttonVariants({ variant: "primary" })}
+              >
                 <Icon icon={faExternalLinkAlt} />
-              </Button>
-            </InputGroup>
+              </a>
+            </div>
             {errors?.[i]?.url && (
-              <div className="text-danger">{errors?.[i]?.url?.message}</div>
+              <div className="text-destructive">
+                {errors?.[i]?.url?.message}
+              </div>
             )}
           </li>
         ))}
       </ul>
-      <InputGroup>
-        <InputGroup.Text>Add new link</InputGroup.Text>
-        <Form.Control
-          as="select"
+      <div className="flex items-center gap-2">
+        <span className="whitespace-nowrap">Add new link</span>
+        <Select
           disabled={sites.length === 0}
           ref={selectRef}
           onChange={handleSiteSelect}
           defaultValue=""
+          className="w-auto"
         >
           <option disabled value="">
             Select site
@@ -158,19 +165,18 @@ const URLInput: FC<URLInputProps> = ({ lens, type, errors }) => {
               </option>
             ))
           )}
-        </Form.Control>
-        <Form.Control
+        </Select>
+        <Input
           ref={inputRef}
           onBlur={(e) => handleInput(e.currentTarget.value)}
           placeholder="URL"
           onChange={(e) => setNewURL(e.currentTarget.value)}
           onPaste={handlePaste}
-          className="w-50"
         />
         <Button onClick={handleAdd} disabled={!newURL || !selectedSite}>
           Add
         </Button>
-      </InputGroup>
+      </div>
     </div>
   );
 };

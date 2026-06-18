@@ -1,10 +1,10 @@
 import { faUndo, faXmark } from "@fortawesome/free-solid-svg-icons";
-import cx from "classnames";
 import type { FC } from "react";
-import { Button, Col, Row } from "react-bootstrap";
 
 import { Icon, SiteLink } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
 import type { URL } from "src/components/urlChangeRow";
+import { cn } from "src/lib/utils";
 import { useAmendment } from "./AmendmentContext";
 
 const CLASSNAME = "URLChangeRow";
@@ -36,30 +36,31 @@ const AmendableURLChangeRow: FC<AmendableURLChangeRowProps> = ({
   if ((newURLs ?? []).length === 0 && (oldURLs ?? []).length === 0) return null;
 
   return (
-    <Row className={CLASSNAME}>
-      <b className="col-2 text-end">Links</b>
+    <div className={`${CLASSNAME} grid grid-cols-12 gap-x-3`}>
+      <b className="col-span-2 text-right">Links</b>
       {showDiff && (
-        <Col xs={4}>
+        <div className="col-span-4">
           {(oldURLs ?? []).length > 0 && (
             <>
               <h6>Removed</h6>
               <div className={CLASSNAME}>
-                <ul className="ps-0">
+                <ul className="pl-0">
                   {(oldURLs ?? []).map((url, index) => {
                     const isRemoved = removedRemovedIndices?.has(index);
                     return (
                       <li
                         key={url.url}
-                        className={cx("d-flex align-items-start", {
-                          "opacity-50 text-decoration-line-through": isRemoved,
-                        })}
+                        className={cn(
+                          "flex items-start",
+                          isRemoved && "line-through opacity-50",
+                        )}
                       >
                         <SiteLink site={url.site} />
                         <a
                           href={url.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="d-inline-block flex-grow-1 text-break"
+                          className="inline-block grow break-words text-link hover:underline"
                         >
                           {url.url}
                         </a>
@@ -67,7 +68,7 @@ const AmendableURLChangeRow: FC<AmendableURLChangeRowProps> = ({
                           <Button
                             variant="danger"
                             size="sm"
-                            className="ms-2"
+                            className="ml-2"
                             onClick={() => clearRemovedItem(field, index)}
                             title="Remove this URL change from the edit"
                           >
@@ -78,7 +79,7 @@ const AmendableURLChangeRow: FC<AmendableURLChangeRowProps> = ({
                           <Button
                             variant="secondary"
                             size="sm"
-                            className="ms-2"
+                            className="ml-2"
                             onClick={() => restoreRemovedItem(field, index)}
                             title="Restore this URL"
                           >
@@ -92,29 +93,30 @@ const AmendableURLChangeRow: FC<AmendableURLChangeRowProps> = ({
               </div>
             </>
           )}
-        </Col>
+        </div>
       )}
-      <Col xs={showDiff ? 4 : 8}>
+      <div className={showDiff ? "col-span-4" : "col-span-8"}>
         {(newURLs ?? []).length > 0 && (
           <>
             {showDiff && <h6>Added</h6>}
             <div className={CLASSNAME}>
-              <ul className="ps-0">
+              <ul className="pl-0">
                 {(newURLs ?? []).map((url, index) => {
                   const isRemoved = removedAddedIndices?.has(index);
                   return (
                     <li
                       key={url.url}
-                      className={cx("d-flex align-items-start", {
-                        "opacity-50 text-decoration-line-through": isRemoved,
-                      })}
+                      className={cn(
+                        "flex items-start",
+                        isRemoved && "line-through opacity-50",
+                      )}
                     >
                       <SiteLink site={url.site} />
                       <a
                         href={url.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="d-inline-block flex-grow-1 text-break"
+                        className="inline-block grow break-words text-link hover:underline"
                       >
                         {url.url}
                       </a>
@@ -122,7 +124,7 @@ const AmendableURLChangeRow: FC<AmendableURLChangeRowProps> = ({
                         <Button
                           variant="danger"
                           size="sm"
-                          className="ms-2"
+                          className="ml-2"
                           onClick={() => clearAddedItem(field, index)}
                           title="Remove this URL from the edit"
                         >
@@ -133,7 +135,7 @@ const AmendableURLChangeRow: FC<AmendableURLChangeRowProps> = ({
                         <Button
                           variant="secondary"
                           size="sm"
-                          className="ms-2"
+                          className="ml-2"
                           onClick={() => restoreAddedItem(field, index)}
                           title="Restore this URL"
                         >
@@ -147,9 +149,9 @@ const AmendableURLChangeRow: FC<AmendableURLChangeRowProps> = ({
             </div>
           </>
         )}
-      </Col>
-      <Col xs={2} />
-    </Row>
+      </div>
+      <div className="col-span-2" />
+    </div>
   );
 };
 

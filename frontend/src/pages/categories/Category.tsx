@@ -1,8 +1,8 @@
 import type { FC } from "react";
-import { Button, Row } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import DeleteButton from "src/components/deleteButton";
 import { TagList } from "src/components/list";
+import { buttonVariants } from "src/components/ui/button";
 import { ROUTE_CATEGORIES, ROUTE_CATEGORY_EDIT } from "src/constants/route";
 import { type CategoryQuery, useDeleteCategory } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
@@ -34,21 +34,21 @@ const CategoryComponent: FC<Props> = ({ category }) => {
 
   return (
     <>
-      <Link to={ROUTE_CATEGORIES}>
+      <Link to={ROUTE_CATEGORIES} className="text-link hover:underline">
         <h6 className="mb-4">&larr; Category List</h6>
       </Link>
-      <div className="d-flex">
-        <h3 className="me-auto">
+      <div className="flex">
+        <h3 className="mr-auto">
           <em>{category.name}</em>
         </h3>
-        <div className="ms-auto">
+        <div className="ml-auto flex gap-2">
           {isAdmin && (
             <>
               <Link
                 to={createHref(ROUTE_CATEGORY_EDIT, category)}
-                className="me-2"
+                className={buttonVariants()}
               >
-                <Button>Edit</Button>
+                Edit
               </Link>
               <DeleteButton
                 onClick={handleDelete}
@@ -60,12 +60,12 @@ const CategoryComponent: FC<Props> = ({ category }) => {
         </div>
       </div>
       {category.description && (
-        <Row className="g-0">
-          <b className="me-2">Description:</b>
+        <div className="flex">
+          <b className="mr-2">Description:</b>
           <span>{category.description}</span>
-        </Row>
+        </div>
       )}
-      <hr className="my-2 mb-4" />
+      <hr className="my-2 mb-4 border-border" />
       <TagList tagFilter={{ category_id: category.id }} />
     </>
   );

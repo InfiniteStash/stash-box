@@ -1,7 +1,7 @@
+import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 import { type CSSProperties, type FC, useEffect, useState } from "react";
-import { Button, Modal } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
 import Image from "./Image";
 
@@ -55,52 +55,66 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
     images.length <= 4 ? 300 : images.length <= 12 ? 220 : 160;
 
   return (
-    <Modal show fullscreen onHide={onClose} dialogClassName="ImageLightbox">
-      <Modal.Body onClick={closeOnBackgroundClick}>
-        <div className="ImageLightbox-main">
-          <Image images={images[index]} key={images[index].url} size="full" />
-          <span className="ImageLightbox-caption">
+    <BaseDialog.Root open onOpenChange={(open) => !open && onClose()}>
+      <BaseDialog.Portal>
+        <BaseDialog.Backdrop className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md" />
+        <BaseDialog.Popup className="ImageLightbox fixed inset-0 z-50 outline-none">
+          {/* biome-ignore lint/a11y/noStaticElementInteractions: backdrop click-to-close; Escape/close button provide keyboard access */}
+          {/* biome-ignore lint/a11y/useKeyWithClickEvents: backdrop click-to-close; Escape/close button provide keyboard access */}
+          <div className="ImageLightbox-body" onClick={closeOnBackgroundClick}>
+            <div className="ImageLightbox-main">
+              <Image
+                images={images[index]}
+                key={images[index].url}
+                size="full"
+              />
+              <span className="ImageLightbox-caption">
+                {images.length > 1 && (
+                  <>
+                    {index + 1}/{images.length} &middot;{" "}
+                  </>
+                )}
+                {images[index].width}&times;{images[index].height}
+              </span>
+            </div>
             {images.length > 1 && (
-              <>
-                {index + 1}/{images.length} &middot;{" "}
-              </>
-            )}
-            {images[index].width}&times;{images[index].height}
-          </span>
-        </div>
-        {images.length > 1 && (
-          <div
-            className="ImageLightbox-thumbs"
-            style={{ "--thumb-height": `${thumbHeight}px` } as CSSProperties}
-          >
-            {images.map((image, i) => (
-              <button
-                type="button"
-                key={image.id}
-                ref={i === index ? scrollIntoView : undefined}
-                className={cx("ImageLightbox-thumb", {
-                  selected: i === index,
-                })}
-                style={{ aspectRatio: `${image.width} / ${image.height}` }}
-                onClick={() => setIndex(i)}
+              <div
+                className="ImageLightbox-thumbs"
+                style={
+                  { "--thumb-height": `${thumbHeight}px` } as CSSProperties
+                }
               >
-                <img src={`${image.url}?size=300`} loading="lazy" alt="" />
-                <span className="ImageLightbox-thumb-dims">
-                  {image.width}&times;{image.height}
-                </span>
-              </button>
-            ))}
+                {images.map((image, i) => (
+                  <button
+                    type="button"
+                    key={image.id}
+                    ref={i === index ? scrollIntoView : undefined}
+                    className={cx("ImageLightbox-thumb", {
+                      selected: i === index,
+                    })}
+                    style={{ aspectRatio: `${image.width} / ${image.height}` }}
+                    onClick={() => setIndex(i)}
+                  >
+                    <img src={`${image.url}?size=300`} loading="lazy" alt="" />
+                    <span className="ImageLightbox-thumb-dims">
+                      {image.width}&times;{image.height}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+            <button
+              type="button"
+              aria-label="Close"
+              className="ImageLightbox-close cursor-pointer border-0 bg-transparent text-foreground"
+              onClick={onClose}
+            >
+              <Icon icon={faXmark} />
+            </button>
           </div>
-        )}
-        <Button
-          className="ImageLightbox-close minimal"
-          onClick={onClose}
-          variant="link"
-        >
-          <Icon icon={faXmark} />
-        </Button>
-      </Modal.Body>
-    </Modal>
+        </BaseDialog.Popup>
+      </BaseDialog.Portal>
+    </BaseDialog.Root>
   );
 };
 

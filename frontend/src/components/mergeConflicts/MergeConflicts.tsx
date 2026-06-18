@@ -1,6 +1,7 @@
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "react-bootstrap";
 import { Icon } from "src/components/fragments";
+import { Alert } from "src/components/ui/alert";
+import { Button } from "src/components/ui/button";
 
 export interface MergeConflictOption {
   // Stable identity, used to match the current form value and as a React key.
@@ -37,30 +38,26 @@ const MergeConflicts = <TField extends string>({
   if (conflicts.length === 0) return null;
 
   return (
-    <div className="MergeConflicts alert alert-warning">
+    <Alert variant="warning" className="MergeConflicts">
       <h6>
-        <Icon icon={faExclamationTriangle} className="me-1" />
+        <Icon icon={faExclamationTriangle} className="mr-1" />
         Conflicting fields
       </h6>
-      <p className="small mb-2">
+      <p className="mb-2 text-sm">
         These fields differ between the merged entities. The first value is
         prefilled — select another to override it.
       </p>
       {conflicts.map((conflict) => {
         const activeKey = conflict.currentKey(values[conflict.field]);
         return (
-          <div key={conflict.field} className="d-flex align-items-center mb-1">
-            <strong className="me-2" style={{ minWidth: "8rem" }}>
-              {conflict.label}
-            </strong>
-            <div className="d-flex gap-2">
+          <div key={conflict.field} className="mb-1 flex items-center">
+            <strong className="mr-2 min-w-32">{conflict.label}</strong>
+            <div className="flex gap-2">
               {conflict.options.map((option) => (
                 <Button
                   key={option.key}
                   size="sm"
-                  variant={
-                    option.key === activeKey ? "primary" : "outline-secondary"
-                  }
+                  variant={option.key === activeKey ? "primary" : "secondary"}
                   onClick={() => onSelect(conflict.field, option.value)}
                   title={option.sources.join(", ")}
                 >
@@ -71,7 +68,7 @@ const MergeConflicts = <TField extends string>({
           </div>
         );
       })}
-    </div>
+    </Alert>
   );
 };
 

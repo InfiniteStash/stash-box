@@ -4,7 +4,6 @@ import {
   faVideo,
 } from "@fortawesome/free-solid-svg-icons";
 import type { FC } from "react";
-import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Icon, Thumbnail } from "src/components/fragments";
 import type { SearchAllQuery } from "src/graphql";
@@ -16,16 +15,16 @@ export type Scene = NonNullable<
 
 export const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (
   <Link to={sceneHref(scene)} className="SearchPage-scene">
-    <Card>
+    <div className="flex flex-row gap-3 rounded-lg bg-card p-[10px] text-card-foreground hover:bg-accent">
       <Thumbnail
         image={getImage(scene.images, "landscape")}
         className="SearchPage-scene-image"
         size={300}
       />
-      <div className="ms-3 w-100">
+      <div className="w-full">
         <h5>
           {scene.title}
-          <small className="text-muted ms-2">
+          <small className="ml-2 text-muted-foreground">
             {formatDuration(scene.duration)}
           </small>
         </h5>
@@ -37,7 +36,7 @@ export const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (
           <div>
             <Icon icon={faVideo} />
             {scene.studio?.name ?? "Unknown"}
-            <small className="text-muted ms-2">{scene.code}</small>
+            <small className="ml-2 text-muted-foreground">{scene.code}</small>
           </div>
           {scene.performers.length > 0 && (
             <div>
@@ -47,6 +46,6 @@ export const SceneCard: FC<{ scene: Scene }> = ({ scene }) => (
           )}
         </div>
       </div>
-    </Card>
+    </div>
   </Link>
 );

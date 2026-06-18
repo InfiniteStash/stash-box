@@ -18,7 +18,7 @@ const render = (
   );
 
 const rowFor = (label: string) =>
-  screen.getByText(label).closest(".row") as HTMLElement;
+  screen.getByText(label).closest(".ChangeRow") as HTMLElement;
 
 const site = (id: string) => ({
   id,
@@ -176,14 +176,14 @@ describe("renderSceneDetails", () => {
         true,
       );
       const titleRow = rowFor("Title");
-      expect(titleRow.querySelector(".bg-danger")).toHaveTextContent(
+      expect(titleRow.querySelector(".bg-destructive")).toHaveTextContent(
         "Old Title",
       );
       expect(titleRow.querySelector(".bg-success")).toHaveTextContent(
         "Renamed",
       );
       const durationRow = rowFor("Duration");
-      expect(durationRow.querySelector(".bg-danger")).toHaveTextContent(
+      expect(durationRow.querySelector(".bg-destructive")).toHaveTextContent(
         "1:00:00",
       );
       expect(durationRow.querySelector(".bg-success")).toHaveTextContent(

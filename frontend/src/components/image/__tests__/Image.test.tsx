@@ -148,7 +148,7 @@ describe("ImageLightbox (via Image)", () => {
     it("close button calls onHide", async () => {
       const { user } = await openLightbox(ONE);
       const dialog = screen.getByRole("dialog");
-      await user.click(screen.getByRole("button", { name: "" }));
+      await user.click(screen.getByRole("button", { name: "Close" }));
       await waitFor(() => expect(dialog).not.toBeInTheDocument());
     });
 

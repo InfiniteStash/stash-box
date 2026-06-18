@@ -1,9 +1,9 @@
 import { faUndo, faXmark } from "@fortawesome/free-solid-svg-icons";
-import cx from "classnames";
 import type { FC } from "react";
-import { Button, Col, Row } from "react-bootstrap";
 
 import { Icon } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
+import { cn } from "src/lib/utils";
 import { useAmendment } from "./AmendmentContext";
 
 export interface AmendableChangeRowProps {
@@ -27,23 +27,24 @@ const AmendableChangeRow: FC<AmendableChangeRowProps> = ({
   if (!name || (!newValue && !oldValue)) return null;
 
   return (
-    <Row
-      className={cx("mb-2", {
-        "opacity-50 text-decoration-line-through": isRemoved,
-      })}
-    >
-      <b className="col-2 text-end pt-1">{name}</b>
-      {showDiff && (
-        <Col xs={4}>
-          <div className="EditDiff bg-danger">{oldValue}</div>
-        </Col>
+    <div
+      className={cn(
+        "mb-2 grid grid-cols-12 gap-x-3",
+        isRemoved && "line-through opacity-50",
       )}
-      <Col xs={showDiff ? 4 : 8}>
-        <div className={cx("EditDiff", { "bg-success": showDiff })}>
+    >
+      <b className="col-span-2 pt-1 text-right">{name}</b>
+      {showDiff && (
+        <div className="col-span-4">
+          <div className="EditDiff bg-destructive">{oldValue}</div>
+        </div>
+      )}
+      <div className={showDiff ? "col-span-4" : "col-span-8"}>
+        <div className={cn("EditDiff", showDiff && "bg-success")}>
           {newValue}
         </div>
-      </Col>
-      <Col xs={2} className="text-end">
+      </div>
+      <div className="col-span-2 text-right">
         {!isRemoved && (
           <Button
             variant="danger"
@@ -64,8 +65,8 @@ const AmendableChangeRow: FC<AmendableChangeRowProps> = ({
             <Icon icon={faUndo} />
           </Button>
         )}
-      </Col>
-    </Row>
+      </div>
+    </div>
   );
 };
 

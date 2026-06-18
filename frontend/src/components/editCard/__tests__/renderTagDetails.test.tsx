@@ -18,7 +18,7 @@ const render = (
 
 const rowFor = (label: string) => {
   const labelEl = screen.getByText(label);
-  return labelEl.closest(".row") as HTMLElement;
+  return labelEl.closest(".ChangeRow") as HTMLElement;
 };
 
 describe("renderTagDetails", () => {
@@ -27,7 +27,7 @@ describe("renderTagDetails", () => {
       render({ name: "NewTag" }, undefined, false);
       const row = rowFor("Name");
       expect(within(row).getByText("NewTag")).toBeInTheDocument();
-      expect(row.querySelector(".bg-danger")).toBeNull();
+      expect(row.querySelector(".bg-destructive")).toBeNull();
     });
 
     it("renders description, category, added_aliases", () => {
@@ -61,7 +61,7 @@ describe("renderTagDetails", () => {
     it("shows both old and new values side-by-side for a renamed tag", () => {
       render({ name: "Renamed" }, { name: "Old" }, true);
       const row = rowFor("Name");
-      const danger = row.querySelector(".bg-danger");
+      const danger = row.querySelector(".bg-destructive");
       const success = row.querySelector(".bg-success");
       expect(danger).toHaveTextContent("Old");
       expect(success).toHaveTextContent("Renamed");
@@ -105,7 +105,7 @@ describe("renderTagDetails", () => {
         true,
       );
       const aliasRow = rowFor("Aliases");
-      const danger = aliasRow.querySelector(".bg-danger");
+      const danger = aliasRow.querySelector(".bg-destructive");
       const success = aliasRow.querySelector(".bg-success");
       expect(danger).toHaveTextContent("removed");
       expect(success).toHaveTextContent("added");

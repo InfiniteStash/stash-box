@@ -1,9 +1,9 @@
 import { sortBy } from "lodash-es";
 import type { FC } from "react";
-import { Button, Row } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import DeleteButton from "src/components/deleteButton";
 import { SiteLink } from "src/components/fragments";
+import { buttonVariants } from "src/components/ui/button";
 import {
   ROUTE_SITE_CATEGORIES,
   ROUTE_SITE_CATEGORY_EDIT,
@@ -50,21 +50,21 @@ const SiteCategoryComponent: FC<Props> = ({ category }) => {
 
   return (
     <>
-      <Link to={ROUTE_SITE_CATEGORIES}>
+      <Link to={ROUTE_SITE_CATEGORIES} className="text-link hover:underline">
         <h6 className="mb-4">&larr; Site Category List</h6>
       </Link>
-      <div className="d-flex">
-        <h3 className="me-auto">
+      <div className="flex">
+        <h3 className="mr-auto">
           <em>{category.name}</em>
         </h3>
-        <div className="ms-auto">
+        <div className="ml-auto flex gap-2">
           {isAdmin && (
             <>
               <Link
                 to={createHref(ROUTE_SITE_CATEGORY_EDIT, category)}
-                className="me-2"
+                className={buttonVariants()}
               >
-                <Button>Edit</Button>
+                Edit
               </Link>
               <DeleteButton
                 onClick={handleDelete}
@@ -76,19 +76,19 @@ const SiteCategoryComponent: FC<Props> = ({ category }) => {
         </div>
       </div>
       {category.description && (
-        <Row className="g-0">
-          <b className="me-2">Description:</b>
+        <div className="flex">
+          <b className="mr-2">Description:</b>
           <span>{category.description}</span>
-        </Row>
+        </div>
       )}
-      <Row className="g-0">
-        <b className="me-2">Sort order:</b>
+      <div className="flex">
+        <b className="mr-2">Sort order:</b>
         <span>{category.sort_order}</span>
-      </Row>
-      <hr className="my-2 mb-4" />
-      <ul className="ps-0">
+      </div>
+      <hr className="my-2 mb-4 border-border" />
+      <ul className="pl-0">
         {sites.map((site) => (
-          <li key={site.id} className="d-block">
+          <li key={site.id} className="block">
             <SiteLink site={site} noMargin />
           </li>
         ))}
