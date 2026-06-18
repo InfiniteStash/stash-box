@@ -41,14 +41,15 @@ body {
   --muted-foreground: #bfccd6;
 
   --accent: #2f3e49;
-  --accent-foreground: #f5f8fa;
 
   --destructive: #db3737;
   --destructive-foreground: #ffffff;
   --success: #0f9960;
   --warning: #d9822b;
 
-  --link: #48aff0;
+  /* Links are regular foreground text (no distinct color); hover underline
+   * still provides the affordance. */
+  --link: var(--foreground);
 
   --border: rgba(255 255 255 / 10%);
   --input: rgba(255 255 255 / 14%);
@@ -73,7 +74,6 @@ body {
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
