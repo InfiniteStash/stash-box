@@ -7,6 +7,7 @@ import { Icon } from "src/components/fragments";
 import { List } from "src/components/list";
 import PerformerCard from "src/components/performerCard";
 import { Button } from "src/components/ui/button";
+import { ButtonGroup } from "src/components/ui/button-group";
 import { SelectCombobox } from "src/components/ui/combobox";
 import { Input } from "src/components/ui/input";
 import { Select } from "src/components/ui/select";
@@ -98,7 +99,7 @@ export const ScenePairings: FC<Props> = ({ id }) => {
         onChange={(v) => setParams("gender", v ?? undefined)}
         className="ml-2 w-40"
       />
-      <div className="performer-sort ml-2 mr-3 flex gap-2">
+      <ButtonGroup className="ml-2 mr-3">
         <Select
           onChange={(e) =>
             setParams("sort", e.currentTarget.value.toLowerCase())
@@ -130,7 +131,7 @@ export const ScenePairings: FC<Props> = ({ id }) => {
             }
           />
         </Button>
-      </div>
+      </ButtonGroup>
       <Switch
         label="Favorites"
         defaultChecked={favorite}

@@ -8,6 +8,7 @@ import List from "src/components/list/List";
 import Modal from "src/components/modal";
 import TagFilter from "src/components/tagFilter";
 import { Button } from "src/components/ui/button";
+import { ButtonGroup } from "src/components/ui/button-group";
 import { Select } from "src/components/ui/select";
 import { Table } from "src/components/ui/table";
 import {
@@ -80,38 +81,42 @@ export const UserFingerprintsList: FC<Props> = ({
   if (!loading && !data) return <ErrorMessage error="Failed to load scenes." />;
 
   const filters = (
-    <div className="scene-sort flex gap-2">
+    <div className="flex items-center gap-2">
       <TagFilter tag={params.tag} onChange={(t) => setParams("tag", t?.id)} />
-      <Select
-        className="w-auto"
-        onChange={(e) => setParams("sort", e.currentTarget.value.toLowerCase())}
-        defaultValue={sort ?? "name"}
-      >
-        {sortOptions.map((s) => (
-          <option value={s.value} key={s.value}>
-            {s.label}
-          </option>
-        ))}
-      </Select>
-      <Button
-        variant="secondary"
-        onClick={() =>
-          setParams(
-            "dir",
-            direction === SortDirectionEnum.DESC
-              ? SortDirectionEnum.ASC
-              : SortDirectionEnum.DESC,
-          )
-        }
-      >
-        <Icon
-          icon={
-            direction === SortDirectionEnum.DESC
-              ? faSortAmountDown
-              : faSortAmountUp
+      <ButtonGroup>
+        <Select
+          className="w-auto"
+          onChange={(e) =>
+            setParams("sort", e.currentTarget.value.toLowerCase())
           }
-        />
-      </Button>
+          defaultValue={sort ?? "name"}
+        >
+          {sortOptions.map((s) => (
+            <option value={s.value} key={s.value}>
+              {s.label}
+            </option>
+          ))}
+        </Select>
+        <Button
+          variant="secondary"
+          onClick={() =>
+            setParams(
+              "dir",
+              direction === SortDirectionEnum.DESC
+                ? SortDirectionEnum.ASC
+                : SortDirectionEnum.DESC,
+            )
+          }
+        >
+          <Icon
+            icon={
+              direction === SortDirectionEnum.DESC
+                ? faSortAmountDown
+                : faSortAmountUp
+            }
+          />
+        </Button>
+      </ButtonGroup>
     </div>
   );
 
