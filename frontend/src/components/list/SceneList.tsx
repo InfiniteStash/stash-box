@@ -7,6 +7,7 @@ import { ErrorMessage, Icon } from "src/components/fragments";
 import SceneCard from "src/components/sceneCard";
 import TagFilter from "src/components/tagFilter";
 import { Button } from "src/components/ui/button";
+import { ButtonGroup } from "src/components/ui/button-group";
 import { SelectCombobox } from "src/components/ui/combobox";
 import { Select } from "src/components/ui/select";
 import { Switch } from "src/components/ui/switch";
@@ -97,7 +98,7 @@ const SceneList: FC<Props> = ({
       {!tagsFilter && (
         <TagFilter tag={params.tag} onChange={(t) => setParams("tag", t?.id)} />
       )}
-      <div className="scene-sort flex gap-2">
+      <ButtonGroup>
         <Select
           className="w-auto"
           onChange={(e) =>
@@ -130,7 +131,7 @@ const SceneList: FC<Props> = ({
             }
           />
         </Button>
-      </div>
+      </ButtonGroup>
       {favoriteFilter === "performer" || favoriteFilter === "studio" ? (
         <Switch
           className="ml-3"

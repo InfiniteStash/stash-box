@@ -4,6 +4,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "src/components/fragments";
 import { Button } from "src/components/ui/button";
+import { ButtonGroup } from "src/components/ui/button-group";
 import { SelectCombobox } from "src/components/ui/combobox";
 import { Label } from "src/components/ui/field";
 import { Select } from "src/components/ui/select";
@@ -132,7 +133,7 @@ const useEditFilter = ({
     <div className="flex flex-wrap items-end gap-x-2 font-bold">
       <div className="mb-3 flex flex-col gap-1">
         <Label>Order</Label>
-        <div className="flex gap-2">
+        <ButtonGroup>
           <Select
             onChange={(e) => setParams("sort", e.currentTarget.value)}
             defaultValue={selectedSort}
@@ -162,7 +163,7 @@ const useEditFilter = ({
               }
             />
           </Button>
-        </div>
+        </ButtonGroup>
       </div>
       <div className="mb-3 flex flex-col gap-1">
         <Label>Type</Label>
