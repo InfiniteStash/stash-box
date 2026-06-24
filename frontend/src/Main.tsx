@@ -95,7 +95,7 @@ const Main: FC<Props> = ({ children }) => {
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     cn(
-      "rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground",
+      "rounded-md px-3 py-2 text-base transition-colors hover:bg-accent hover:text-foreground",
       isActive ? "font-medium text-link" : "text-foreground/85",
     );
 
@@ -126,7 +126,7 @@ const Main: FC<Props> = ({ children }) => {
         href={guidelinesURL}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-foreground/85 transition-colors hover:bg-accent hover:text-foreground"
+        className="flex items-center gap-2 rounded-md px-3 py-2 text-base text-foreground/85 transition-colors hover:bg-accent hover:text-foreground"
       >
         <Icon icon={faBook} />
         Guidelines

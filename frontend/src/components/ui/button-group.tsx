@@ -2,10 +2,10 @@ import { cva, type VariantProps } from "class-variance-authority";
 import type { HTMLAttributes } from "react";
 import { cn } from "src/lib/utils";
 
-// shadcn/ui Button Group, adapted for this codebase (cn from src/lib/utils,
-// no Radix Slot). Joins adjacent controls (Button / Select / Input) into one
-// connected widget: shared inner borders, flattened inner radii, focused child
-// raised so its ring isn't clipped.
+// shadcn/ui Button Group (cn from src/lib/utils instead of Radix Slot).
+// Joins adjacent controls (Button / Select / Input) into one connected widget
+// by flattening inner radii and collapsing the shared border. Relies on each
+// child carrying its own border (our Button does — see button.tsx).
 const buttonGroupVariants = cva(
   "flex w-fit items-stretch [&>*]:focus-visible:relative [&>*]:focus-visible:z-10 [&>input]:flex-1",
   {
