@@ -21,7 +21,7 @@ const popupClasses =
 const itemClasses =
   "flex cursor-pointer select-none flex-col rounded px-3 py-2 text-sm data-[highlighted]:bg-accent data-[selected]:bg-primary/25";
 const inputClasses =
-  "flex h-9 w-full rounded-md border border-input bg-secondary px-3 py-1 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40";
+  "flex h-9 w-full rounded-md border border-input bg-input-bg px-3 py-1 text-sm text-input-foreground transition-colors placeholder:text-input-foreground/50 focus-visible:outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40";
 
 // Shared async option loader: debounced server-side search with stale-response
 // dropping and URL-paste ID extraction. The debounced wrapper is kept stable
@@ -118,6 +118,10 @@ export function AsyncSelect<T extends ComboboxOption>({
   noOptionsMessage,
 }: AsyncSelectProps<T>) {
   const { items, term, loading, runSearch } = useAsyncOptions(loadOptions);
+  const [open, setOpen] = useState(false);
+  // Async search: nothing to show until the user has typed, so don't open an
+  // empty popup on focus.
+  const hasResults = loading || items.length > 0 || term.trim().length > 0;
 
   return (
     <Combobox.Root
@@ -125,6 +129,8 @@ export function AsyncSelect<T extends ComboboxOption>({
       defaultValue={defaultValue}
       value={value}
       filter={null}
+      open={open && hasResults}
+      onOpenChange={setOpen}
       onValueChange={(v: T | null) => onChange(v)}
       onInputValueChange={runSearch}
       itemToStringLabel={(item: T) => item?.label ?? ""}
@@ -140,7 +146,7 @@ export function AsyncSelect<T extends ComboboxOption>({
         {isClearable && (
           <Combobox.Clear
             aria-label="Clear"
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-input-foreground/60 hover:text-input-foreground"
           >
             ×
           </Combobox.Clear>
@@ -226,7 +232,7 @@ export function SelectCombobox<T extends ComboboxOption>({
         {isClearable && (
           <Combobox.Clear
             aria-label="Clear"
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-input-foreground/60 hover:text-input-foreground"
           >
             ×
           </Combobox.Clear>
@@ -286,7 +292,7 @@ export function MultiCombobox<T extends ComboboxOption>({
       }
     >
       {/* biome-ignore lint/a11y/noLabelWithoutControl: wraps the Base UI Combobox.Input below */}
-      <label className="flex min-h-9 cursor-text flex-wrap items-center gap-1.5 rounded-md border border-input bg-secondary px-2 py-1 transition-colors focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/40">
+      <label className="flex min-h-9 cursor-text flex-wrap items-center gap-1.5 rounded-md border border-input bg-input-bg px-2 py-1 text-input-foreground transition-colors focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/40">
         {selected.map((item) => (
           <span
             key={item.value}
@@ -296,7 +302,7 @@ export function MultiCombobox<T extends ComboboxOption>({
             <button
               type="button"
               aria-label={`Remove ${item.label}`}
-              className="flex size-4 items-center justify-center rounded-sm border-0 bg-transparent text-muted-foreground hover:bg-black/20 hover:text-foreground"
+              className="flex size-4 items-center justify-center rounded-sm border-0 bg-transparent text-input-foreground/60 hover:bg-black/10 hover:text-input-foreground"
               onClick={() => onChange(values.filter((v) => v !== item.value))}
             >
               ×
@@ -306,7 +312,7 @@ export function MultiCombobox<T extends ComboboxOption>({
         <Combobox.Input
           id={inputId}
           placeholder={selected.length === 0 ? placeholder : ""}
-          className="h-7 min-w-24 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+          className="h-7 min-w-24 flex-1 bg-transparent text-sm outline-none placeholder:text-input-foreground/50"
         />
       </label>
       <Combobox.Portal>
@@ -362,6 +368,10 @@ export function AsyncSearchAdd<T extends ComboboxOption>({
   const { items, term, loading, runSearch, reset } =
     useAsyncOptions(loadOptions);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [open, setOpen] = useState(false);
+  // Async search: nothing to show until the user has typed, so don't open an
+  // empty popup on focus.
+  const hasResults = loading || items.length > 0 || term.trim().length > 0;
   useEffect(() => {
     if (autoFocus) inputRef.current?.focus();
   }, [autoFocus]);
@@ -372,6 +382,8 @@ export function AsyncSearchAdd<T extends ComboboxOption>({
       value={null}
       inputValue={term}
       filter={null}
+      open={open && hasResults}
+      onOpenChange={setOpen}
       onValueChange={(item: T | null) => {
         if (item) {
           onSelect(item);

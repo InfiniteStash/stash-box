@@ -17,6 +17,42 @@ body {
 }
 
 /*
+ * Global heading scale. Preflight unstyles h1–h6 (font-size/weight: inherit);
+ * shadcn normally re-applies size via per-element utilities, but this app uses
+ * bare headings as page titles, so map its documented scale here instead.
+ * Must come after the preflight import to win at equal specificity; utility
+ * classes (text-xl, etc.) still override where a heading is deliberately sized.
+ */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+h1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+}
+h2 {
+  font-size: 1.875rem;
+}
+h3 {
+  font-size: 1.5rem;
+}
+h4 {
+  font-size: 1.25rem;
+}
+h5 {
+  font-size: 1.125rem;
+}
+h6 {
+  font-size: 1rem;
+}
+
+/*
  * Blueprint dark palette ported from styles/theme.scss, expressed as the
  * shadcn-style semantic tokens our Base UI components consume.
  * App is dark-only, so the values live directly on :root (no .dark variant).
@@ -53,6 +89,10 @@ body {
 
   --border: rgba(255 255 255 / 10%);
   --input: rgba(255 255 255 / 14%);
+  /* Form fields are light surfaces (white with near-black text) that stand out
+   * against the dark app chrome — the shadcn light-input look. */
+  --input-bg: #ffffff;
+  --input-foreground: #182026;
   --ring: #137cbd;
 
   --radius: 0.5rem;
@@ -81,6 +121,8 @@ body {
   --color-link: var(--link);
   --color-border: var(--border);
   --color-input: var(--input);
+  --color-input-bg: var(--input-bg);
+  --color-input-foreground: var(--input-foreground);
   --color-ring: var(--ring);
 
   --radius-sm: calc(var(--radius) - 1px);

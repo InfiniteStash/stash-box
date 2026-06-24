@@ -8,6 +8,7 @@ import { ErrorMessage, Icon } from "src/components/fragments";
 import { List } from "src/components/list";
 import PerformerCard from "src/components/performerCard";
 import { Button } from "src/components/ui/button";
+import { ButtonGroup } from "src/components/ui/button-group";
 import { SelectCombobox } from "src/components/ui/combobox";
 import { Input } from "src/components/ui/input";
 import { Select } from "src/components/ui/select";
@@ -98,7 +99,7 @@ const PerformersComponent: FC = () => {
         onChange={(v) => setParams("gender", v ?? undefined)}
         className="w-40"
       />
-      <div className="flex items-center gap-1">
+      <ButtonGroup>
         <Select
           defaultValue={sort ?? "name"}
           onChange={(e) =>
@@ -113,7 +114,6 @@ const PerformersComponent: FC = () => {
         </Select>
         <Button
           variant="secondary"
-          size="sm"
           aria-label="Toggle sort direction"
           onClick={() =>
             setParams(
@@ -132,7 +132,7 @@ const PerformersComponent: FC = () => {
             }
           />
         </Button>
-      </div>
+      </ButtonGroup>
       <Switch
         id="favorite"
         label="Only favorites"

@@ -47,7 +47,7 @@ export function TagsInput({
   };
 
   return (
-    <label className="flex min-h-9 cursor-text flex-wrap items-center gap-1.5 rounded-md border border-input bg-secondary px-2 py-1 transition-colors focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/40">
+    <label className="flex min-h-9 cursor-text flex-wrap items-center gap-1.5 rounded-md border border-input bg-input-bg px-2 py-1 text-input-foreground transition-colors focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/40">
       {values.map((value, index) => (
         <span
           key={value}
@@ -58,8 +58,8 @@ export function TagsInput({
             type="button"
             aria-label={`Remove ${value}`}
             className={cn(
-              "flex size-4 items-center justify-center rounded-sm border-0 bg-transparent text-muted-foreground",
-              "hover:bg-black/20 hover:text-foreground",
+              "flex size-4 items-center justify-center rounded-sm border-0 bg-transparent text-input-foreground/60",
+              "hover:bg-black/10 hover:text-input-foreground",
             )}
             onClick={(e) => {
               e.stopPropagation();
@@ -78,7 +78,7 @@ export function TagsInput({
         onKeyDown={onKeyDown}
         onBlur={add}
         placeholder={values.length === 0 ? placeholder : ""}
-        className="h-7 min-w-24 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+        className="h-7 min-w-24 flex-1 bg-transparent text-sm outline-none placeholder:text-input-foreground/50"
       />
     </label>
   );
