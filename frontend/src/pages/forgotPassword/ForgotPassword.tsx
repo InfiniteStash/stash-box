@@ -2,12 +2,12 @@ import type { CombinedGraphQLErrors } from "@apollo/client";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { type FC, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Title from "src/components/title";
 import { Button } from "src/components/ui/button";
 import { Label } from "src/components/ui/field";
 import { Input } from "src/components/ui/input";
-import { ROUTE_HOME } from "src/constants/route";
+import { ROUTE_HOME, ROUTE_LOGIN } from "src/constants/route";
 import { useResetPassword } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
 import * as yup from "yup";
@@ -60,9 +60,9 @@ const ForgotPassword: FC = () => {
             If a matching account was found an email was sent to {resetEmail} to
             allow you to reset your password.
           </p>
-          <a href="/login" className="text-link hover:underline">
+          <Link to={ROUTE_LOGIN} className="text-link hover:underline">
             Return to login
-          </a>
+          </Link>
         </div>
       </div>
     );

@@ -81,6 +81,14 @@ const Actions: FC<Props> = ({ performer }) => {
         >
           Delete
         </Link>
+        {isModerator && (
+          <Link
+            to={`${ROUTE_IMAGE_REVIEW}?performer=${performer.id}`}
+            className={buttonVariants({ variant: "secondary" })}
+          >
+            Review Images
+          </Link>
+        )}
       </div>
     </div>
   );

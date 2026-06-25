@@ -49,6 +49,13 @@ export const createHref = (route: string, params: unknown = {}) =>
     params as Record<string, string | number | boolean | undefined>,
   );
 
+// Prefixes a router path with the app's base path for full-page navigations
+// (window.location), which bypass the router and ignore its basename.
+export const baseHref = (path: string) =>
+  `${import.meta.env.BASE_URL.replace(/\/$/, "")}${
+    path.startsWith("/") ? path : `/${path}`
+  }`;
+
 const ROUTES_WITH_ID = [ROUTE_PERFORMER, ROUTE_SCENE, ROUTE_STUDIO, ROUTE_TAG];
 
 // Extracts a UUID from a local URL (e.g., /performers/{id}, /scenes/{id})

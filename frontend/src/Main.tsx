@@ -33,7 +33,14 @@ import {
 import { useConfig, useUnreadNotificationsCount } from "src/graphql";
 import { useAuth } from "src/hooks";
 import { cn } from "src/lib/utils";
-import { canEdit, canModerate, isAdmin, setCachedUser, userHref } from "src/utils";
+import {
+  baseHref,
+  canEdit,
+  canModerate,
+  isAdmin,
+  setCachedUser,
+  userHref,
+} from "src/utils";
 import { getCredentialsSetting, getPlatformURL } from "src/utils/createClient";
 import AuthContext from "./context";
 
@@ -92,7 +99,7 @@ const Main: FC<Props> = ({ children }) => {
       credentials: getCredentialsSetting(),
     });
     setCachedUser();
-    if (res.ok) window.location.href = ROUTE_LOGIN;
+    if (res.ok) window.location.href = baseHref(ROUTE_LOGIN);
     return false;
   };
 
@@ -111,7 +118,9 @@ const Main: FC<Props> = ({ children }) => {
     { to: ROUTE_EDITS, label: "Edits" },
     ...(canEdit(user) ? [{ to: ROUTE_DRAFTS, label: "Drafts" }] : []),
     { to: ROUTE_SITES, label: "Sites" },
-    ...(canModerate(user) ? [{ to: ROUTE_IMAGE_REVIEW, label: "Image Review" }] : []),
+    ...(canModerate(user)
+      ? [{ to: ROUTE_IMAGE_REVIEW, label: "Image Review" }]
+      : []),
   ];
 
   const closeMenu = () => setMobileOpen(false);

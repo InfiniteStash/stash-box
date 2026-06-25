@@ -1,3 +1,4 @@
+import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import {
   faArrowLeft,
   faArrowRight,
@@ -12,11 +13,10 @@ import {
   useRef,
   useState,
 } from "react";
-import { Dialog as BaseDialog } from "@base-ui/react/dialog";
-import { Button } from "src/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "src/components/ui/tabs";
 import { Link, useNavigate } from "react-router-dom";
 import { Icon } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "src/components/ui/tabs";
 import { imageHref } from "src/utils/route";
 import Image from "./Image";
 import ImageCategorization, {
@@ -139,109 +139,121 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
   );
 
   return (
-    <BaseDialog.Root open onOpenChange={(open) => !open && handleClose()}><BaseDialog.Portal><BaseDialog.Backdrop className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md" /><BaseDialog.Popup className="ImageLightbox fixed inset-0 z-50 outline-none">
-      <div className="ImageLightbox-body" onClick={closeOnBackgroundClick}>
-        <div className="ImageLightbox-main">
-          <Image
-            images={focused}
-            key={focused.url}
-            size="full"
-            showTags={showTags && sideTab !== "categorization"}
-          />
-          <div className="ImageLightbox-caption">
-            {images.length > 1 && (
-              <>
-                {index + 1}/{images.length} &middot;{" "}
-              </>
-            )}
-            <span>
-              {focused.width}&times;{focused.height}
-            </span>{" "}
-            &middot;{" "}
-            <Link
-              className="ImageLightbox-details"
-              to={imageHref(focused)}
-              onClick={(event) => {
-                if (
-                  event.ctrlKey ||
-                  event.metaKey ||
-                  event.shiftKey ||
-                  event.altKey
-                )
-                  return;
-                event.preventDefault();
-                leave(() => navigate(imageHref(focused)));
-              }}
-            >
-              Details
-            </Link>
-          </div>
-        </div>
-        {showCategorization ? (
-          <div className="ImageLightbox-side">
-            <Tabs
-              value={sideTab}
-              onValueChange={(key) =>
-                key &&
-                key !== sideTab &&
-                leave(() => setSideTab(key as "images" | "categorization"))
-              }
-            >
-              <TabsList><TabsTrigger value="images">Images</TabsTrigger><TabsTrigger value="categorization">Categorization</TabsTrigger></TabsList>
-            </Tabs>
-            {sideTab === "categorization" ? (
-              <>
-                <div className="ImageLightbox-editor-navigation">
-                  <Button
-                    variant="link"
-                    className="minimal"
-                    aria-label="Previous image"
-                    disabled={index === 0}
-                    onClick={() => goTo(index - 1)}
-                  >
-                    <Icon icon={faArrowLeft} />
-                  </Button>
-                  <span>
-                    {index + 1} of {images.length}
-                  </span>
-                  <Button
-                    variant="link"
-                    className="minimal"
-                    aria-label="Next image"
-                    disabled={index === images.length - 1}
-                    onClick={() => goTo(index + 1)}
-                  >
-                    <Icon icon={faArrowRight} />
-                  </Button>
-                </div>
-                <div
-                  className="ImageLightbox-editor"
-                  role="group"
-                  aria-label="Image classification and date"
+    <BaseDialog.Root open onOpenChange={(open) => !open && handleClose()}>
+      <BaseDialog.Portal>
+        <BaseDialog.Backdrop className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md" />
+        <BaseDialog.Popup className="ImageLightbox fixed inset-0 z-50 outline-none">
+          {/* biome-ignore lint/a11y/noStaticElementInteractions: background click closes the dialog; Escape and close button support keyboard access */}
+          {/* biome-ignore lint/a11y/useKeyWithClickEvents: Escape and close button support keyboard access */}
+          <div className="ImageLightbox-body" onClick={closeOnBackgroundClick}>
+            <div className="ImageLightbox-main">
+              <Image
+                images={focused}
+                key={focused.url}
+                size="full"
+                showTags={showTags && sideTab !== "categorization"}
+              />
+              <div className="ImageLightbox-caption">
+                {images.length > 1 && (
+                  <>
+                    {index + 1}/{images.length} &middot;{" "}
+                  </>
+                )}
+                <span>
+                  {focused.width}&times;{focused.height}
+                </span>{" "}
+                &middot;{" "}
+                <Link
+                  className="ImageLightbox-details"
+                  to={imageHref(focused)}
+                  onClick={(event) => {
+                    if (
+                      event.ctrlKey ||
+                      event.metaKey ||
+                      event.shiftKey ||
+                      event.altKey
+                    )
+                      return;
+                    event.preventDefault();
+                    leave(() => navigate(imageHref(focused)));
+                  }}
                 >
-                  <ImageCategorization
-                    key={focused.id}
-                    ref={categorizationEditor}
-                    imageId={focused.id}
-                  />
-                </div>
-              </>
+                  Details
+                </Link>
+              </div>
+            </div>
+            {showCategorization ? (
+              <div className="ImageLightbox-side">
+                <Tabs
+                  value={sideTab}
+                  onValueChange={(key) =>
+                    key &&
+                    key !== sideTab &&
+                    leave(() => setSideTab(key as "images" | "categorization"))
+                  }
+                >
+                  <TabsList>
+                    <TabsTrigger value="images">Images</TabsTrigger>
+                    <TabsTrigger value="categorization">
+                      Categorization
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                {sideTab === "categorization" ? (
+                  <>
+                    <div className="ImageLightbox-editor-navigation">
+                      <Button
+                        variant="link"
+                        className="minimal"
+                        aria-label="Previous image"
+                        disabled={index === 0}
+                        onClick={() => goTo(index - 1)}
+                      >
+                        <Icon icon={faArrowLeft} />
+                      </Button>
+                      <span>
+                        {index + 1} of {images.length}
+                      </span>
+                      <Button
+                        variant="link"
+                        className="minimal"
+                        aria-label="Next image"
+                        disabled={index === images.length - 1}
+                        onClick={() => goTo(index + 1)}
+                      >
+                        <Icon icon={faArrowRight} />
+                      </Button>
+                    </div>
+                    <div
+                      className="ImageLightbox-editor"
+                      role="group"
+                      aria-label="Image classification and date"
+                    >
+                      <ImageCategorization
+                        key={focused.id}
+                        ref={categorizationEditor}
+                        imageId={focused.id}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  thumbnails
+                )}
+              </div>
             ) : (
-              thumbnails
+              images.length > 1 && thumbnails
             )}
+            <Button
+              className="ImageLightbox-close minimal"
+              onClick={handleClose}
+              variant="link"
+            >
+              <Icon icon={faXmark} />
+            </Button>
           </div>
-        ) : (
-          images.length > 1 && thumbnails
-        )}
-        <Button
-          className="ImageLightbox-close minimal"
-          onClick={handleClose}
-          variant="link"
-        >
-          <Icon icon={faXmark} />
-        </Button>
-      </div>
-    </BaseDialog.Popup></BaseDialog.Portal></BaseDialog.Root>
+        </BaseDialog.Popup>
+      </BaseDialog.Portal>
+    </BaseDialog.Root>
   );
 };
 

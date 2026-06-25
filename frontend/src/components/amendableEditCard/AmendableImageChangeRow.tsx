@@ -62,7 +62,8 @@ const AmendableImageChangeRow: FC<AmendableImageChangeRowProps> = ({
           <ImageComponent
             images={image}
             alt=""
-            size={300} loading="lazy"
+            size={300}
+            loading="lazy"
             className="h-[150px] w-auto"
             lightboxImages={lightboxImages}
           />

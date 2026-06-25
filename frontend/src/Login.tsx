@@ -6,6 +6,7 @@ import { Button } from "src/components/ui/button";
 import { FieldError, FormGroup, Label } from "src/components/ui/field";
 import { Input } from "src/components/ui/input";
 import { ROUTE_FORGOT_PASSWORD, ROUTE_REGISTER } from "src/constants/route";
+import { baseHref } from "src/utils";
 import { getCredentialsSetting, getPlatformURL } from "src/utils/createClient";
 import * as yup from "yup";
 import "./styles/legacy.css";
@@ -53,7 +54,7 @@ const Login: FC = () => {
     }).finally(() => setLoading(false));
 
     const returnURL = decodeURIComponent(redirect ?? "") || "/";
-    if (res.ok) window.location.replace(returnURL);
+    if (res.ok) window.location.replace(baseHref(returnURL));
     else setLoginError("Access denied");
   };
 

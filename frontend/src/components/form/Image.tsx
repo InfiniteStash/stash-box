@@ -15,7 +15,12 @@ interface ImageProps {
   showCategorization?: boolean;
 }
 
-const ImageInput: FC<ImageProps> = ({ image, lightboxImages, onRemove, showCategorization }) => (
+const ImageInput: FC<ImageProps> = ({
+  image,
+  lightboxImages,
+  onRemove,
+  showCategorization,
+}) => (
   <div className="relative">
     <Button
       variant="danger"

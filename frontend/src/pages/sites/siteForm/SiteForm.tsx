@@ -213,7 +213,12 @@ const SiteForm: FC<SiteProps> = ({ site, callback }) => {
         </p>
       </FormGroup>
 
-      <SiteFavicon currentIcon={site?.icon} getUrl={() => getValues("url") ?? ""} value={favicon} onChange={setFavicon} />
+      <SiteFavicon
+        currentIcon={site?.icon}
+        getUrl={() => getValues("url") ?? ""}
+        value={favicon}
+        onChange={setFavicon}
+      />
       <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
         <Button type="submit">Save</Button>
         <Button type="reset" className="sm:ml-auto">

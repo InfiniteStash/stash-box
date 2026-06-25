@@ -3,6 +3,7 @@ import { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_USERS } from "src/constants/route";
 import { useAddUser } from "src/graphql";
+import { baseHref } from "src/utils";
 import UserForm, { type UserData } from "./UserForm";
 
 const AddUserComponent: FC = () => {
@@ -10,7 +11,7 @@ const AddUserComponent: FC = () => {
   const navigate = useNavigate();
   const [insertUser] = useAddUser({
     onCompleted: () => {
-      window.location.href = ROUTE_USERS;
+      window.location.href = baseHref(ROUTE_USERS);
     },
   });
 

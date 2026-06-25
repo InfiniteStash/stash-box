@@ -38,7 +38,7 @@ import {
   VoteTypeEnum,
 } from "src/graphql";
 import { useCurrentUser, useToast } from "src/hooks";
-import { createHref, formatDateTime, isPrivateUser } from "src/utils";
+import { baseHref, createHref, formatDateTime, isPrivateUser } from "src/utils";
 import { GenerateInviteKeyModal } from "./GenerateInviteKeyModal";
 
 interface IInviteKeys {
@@ -167,7 +167,7 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
   const handleDelete = (status: boolean): void => {
     if (status)
       deleteUser({ variables: { input: { id: user.id } } }).then(() => {
-        window.location.href = ROUTE_USERS;
+        window.location.href = baseHref(ROUTE_USERS);
       });
     setShowDelete(false);
   };
@@ -318,8 +318,13 @@ const UserComponent: FC<Props> = ({ user, refetch }) => {
               >
                 My Fingerprints
               </Link>
-              <Link to={createHref(ROUTE_USER_IMAGE_PREFERENCES, user)} className={buttonVariants({ variant: "secondary" })}>Image Preferences</Link>
-               <Link to={ROUTE_USER_PASSWORD} className={buttonVariants()}>
+              <Link
+                to={createHref(ROUTE_USER_IMAGE_PREFERENCES, user)}
+                className={buttonVariants({ variant: "secondary" })}
+              >
+                Image Preferences
+              </Link>
+              <Link to={ROUTE_USER_PASSWORD} className={buttonVariants()}>
                 Change Password
               </Link>
             </>

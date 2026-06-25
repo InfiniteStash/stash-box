@@ -21,6 +21,7 @@ import {
 } from "src/graphql";
 import { useCurrentUser } from "src/hooks";
 import {
+  baseHref,
   createHref,
   getEditDetailsName,
   getEditTargetName,
@@ -66,7 +67,7 @@ const EditComponent: FC = () => {
         const target = result.data?.approveEdit.target;
         if (!target) return;
 
-        window.location.href = `${getEditTargetRoute(target)}#edits`;
+        window.location.href = baseHref(`${getEditTargetRoute(target)}#edits`);
       });
     setShowApply(false);
   };
