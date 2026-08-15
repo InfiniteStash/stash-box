@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -15,14 +16,20 @@ import (
 
 type S3Backend struct{}
 
+// Shared so the connection pool survives across requests.
+var s3Client = sync.OnceValues(func() (*minio.Client, error) {
+	s3config := config.GetS3Config()
+	return minio.New(s3config.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(s3config.AccessKey, s3config.Secret, ""),
+		Secure: true,
+	})
+})
+
 func (s *S3Backend) WriteFile(file []byte, image *models.Image) error {
 	s3config := config.GetS3Config()
 	headers := s3config.UploadHeaders
 
-	minioClient, err := minio.New(s3config.Endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(s3config.AccessKey, s3config.Secret, ""),
-		Secure: true,
-	})
+	minioClient, err := s3Client()
 	if err != nil {
 		return fmt.Errorf("creating minio client: %w", err)
 	}
@@ -36,10 +43,7 @@ func (s *S3Backend) WriteFile(file []byte, image *models.Image) error {
 
 func (s *S3Backend) DestroyFile(image *models.Image) error {
 	s3config := config.GetS3Config()
-	minioClient, err := minio.New(s3config.Endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(s3config.AccessKey, s3config.Secret, ""),
-		Secure: true,
-	})
+	minioClient, err := s3Client()
 	if err != nil {
 		return err
 	}
@@ -84,10 +88,7 @@ func (s *S3Backend) ReadFile(image models.Image) (io.ReadCloser, int64, error) {
 	ctx := context.TODO()
 
 	s3config := config.GetS3Config()
-	minioClient, err := minio.New(s3config.Endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(s3config.AccessKey, s3config.Secret, ""),
-		Secure: true,
-	})
+	minioClient, err := s3Client()
 	if err != nil {
 		return nil, 0, err
 	}
