@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -52,6 +53,7 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 	requestedSize, err := getImageSize(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	cacheManager := cache.GetCacheManager()
@@ -206,10 +208,13 @@ func getImageSize(r *http.Request) (int, error) {
 	// Skip resize
 	case querySize != "":
 		size, err := strconv.Atoi(querySize)
-		if err != nil || !slices.Contains(allowedSizes, size) {
-			return 0, err
+		if err != nil {
+			return 0, fmt.Errorf("invalid size %q", querySize)
 		}
-		return size, err
+		if !slices.Contains(allowedSizes, size) {
+			return 0, fmt.Errorf("unsupported size %d", size)
+		}
+		return size, nil
 	case config.GetImageMaxSize() != nil:
 		maxSize = *config.GetImageMaxSize()
 	}
