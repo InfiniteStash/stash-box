@@ -12,6 +12,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/klauspost/compress/flate"
@@ -38,6 +39,14 @@ import (
 	"github.com/stashapp/stash-box/internal/service"
 	"github.com/stashapp/stash-box/internal/service/user"
 	"github.com/stashapp/stash-box/pkg/logger"
+)
+
+// Bound connection lifetime so stalled clients can't accumulate indefinitely.
+const (
+	readHeaderTimeout = 10 * time.Second
+	readTimeout       = 60 * time.Second
+	writeTimeout      = 60 * time.Second
+	idleTimeout       = 120 * time.Second
 )
 
 var version string
@@ -244,16 +253,28 @@ func Start(fac service.Factory, ui embed.FS) {
 	// Priority 1: Autocert (Let's Encrypt)
 	if tlsConfig := autocert.Init(); tlsConfig != nil {
 		httpsServer := &http.Server{
-			Addr:      address,
-			Handler:   r,
-			TLSConfig: tlsConfig,
+			Addr:              address,
+			Handler:           r,
+			TLSConfig:         tlsConfig,
+			ReadHeaderTimeout: readHeaderTimeout,
+			ReadTimeout:       readTimeout,
+			WriteTimeout:      writeTimeout,
+			IdleTimeout:       idleTimeout,
 		}
 
 		// Start HTTP server for ACME HTTP-01 challenges on port 80
 		// Non-challenge requests are redirected to HTTPS
 		go func() {
 			logger.Infof("Starting HTTP server on %s:80 for ACME challenges", config.GetHost())
-			if err := http.ListenAndServe(config.GetHost()+":80", autocert.HTTPHandler(http.HandlerFunc(redirect))); err != nil {
+			challengeServer := &http.Server{
+				Addr:              config.GetHost() + ":80",
+				Handler:           autocert.HTTPHandler(http.HandlerFunc(redirect)),
+				ReadHeaderTimeout: readHeaderTimeout,
+				ReadTimeout:       readTimeout,
+				WriteTimeout:      writeTimeout,
+				IdleTimeout:       idleTimeout,
+			}
+			if err := challengeServer.ListenAndServe(); err != nil {
 				logger.Errorf("HTTP server error: %v", err)
 			}
 		}()
@@ -269,14 +290,26 @@ func Start(fac service.Factory, ui embed.FS) {
 	// Priority 2: File-based TLS
 	if tlsConfig := makeTLSConfig(); tlsConfig != nil {
 		httpsServer := &http.Server{
-			Addr:      address,
-			Handler:   r,
-			TLSConfig: tlsConfig,
+			Addr:              address,
+			Handler:           r,
+			TLSConfig:         tlsConfig,
+			ReadHeaderTimeout: readHeaderTimeout,
+			ReadTimeout:       readTimeout,
+			WriteTimeout:      writeTimeout,
+			IdleTimeout:       idleTimeout,
 		}
 
 		if config.GetHTTPUpgrade() {
 			go func() {
-				logger.Fatal(http.ListenAndServe(config.GetHost()+":80", http.HandlerFunc(redirect)))
+				redirectServer := &http.Server{
+					Addr:              config.GetHost() + ":80",
+					Handler:           http.HandlerFunc(redirect),
+					ReadHeaderTimeout: readHeaderTimeout,
+					ReadTimeout:       readTimeout,
+					WriteTimeout:      writeTimeout,
+					IdleTimeout:       idleTimeout,
+				}
+				logger.Fatal(redirectServer.ListenAndServe())
 			}()
 		}
 
@@ -290,8 +323,12 @@ func Start(fac service.Factory, ui embed.FS) {
 
 	// Priority 3: HTTP only
 	server := &http.Server{
-		Addr:    address,
-		Handler: r,
+		Addr:              address,
+		Handler:           r,
+		ReadHeaderTimeout: readHeaderTimeout,
+		ReadTimeout:       readTimeout,
+		WriteTimeout:      writeTimeout,
+		IdleTimeout:       idleTimeout,
 	}
 
 	go func() {
