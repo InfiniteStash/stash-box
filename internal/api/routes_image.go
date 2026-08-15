@@ -68,7 +68,7 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Cache-Control", "max-age=604800000")
 			// Use http.ServeContent for *os.File to enable sendfile syscall
 			if file, ok := reader.(*os.File); ok {
-				http.ServeContent(w, r, "", time.Time{}, file)
+				http.ServeContent(w, r, "", fileModTime(file), file)
 				return
 			}
 			if _, err := io.Copy(w, reader); err != nil {
@@ -144,7 +144,7 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 	_, writeSpan := otel.Tracer(tracerName).Start(ctx, "image.WriteResponse")
 	defer writeSpan.End()
 	if file, ok := reader.(*os.File); ok {
-		http.ServeContent(w, r, "", time.Time{}, file)
+		http.ServeContent(w, r, "", fileModTime(file), file)
 		return
 	}
 	if _, err := io.Copy(w, reader); err != nil {
@@ -186,6 +186,15 @@ func (rs imageRoutes) siteImage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Cache-Control", "max-age=604800000")
 	//nolint
 	w.Write(data)
+}
+
+// A zero time makes ServeContent skip conditional requests entirely.
+func fileModTime(f *os.File) time.Time {
+	stat, err := f.Stat()
+	if err != nil {
+		return time.Time{}
+	}
+	return stat.ModTime()
 }
 
 func faviconContentType(data []byte) string {
