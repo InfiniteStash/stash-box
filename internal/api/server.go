@@ -164,7 +164,8 @@ func Start(fac service.Factory, ui embed.FS) {
 	r.Use(middleware.Recoverer)
 
 	compressor := middleware.NewCompressor(flate.DefaultCompression)
-	r.Use(compressor.Handler)
+	// Image bytes don't compress, and wrapping them blocks their zero-copy write path.
+	r.Use(skipPrefixes(compressor.Handler, "/images"))
 	r.Use(middleware.StripSlashes)
 	r.Use(BaseURLMiddleware)
 
@@ -381,6 +382,22 @@ type contextKey struct {
 var (
 	BaseURLCtxKey = &contextKey{"BaseURL"}
 )
+
+// skipPrefixes applies mw to every request except those under the given path prefixes.
+func skipPrefixes(mw func(http.Handler) http.Handler, prefixes ...string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		wrapped := mw(next)
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			for _, prefix := range prefixes {
+				if strings.HasPrefix(r.URL.Path, prefix) {
+					next.ServeHTTP(w, r)
+					return
+				}
+			}
+			wrapped.ServeHTTP(w, r)
+		})
+	}
+}
 
 func BaseURLMiddleware(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
