@@ -65,7 +65,7 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			defer reader.Close()
 
-			w.Header().Add("Cache-Control", "max-age=604800000")
+			w.Header().Set("Cache-Control", "max-age=31536000, immutable")
 			// Use http.ServeContent for *os.File to enable sendfile syscall
 			if file, ok := reader.(*os.File); ok {
 				http.ServeContent(w, r, "", fileModTime(file), file)
@@ -113,7 +113,7 @@ func (rs imageRoutes) image(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "image/svg+xml")
 		w.Header().Add("Content-Security-Policy", "script-src 'none'")
 	}
-	w.Header().Add("Cache-Control", "max-age=604800000")
+	w.Header().Set("Cache-Control", "max-age=31536000, immutable")
 
 	// Resize image
 	if shouldResize(databaseImage, requestedSize) {
