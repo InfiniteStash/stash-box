@@ -183,7 +183,8 @@ func (rs imageRoutes) siteImage(w http.ResponseWriter, r *http.Request) {
 	if contentType == "image/svg+xml" {
 		w.Header().Set("Content-Security-Policy", "script-src 'none'")
 	}
-	w.Header().Add("Cache-Control", "max-age=604800000")
+	// Keyed by site rather than by content, so a replaced icon reuses this URL.
+	w.Header().Set("Cache-Control", "max-age=86400")
 	//nolint
 	w.Write(data)
 }
