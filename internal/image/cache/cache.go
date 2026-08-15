@@ -43,9 +43,15 @@ func GetCacheManager() *cacheManager {
 	return instance
 }
 
+// Sharded like the image storage backend, so no single directory holds every entry.
+func (c *cacheManager) getItemDir(id uuid.UUID) string {
+	key := id.String()
+	return filepath.Join(c.path, key[0:2], key[2:4])
+}
+
 func (c *cacheManager) getItemPath(id uuid.UUID, size int) string {
 	filename := fmt.Sprintf("%s_%d", id.String(), size)
-	return filepath.Join(c.path, filename)
+	return filepath.Join(c.getItemDir(id), filename)
 }
 
 func (c *cacheManager) Read(id uuid.UUID, size int) (io.ReadCloser, error) {
@@ -54,12 +60,34 @@ func (c *cacheManager) Read(id uuid.UUID, size int) (io.ReadCloser, error) {
 }
 
 func (c *cacheManager) Write(id uuid.UUID, size int, data []byte) error {
-	filePath := c.getItemPath(id, size)
-	return os.WriteFile(filePath, data, 0644)
+	dir := c.getItemDir(id)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+
+	// Rename into place so a concurrent reader never sees a partial file.
+	tmp, err := os.CreateTemp(dir, ".tmp-*")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmp.Name())
+
+	if _, err := tmp.Write(data); err != nil {
+		tmp.Close()
+		return err
+	}
+	if err := tmp.Close(); err != nil {
+		return err
+	}
+	if err := os.Chmod(tmp.Name(), 0644); err != nil {
+		return err
+	}
+
+	return os.Rename(tmp.Name(), c.getItemPath(id, size))
 }
 
 func (c *cacheManager) Delete(id uuid.UUID) error {
-	globPath := filepath.Join(c.path, fmt.Sprintf("%s_*", id.String()))
+	globPath := filepath.Join(c.getItemDir(id), fmt.Sprintf("%s_*", id.String()))
 	files, err := filepath.Glob(globPath)
 	if err != nil {
 		return err
