@@ -49,12 +49,8 @@ func handleLogin(fac service.Factory) func(http.ResponseWriter, *http.Request) {
 		newSession.Values[userIDKey] = userID
 		newSession.Options.MaxAge = maxCookieAge
 		newSession.Options.HttpOnly = true
-		if config.GetIsProduction() {
-			newSession.Options.Secure = true
-		} else {
-			newSession.Options.Secure = false
-			newSession.Options.SameSite = http.SameSiteLaxMode
-		}
+		newSession.Options.SameSite = http.SameSiteLaxMode
+		newSession.Options.Secure = config.GetIsProduction()
 
 		err = newSession.Save(r, w)
 		if err != nil {
@@ -74,12 +70,8 @@ func handleLogout(w http.ResponseWriter, r *http.Request) {
 	delete(session.Values, userIDKey)
 	session.Options.MaxAge = -1
 	session.Options.HttpOnly = true
-	if config.GetIsProduction() {
-		session.Options.Secure = true
-	} else {
-		session.Options.Secure = false
-		session.Options.SameSite = http.SameSiteLaxMode
-	}
+	session.Options.SameSite = http.SameSiteLaxMode
+	session.Options.Secure = config.GetIsProduction()
 
 	err = session.Save(r, w)
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/pprof"
+	"net/url"
 	"os"
 	"runtime/debug"
 	"strconv"
@@ -65,6 +66,29 @@ func getUserAndRoles(ctx context.Context, fac service.Factory, userID string) (*
 	au := auth.FromUser(u)
 	auth.CacheSet(au, roles)
 	return au, roles, nil
+}
+
+// crossOriginProtection rejects non-safe cross-origin browser requests, which
+// would otherwise ride on the session cookie. Requests carrying an API key send
+// no ambient credential, so they are exempt.
+func crossOriginProtection() func(http.Handler) http.Handler {
+	csrf := http.NewCrossOriginProtection()
+	if u, err := url.Parse(config.GetHostURL()); err == nil && u.Scheme != "" && u.Host != "" {
+		if err := csrf.AddTrustedOrigin(u.Scheme + "://" + u.Host); err != nil {
+			logger.Warnf("host_url is not a valid origin, not trusted for CSRF: %v", err)
+		}
+	}
+
+	return func(next http.Handler) http.Handler {
+		protected := csrf.Handler(next)
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Header.Get(APIKeyHeader) != "" {
+				next.ServeHTTP(w, r)
+				return
+			}
+			protected.ServeHTTP(w, r)
+		})
+	}
 }
 
 func authenticateHandler(fac service.Factory) func(http.Handler) http.Handler {
@@ -151,6 +175,7 @@ func Start(fac service.Factory, ui embed.FS) {
 	}
 
 	r.Use(corsConfig.Handler)
+	r.Use(crossOriginProtection())
 	r.Use(authenticateHandler(fac))
 	r.Use(middleware.Recoverer)
 
