@@ -2,6 +2,7 @@ package auth
 
 import (
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -16,17 +17,6 @@ func newID(t *testing.T) uuid.UUID {
 		t.Fatalf("uuid: %v", err)
 	}
 	return id
-}
-
-func withTTLs(t *testing.T, cache, tomb time.Duration) {
-	t.Helper()
-	origCache, origTomb := cacheTTL, tombstoneTTL
-	cacheTTL = cache
-	tombstoneTTL = tomb
-	t.Cleanup(func() {
-		cacheTTL = origCache
-		tombstoneTTL = origTomb
-	})
 }
 
 func TestCacheSetGetRoundtrip(t *testing.T) {
@@ -99,18 +89,18 @@ func TestCacheInvalidateRemovesEntry(t *testing.T) {
 }
 
 func TestCacheTTLExpires(t *testing.T) {
-	withTTLs(t, 10*time.Millisecond, 0)
-	id := newID(t)
-	CacheSet(&AuthUser{ID: id, APIKey: "k1"}, nil)
+	synctest.Test(t, func(t *testing.T) {
+		id := newID(t)
+		CacheSet(&AuthUser{ID: id, APIKey: "k1"}, nil)
 
-	time.Sleep(20 * time.Millisecond)
+		time.Sleep(cacheTTL + time.Second)
 
-	_, _, ok := CacheGet(id)
-	assert.False(t, ok, "entry past cacheTTL must miss")
+		_, _, ok := CacheGet(id)
+		assert.False(t, ok, "entry past cacheTTL must miss")
+	})
 }
 
 func TestTombstoneBlocksConcurrentSet(t *testing.T) {
-	withTTLs(t, 30*time.Second, 5*time.Second)
 	id := newID(t)
 
 	CacheInvalidate(id)
@@ -123,16 +113,17 @@ func TestTombstoneBlocksConcurrentSet(t *testing.T) {
 }
 
 func TestTombstoneExpiresAndAllowsSet(t *testing.T) {
-	withTTLs(t, 30*time.Second, 10*time.Millisecond)
-	id := newID(t)
+	synctest.Test(t, func(t *testing.T) {
+		id := newID(t)
 
-	CacheInvalidate(id)
-	time.Sleep(20 * time.Millisecond)
-	CacheSet(&AuthUser{ID: id, APIKey: "fresh"}, nil)
+		CacheInvalidate(id)
+		time.Sleep(tombstoneTTL + time.Second)
+		CacheSet(&AuthUser{ID: id, APIKey: "fresh"}, nil)
 
-	got, _, ok := CacheGet(id)
-	assert.True(t, ok, "after tombstone expires, CacheSet must succeed")
-	assert.Equal(t, "fresh", got.APIKey)
+		got, _, ok := CacheGet(id)
+		assert.True(t, ok, "after tombstone expires, CacheSet must succeed")
+		assert.Equal(t, "fresh", got.APIKey)
+	})
 }
 
 func TestInvalidateAffectsOnlyTargetKey(t *testing.T) {

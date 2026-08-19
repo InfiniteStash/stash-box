@@ -14,11 +14,10 @@ type AuthUser struct { //nolint:revive // distinct from models.User on purpose
 	APIKey string
 }
 
-// var (not const) so tests can shrink them.
-var cacheTTL = 30 * time.Second
+const cacheTTL = 30 * time.Second
 
 // Delay caching user data after invalidation to prevent race conditions.
-var tombstoneTTL = 5 * time.Second
+const tombstoneTTL = 5 * time.Second
 
 type cachedAuth struct {
 	user    AuthUser
