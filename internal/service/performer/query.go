@@ -2,34 +2,26 @@ package performer
 
 import (
 	"context"
-	"fmt"
+	"github.com/gofrs/uuid"
 	"strings"
 
-	sq "github.com/Masterminds/squirrel"
-	"github.com/gofrs/uuid"
+	qb "github.com/stashapp/stash-box/pkg/querybuilder"
 
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/models"
 	queryhelper "github.com/stashapp/stash-box/internal/service/query"
+	schema "github.com/stashapp/stash-box/internal/service/query/schema"
 )
 
 func (s *Performer) Query(ctx context.Context, input models.PerformerQueryInput) ([]models.Performer, error) {
 	user := auth.GetCurrentUser(ctx)
-
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query := s.buildPerformerQuery(psql, input, user.ID, false)
-
-	// Apply sort
-	query = s.applyPerformerSort(query, input)
-
-	// Apply pagination
-	query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
-
+	query := s.buildPerformerQuery(input, user.ID, false)
+	s.applyPerformerSort(query, input)
+	queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 	ids, err := queryhelper.ExecuteIDQuery(ctx, query, s.queries.DB(), "QueryPerformers")
 	if err != nil {
 		return nil, err
 	}
-
 	performerPtrs, loadErrs := s.LoadIds(ctx, ids)
 	for _, loadErr := range loadErrs {
 		if loadErr != nil {
@@ -42,208 +34,165 @@ func (s *Performer) Query(ctx context.Context, input models.PerformerQueryInput)
 			performers = append(performers, *performer)
 		}
 	}
-
 	return performers, nil
 }
 
 func (s *Performer) QueryCount(ctx context.Context, input models.PerformerQueryInput) (int, error) {
 	user := auth.GetCurrentUser(ctx)
-
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query := s.buildPerformerQuery(psql, input, user.ID, true)
-
-	return queryhelper.ExecuteCount(ctx, query, s.queries.DB(), "QueryPerformersCount")
+	return queryhelper.ExecuteCount(ctx, s.buildPerformerQuery(input, user.ID, true), s.queries.DB(), "QueryPerformersCount")
 }
 
-func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input models.PerformerQueryInput, userID uuid.UUID, forCount bool) sq.SelectBuilder {
-	var query sq.SelectBuilder
-	needsStudioJoin := input.StudioID != nil
+type performerStatsRelation struct {
+	table       qb.DerivedTable
+	performerID qb.Expr[uuid.UUID]
+	debut       qb.Expr[string]
+	lastScene   qb.Expr[string]
+	sceneCount  qb.Expr[int64]
+}
 
-	// Build base query with studio join if needed
+func performerStats(studioID *uuid.UUID, alias string) performerStatsRelation {
+	sp := schema.ScenePerformers.AS(alias + "_sp")
+	scenes := schema.Scenes.AS(alias + "_sc")
+	performerID := sp.PerformerID.AS("performer_id")
+	debut := qb.MIN(scenes.Date).AS("debut")
+	lastScene := qb.MAX(scenes.Date).AS("last_scene")
+	sceneCount := qb.CountAll().AS("scene_count")
+	q := qb.Select(performerID, debut, lastScene, sceneCount).From(sp.INNER_JOIN(scenes, sp.SceneID.EQ(scenes.ID))).GroupBy(sp.PerformerID)
+	if studioID != nil {
+		q.Where(scenes.StudioID.EQ(qb.UUID(*studioID)))
+	}
+	table := q.As(alias)
+	return performerStatsRelation{
+		table: table, performerID: table.Column(performerID), debut: table.Column(debut),
+		lastScene: table.Column(lastScene), sceneCount: table.Column(sceneCount),
+	}
+}
+
+func (s *Performer) buildPerformerQuery(input models.PerformerQueryInput, userID uuid.UUID, forCount bool) *qb.Builder {
+	projection := qb.Projection(schema.Performers.ID)
 	if forCount {
-		if needsStudioJoin {
-			query = psql.Select("COUNT(DISTINCT performers.id)").From("performers").
-				Join(`(
-					SELECT performer_id, MIN(date) as debut, MAX(date) AS last_scene, COUNT(*) as scene_count
-					FROM scene_performers
-					JOIN scenes ON scene_id = id AND studio_id = ?
-					GROUP BY performer_id
-				) D ON performers.id = D.performer_id`, input.StudioID)
-		} else {
-			query = psql.Select("COUNT(*)").From("performers")
-		}
-	} else {
-		if needsStudioJoin {
-			query = psql.Select("performers.id").From("performers").
-				Join(`(
-					SELECT performer_id, MIN(date) as debut, MAX(date) AS last_scene, COUNT(*) as scene_count
-					FROM scene_performers
-					JOIN scenes ON scene_id = id AND studio_id = ?
-					GROUP BY performer_id
-				) D ON performers.id = D.performer_id`, input.StudioID)
-		} else {
-			query = psql.Select("performers.id").From("performers")
-		}
+		projection = qb.COUNT(qb.STAR)
 	}
-
-	// Filter by URL
+	query := qb.Select(projection).From(schema.Performers)
+	if input.StudioID != nil {
+		stats := performerStats(input.StudioID, "d")
+		query.Join(stats.table, schema.Performers.ID.EQ(stats.performerID))
+	}
 	if input.URL != nil && *input.URL != "" {
-		query = query.
-			Join("performer_urls ON performers.id = performer_urls.performer_id").
-			Where(sq.Eq{"performer_urls.url": *input.URL})
+		query.Join(schema.PerformerUrls, schema.Performers.ID.EQ(schema.PerformerUrls.PerformerID)).Where(schema.PerformerUrls.URL.EQ(qb.String(*input.URL)))
 	}
-
-	// Filter by name only
 	if input.Name != nil && *input.Name != "" {
-		searchTerm := "%" + *input.Name + "%"
-		query = query.Where(sq.ILike{"performers.name": searchTerm})
+		query.Where(queryhelper.ILike(schema.Performers.Name, "%"+*input.Name+"%"))
 	}
-
-	// Filter by names (searches name and disambiguation)
 	if input.Names != nil && *input.Names != "" {
-		searchTerm := "%" + *input.Names + "%"
-		query = query.Where(sq.Or{
-			sq.ILike{"performers.name": searchTerm},
-			sq.ILike{"performers.disambiguation": searchTerm},
-		})
+		term := "%" + *input.Names + "%"
+		query.Where(qb.OR(queryhelper.ILike(schema.Performers.Name, term), queryhelper.ILike(schema.Performers.Disambiguation, term)))
 	}
-
-	// Filter by birth year
 	if input.BirthYear != nil {
-		query = queryhelper.ApplyIntCriterion(query, "EXTRACT(YEAR FROM to_date(performers.birthdate, 'YYYY-MM-DD'))::int", input.BirthYear)
+		queryhelper.ApplyIntCriterion(query, qb.RawInt("EXTRACT(YEAR FROM to_date(performers.birthdate, 'YYYY-MM-DD'))::int"), input.BirthYear)
 	}
-
-	// Filter by birthdate
 	if input.Birthdate != nil {
-		query = queryhelper.ApplyDateCriterion(query, "performers.birthdate", input.Birthdate)
+		queryhelper.ApplyDateCriterion(query, schema.Performers.Birthdate, input.Birthdate)
 	}
-
-	// Filter by deathdate
 	if input.Deathdate != nil {
-		query = queryhelper.ApplyDateCriterion(query, "performers.deathdate", input.Deathdate)
+		queryhelper.ApplyDateCriterion(query, schema.Performers.Deathdate, input.Deathdate)
 	}
-
-	// Filter by age
 	if input.Age != nil {
-		ageExpr := "EXTRACT(YEAR FROM AGE(COALESCE(to_date(performers.deathdate, 'YYYY-MM-DD'), CURRENT_DATE), to_date(performers.birthdate, 'YYYY-MM-DD')))::int"
-		query = queryhelper.ApplyIntCriterion(query, ageExpr, input.Age)
+		queryhelper.ApplyIntCriterion(query, qb.RawInt("EXTRACT(YEAR FROM AGE(COALESCE(to_date(performers.deathdate, 'YYYY-MM-DD'), CURRENT_DATE), to_date(performers.birthdate, 'YYYY-MM-DD')))::int"), input.Age)
 	}
-
-	// Filter by gender
 	if input.Gender != nil && *input.Gender != "" {
 		if *input.Gender == models.GenderFilterEnumUnknown {
-			query = query.Where("performers.gender IS NULL")
+			query.Where(schema.Performers.Gender.IS_NULL())
 		} else {
-			query = query.Where(sq.Eq{"performers.gender": input.Gender.String()})
+			query.Where(schema.Performers.Gender.EQ(qb.String(input.Gender.String())))
 		}
 	}
-
-	// Filter by ethnicity
 	if input.Ethnicity != nil && *input.Ethnicity != "" {
 		if *input.Ethnicity == models.EthnicityFilterEnumUnknown {
-			query = query.Where("performers.ethnicity IS NULL")
+			query.Where(schema.Performers.Ethnicity.IS_NULL())
 		} else {
-			query = query.Where(sq.Eq{"performers.ethnicity": input.Ethnicity.String()})
+			query.Where(schema.Performers.Ethnicity.EQ(qb.String(input.Ethnicity.String())))
 		}
 	}
-
-	// Filter by favorite status
 	if input.IsFavorite != nil {
+		favorite := schema.PerformerFavorites.AS("F")
 		if *input.IsFavorite {
-			query = query.
-				Join("performer_favorites F ON performers.id = F.performer_id").
-				Where(sq.Eq{"F.user_id": userID})
+			query.Join(favorite, schema.Performers.ID.EQ(favorite.PerformerID)).Where(favorite.UserID.EQ(qb.UUID(userID)))
 		} else {
-			query = query.
-				LeftJoin("performer_favorites F ON performers.id = F.performer_id AND F.user_id = ?", userID).
-				Where("F.performer_id IS NULL")
+			query.LeftJoin(favorite, qb.AND(schema.Performers.ID.EQ(favorite.PerformerID), favorite.UserID.EQ(qb.UUID(userID)))).Where(favorite.PerformerID.IS_NULL())
 		}
 	}
-
-	// Filter by performed with
 	if input.PerformedWith != nil {
-		subquery := `
-			performers.id IN (
-				SELECT SP.performer_id FROM scene_performers SP
-				JOIN scene_performers SPP ON SP.scene_id = SPP.scene_id
-				WHERE SPP.performer_id = ? AND SP.performer_id != ?
-				GROUP BY SP.performer_id
-			)`
-		query = query.Where(sq.Expr(subquery, input.PerformedWith, input.PerformedWith))
+		query.Where(qb.Raw[bool](`performers.id IN (SELECT SP.performer_id FROM scene_performers SP JOIN scene_performers SPP ON SP.scene_id = SPP.scene_id WHERE SPP.performer_id = ? AND SP.performer_id != ? GROUP BY SP.performer_id)`, *input.PerformedWith, *input.PerformedWith))
 	}
-
-	// String criteria
 	if input.Disambiguation != nil {
-		query = queryhelper.ApplyStringCriterion(query, "disambiguation", input.Disambiguation)
+		queryhelper.ApplyStringCriterion(query, schema.Performers.Disambiguation, input.Disambiguation)
 	}
 	if input.Country != nil {
-		query = queryhelper.ApplyStringCriterion(query, "country", input.Country)
+		queryhelper.ApplyStringCriterion(query, schema.Performers.Country, input.Country)
 	}
-
-	// Only non-deleted performers
-	query = query.Where(sq.Eq{"deleted": false})
-
+	query.Where(schema.Performers.Deleted.EQ(qb.Bool(false)))
 	return query
 }
 
-func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.PerformerQueryInput) sq.SelectBuilder {
-	sortField := "name"
-	sortDir := "ASC"
-	if input.Direction != "" {
-		sortDir = strings.ToUpper(input.Direction.String())
+func direction(desc bool, exp qb.Expression) qb.OrderByClause {
+	if desc {
+		return qb.Desc(exp)
 	}
+	return qb.Asc(exp)
+}
 
-	needsStudioJoin := input.StudioID != nil
-
+func (s *Performer) applyPerformerSort(query *qb.Builder, input models.PerformerQueryInput) {
+	desc := strings.ToUpper(input.Direction.String()) == "DESC"
+	nameOrder := direction(desc, schema.Performers.Name)
+	needsStats := input.StudioID != nil
 	switch input.Sort {
-	case models.PerformerSortEnumDebut:
-		if !needsStudioJoin {
-			query = query.LeftJoin(`(
-				SELECT performer_id, MIN(date) as debut
-				FROM scene_performers
-				JOIN scenes ON scene_id = id
-				GROUP BY performer_id
-			) D ON performers.id = D.performer_id`)
+	case models.PerformerSortEnumDebut, models.PerformerSortEnumLastScene, models.PerformerSortEnumSceneCount:
+		stats := performerStats(input.StudioID, "d")
+		if !needsStats {
+			query.LeftJoin(stats.table, schema.Performers.ID.EQ(stats.performerID))
 		}
-		return query.OrderBy(fmt.Sprintf("debut %s NULLS LAST, name %s", sortDir, sortDir))
-	case models.PerformerSortEnumLastScene:
-		if !needsStudioJoin {
-			query = query.LeftJoin(`(
-				SELECT performer_id, MAX(date) as last_scene
-				FROM scene_performers
-				JOIN scenes ON scene_id = id
-				GROUP BY performer_id
-			) D ON performers.id = D.performer_id`)
+		expression := qb.Expression(stats.sceneCount.Coalesce(qb.Int64(0)))
+		if input.Sort == models.PerformerSortEnumDebut {
+			expression = stats.debut
 		}
-		return query.OrderBy(fmt.Sprintf("last_scene %s NULLS LAST, name %s", sortDir, sortDir))
+		if input.Sort == models.PerformerSortEnumLastScene {
+			expression = stats.lastScene
+		}
+		query.OrderBy(direction(desc, expression).NULLS_LAST(), nameOrder)
 	case models.PerformerSortEnumSharedSceneCount:
 		if input.PerformedWith != nil {
-			query = query.LeftJoin(`(
-				SELECT SP.performer_id, COUNT(*) as shared_scene_count
-				FROM scene_performers SP
-				JOIN scene_performers SPP ON SPP.scene_id = SP.scene_id AND SPP.performer_id = ?
-				JOIN scenes ON scenes.id = SP.scene_id AND scenes.deleted = false
-				GROUP BY SP.performer_id
-			) SS ON performers.id = SS.performer_id`, input.PerformedWith)
-			return query.OrderBy(fmt.Sprintf("COALESCE(shared_scene_count, 0) %s, name %s", sortDir, sortDir))
+			sp := schema.ScenePerformers.AS("shared_sp")
+			partner := schema.ScenePerformers.AS("shared_partner")
+			scenes := schema.Scenes.AS("shared_scene")
+			performerID := sp.PerformerID.AS("performer_id")
+			sharedSceneCount := qb.CountAll().AS("shared_scene_count")
+			shared := qb.Select(performerID, sharedSceneCount).
+				From(sp.INNER_JOIN(partner, qb.AND(partner.SceneID.EQ(sp.SceneID), partner.PerformerID.EQ(qb.UUID(*input.PerformedWith)))).
+					INNER_JOIN(scenes, qb.AND(scenes.ID.EQ(sp.SceneID), scenes.Deleted.EQ(qb.Bool(false))))).
+				GroupBy(sp.PerformerID).Statement().AsTable("ss")
+			query.LeftJoin(shared, schema.Performers.ID.EQ(shared.Column(performerID)))
+			query.OrderBy(direction(desc, shared.Column(sharedSceneCount).Coalesce(qb.Int64(0))), nameOrder)
+		} else {
+			stats := performerStats(input.StudioID, "d")
+			query.OrderBy(direction(desc, stats.sceneCount.Coalesce(qb.Int64(0))), nameOrder)
 		}
-		fallthrough
-	case models.PerformerSortEnumSceneCount:
-		if !needsStudioJoin {
-			query = query.LeftJoin(`(
-				SELECT performer_id, COUNT(*) as scene_count
-				FROM scene_performers
-				GROUP BY performer_id
-			) D ON performers.id = D.performer_id`)
-		}
-		return query.OrderBy(fmt.Sprintf("COALESCE(scene_count, 0) %s, name %s", sortDir, sortDir))
 	case models.PerformerSortEnumPopularity:
-		query = query.LeftJoin("performer_popularity_all_time ON performers.id = performer_popularity_all_time.performer_id")
-		return query.OrderBy(fmt.Sprintf("COALESCE(performer_popularity_all_time.user_count, 0) %s, name %s", sortDir, sortDir))
+		query.LeftJoin(schema.PerformerPopularityAllTime, schema.Performers.ID.EQ(schema.PerformerPopularityAllTime.PerformerID)).OrderBy(direction(desc, qb.Raw[any]("COALESCE(performer_popularity_all_time.user_count, 0)")), nameOrder)
 	default:
-		if input.Sort != "" {
-			sortField = strings.ToLower(input.Sort.String())
+		field := qb.Expression(schema.Performers.Name)
+		switch input.Sort {
+		case models.PerformerSortEnumBirthdate:
+			field = schema.Performers.Birthdate
+		case models.PerformerSortEnumDeathdate:
+			field = schema.Performers.Deathdate
+		case models.PerformerSortEnumCareerStartYear:
+			field = schema.Performers.CareerStartYear
+		case models.PerformerSortEnumCreatedAt:
+			field = schema.Performers.CreatedAt
+		case models.PerformerSortEnumUpdatedAt:
+			field = schema.Performers.UpdatedAt
 		}
-		return query.OrderBy(fmt.Sprintf("%s %s", sortField, sortDir))
+		query.OrderBy(direction(desc, field))
 	}
 }

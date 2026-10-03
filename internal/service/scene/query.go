@@ -3,14 +3,15 @@ package scene
 import (
 	"context"
 	"fmt"
+	"github.com/gofrs/uuid"
 	"strings"
 
-	sq "github.com/Masterminds/squirrel"
-	"github.com/gofrs/uuid"
+	qb "github.com/stashapp/stash-box/pkg/querybuilder"
 
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/models"
 	queryhelper "github.com/stashapp/stash-box/internal/service/query"
+	schema "github.com/stashapp/stash-box/internal/service/query/schema"
 )
 
 func (s *Scene) Query(ctx context.Context, input models.SceneQueryInput) ([]models.Scene, error) {
@@ -19,18 +20,14 @@ func (s *Scene) Query(ctx context.Context, input models.SceneQueryInput) ([]mode
 
 func (s *Scene) QueryForPerformer(ctx context.Context, input models.SceneQueryInput, performerID *uuid.UUID) ([]models.Scene, error) {
 	user := auth.GetCurrentUser(ctx)
-
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, err := s.buildSceneQuery(psql, input, performerID, user.ID, false)
+	query, err := s.buildSceneQuery(input, performerID, user.ID, false)
 	if err != nil {
 		return nil, err
 	}
-
 	ids, err := queryhelper.ExecuteIDQuery(ctx, query, s.queries.DB(), "QueryScenes")
 	if err != nil {
 		return nil, err
 	}
-
 	scenePtrs, loadErrs := s.LoadIds(ctx, ids)
 	for _, loadErr := range loadErrs {
 		if loadErr != nil {
@@ -43,7 +40,6 @@ func (s *Scene) QueryForPerformer(ctx context.Context, input models.SceneQueryIn
 			scenes = append(scenes, *scene)
 		}
 	}
-
 	return scenes, nil
 }
 
@@ -53,263 +49,152 @@ func (s *Scene) QueryCount(ctx context.Context, input models.SceneQueryInput) (i
 
 func (s *Scene) QueryCountForPerformer(ctx context.Context, input models.SceneQueryInput, performerID *uuid.UUID) (int, error) {
 	user := auth.GetCurrentUser(ctx)
-
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-
-	innerQuery, err := s.buildSceneQuery(psql, input, performerID, user.ID, true)
+	inner, err := s.buildSceneQuery(input, performerID, user.ID, true)
 	if err != nil {
 		return 0, err
 	}
-
-	countQuery := psql.Select("COUNT(*)").FromSelect(innerQuery, "subquery")
-
-	return queryhelper.ExecuteCount(ctx, countQuery, s.queries.DB(), "QueryScenesCount")
+	return queryhelper.ExecuteCount(ctx, qb.Count(inner, "subquery"), s.queries.DB(), "QueryScenesCount")
 }
 
-func (s *Scene) buildSceneQuery(psql sq.StatementBuilderType, input models.SceneQueryInput, performerID *uuid.UUID, userID uuid.UUID, forCount bool) (sq.SelectBuilder, error) {
-	query := psql.Select("scenes.id").From("scenes")
-
-	// Scope to a single performer
+func (s *Scene) buildSceneQuery(input models.SceneQueryInput, performerID *uuid.UUID, userID uuid.UUID, forCount bool) (*qb.Builder, error) {
+	query := qb.Select(schema.Scenes.ID).From(schema.Scenes)
 	if performerID != nil {
-		if err := queryhelper.ApplyMultiIDCriterion(&query, "scenes", "scene_performers", "scene_id", "performer_id", &models.MultiIDCriterionInput{
-			Modifier: models.CriterionModifierIncludes,
-			Value:    []uuid.UUID{*performerID},
-		}); err != nil {
+		criterion := &models.MultiIDCriterionInput{Modifier: models.CriterionModifierIncludes, Value: []uuid.UUID{*performerID}}
+		if err := queryhelper.ApplyMultiIDCriterion(query, schema.Scenes.ID, schema.ScenePerformers.SceneID, schema.ScenePerformers.PerformerID, schema.ScenePerformers, criterion); err != nil {
 			return query, err
 		}
 	}
-
-	// Filter by URL
 	if input.URL != nil && *input.URL != "" {
-		query = query.
-			Join("scene_urls ON scenes.id = scene_urls.scene_id").
-			Where(sq.Eq{"scene_urls.url": *input.URL})
+		query.Join(schema.SceneUrls, schema.Scenes.ID.EQ(schema.SceneUrls.SceneID)).Where(schema.SceneUrls.URL.EQ(qb.String(*input.URL)))
 	}
-
-	// Filter by parent studio
 	if input.ParentStudio != nil {
-		query = query.
-			Join("studios ON scenes.studio_id = studios.id").
-			Where(sq.Or{
-				sq.Eq{"studios.parent_studio_id": *input.ParentStudio},
-				sq.Eq{"studios.id": *input.ParentStudio},
-			})
+		parentID, err := uuid.FromString(*input.ParentStudio)
+		if err != nil {
+			return query, fmt.Errorf("invalid parent studio id %q: %w", *input.ParentStudio, err)
+		}
+		query.Join(schema.Studios, schema.Scenes.StudioID.EQ(schema.Studios.ID)).Where(qb.OR(schema.Studios.ParentStudioID.EQ(qb.UUID(parentID)), schema.Studios.ID.EQ(qb.UUID(parentID))))
 	}
-
-	// Filter by performers
 	if input.Performers != nil && len(input.Performers.Value) > 0 {
-		if err := queryhelper.ApplyMultiIDCriterion(&query, "scenes", "scene_performers", "scene_id", "performer_id", input.Performers); err != nil {
+		if err := queryhelper.ApplyMultiIDCriterion(query, schema.Scenes.ID, schema.ScenePerformers.SceneID, schema.ScenePerformers.PerformerID, schema.ScenePerformers, input.Performers); err != nil {
 			return query, err
 		}
 	}
-
-	// Filter by tags
 	if input.Tags != nil && len(input.Tags.Value) > 0 {
-		if err := queryhelper.ApplyMultiIDCriterion(&query, "scenes", "scene_tags", "scene_id", "tag_id", input.Tags); err != nil {
+		if err := queryhelper.ApplyMultiIDCriterion(query, schema.Scenes.ID, schema.SceneTags.SceneID, schema.SceneTags.TagID, schema.SceneTags, input.Tags); err != nil {
 			return query, err
 		}
 	}
-
-	// Filter by fingerprints
 	if input.Fingerprints != nil && len(input.Fingerprints.Value) > 0 {
-		placeholders := make([]string, len(input.Fingerprints.Value))
-		args := make([]any, len(input.Fingerprints.Value))
+		hashes := make([]qb.Expr[int64], len(input.Fingerprints.Value))
 		for i, hash := range input.Fingerprints.Value {
-			placeholders[i] = "?"
-			h, err := models.UnmarshalFingerprintHash(hash)
+			parsed, err := models.UnmarshalFingerprintHash(hash)
 			if err != nil {
 				return query, fmt.Errorf("invalid fingerprint hash %q: %w", hash, err)
 			}
-			args[i] = h.Int64()
+			hashes[i] = qb.Int64(parsed.Int64())
 		}
-		query = query.Join(fmt.Sprintf(`(
-			SELECT scene_id
-			FROM scene_fingerprints SFP
-			JOIN fingerprints FP ON SFP.fingerprint_id = FP.id
-			WHERE FP.hash IN (%s)
-			GROUP BY scene_id
-		) T ON scenes.id = T.scene_id`, strings.Join(placeholders, ",")), args...)
+		sfp, fp := schema.SceneFingerprints.AS("SFP"), schema.Fingerprints.AS("FP")
+		sceneID := sfp.SceneID.AS("scene_id")
+		sub := qb.Select(sceneID).From(sfp.INNER_JOIN(fp, sfp.FingerprintID.EQ(fp.ID))).Where(fp.Hash.IN(hashes...)).GroupBy(sfp.SceneID).Statement().AsTable("T")
+		query.Join(sub, schema.Scenes.ID.EQ(sub.Column(sceneID)))
 	}
-
-	// Filter by has fingerprint submissions
 	if input.HasFingerprintSubmissions != nil && *input.HasFingerprintSubmissions {
-		query = query.Join(`(
-			SELECT scene_id
-			FROM scene_fingerprints
-			WHERE user_id = ?
-			GROUP BY scene_id
-		) SFP ON scenes.id = SFP.scene_id`, userID)
+		sfp := schema.SceneFingerprints.AS("SFP")
+		sceneID := sfp.SceneID.AS("scene_id")
+		sub := qb.Select(sceneID).From(sfp).Where(sfp.UserID.EQ(qb.UUID(userID))).GroupBy(sfp.SceneID).Statement().AsTable("submitted")
+		query.Join(sub, schema.Scenes.ID.EQ(sub.Column(sceneID)))
 	}
-
-	// Deprecated free-text filter. Matched against the BM25 title index rather
-	// than a substring scan, since callers pass whole titles.
 	if input.Text != nil && *input.Text != "" {
-		query = query.
-			Join("scene_search ON scene_search.scene_id = scenes.id").
-			Where(
-				"scene_search.scene_id @@@ paradedb.match(field => 'scene_title', value => ?, conjunction_mode => true)",
-				*input.Text,
-			)
+		query.Join(schema.SceneSearch, schema.SceneSearch.SceneID.EQ(schema.Scenes.ID)).Where(qb.Raw[bool]("scene_search.scene_id @@@ paradedb.match(field => 'scene_title', value => ?, conjunction_mode => true)", *input.Text))
 	}
-
-	// Filter by title only
 	if input.Title != nil && *input.Title != "" {
-		searchTerm := "%" + *input.Title + "%"
-		query = query.Where(sq.ILike{"scenes.title": searchTerm})
+		query.Where(queryhelper.ILike(schema.Scenes.Title, "%"+*input.Title+"%"))
 	}
-
-	// Filter by code
 	if input.Code != nil {
-		query = queryhelper.ApplyStringCriterion(query, "scenes.code", input.Code)
+		queryhelper.ApplyStringCriterion(query, schema.Scenes.Code, input.Code)
 	}
-
-	// Filter by studios
 	if input.Studios != nil && len(input.Studios.Value) > 0 {
 		switch input.Studios.Modifier {
-		case models.CriterionModifierEquals:
-			query = query.Where(sq.Eq{"scenes.studio_id": input.Studios.Value[0]})
-		case models.CriterionModifierNotEquals:
-			query = query.Where(sq.NotEq{"scenes.studio_id": input.Studios.Value[0]})
-		case models.CriterionModifierIsNull:
-			query = query.Where("scenes.studio_id IS NULL")
-		case models.CriterionModifierNotNull:
-			query = query.Where("scenes.studio_id IS NOT NULL")
-		case models.CriterionModifierIncludes:
-			query = query.Where(sq.Eq{"scenes.studio_id": input.Studios.Value})
-		case models.CriterionModifierExcludes:
-			query = query.Where(sq.Or{sq.Expr("scenes.studio_id IS NULL"), sq.NotEq{"scenes.studio_id": input.Studios.Value}})
+		case models.CriterionModifierEquals, models.CriterionModifierNotEquals, models.CriterionModifierIsNull, models.CriterionModifierNotNull, models.CriterionModifierIncludes, models.CriterionModifierExcludes:
 		default:
 			return query, fmt.Errorf("unsupported modifier %s for scenes.studio_id", input.Studios.Modifier)
 		}
+		queryhelper.ApplyIDCriterion(query, schema.Scenes.StudioID, &models.IDCriterionInput{Modifier: input.Studios.Modifier, Value: input.Studios.Value})
 	}
-
-	// Filter by date
 	if input.Date != nil {
 		switch input.Date.Modifier {
-		case models.CriterionModifierEquals:
-			query = query.Where(sq.Eq{"scenes.date": input.Date.Value})
-		case models.CriterionModifierNotEquals:
-			query = query.Where(sq.NotEq{"scenes.date": input.Date.Value})
-		case models.CriterionModifierGreaterThan:
-			query = query.Where(sq.Gt{"scenes.date": input.Date.Value})
-		case models.CriterionModifierLessThan:
-			query = query.Where(sq.Lt{"scenes.date": input.Date.Value})
-		case models.CriterionModifierIsNull:
-			query = query.Where("scenes.date IS NULL")
-		case models.CriterionModifierNotNull:
-			query = query.Where("scenes.date IS NOT NULL")
+		case models.CriterionModifierEquals, models.CriterionModifierNotEquals, models.CriterionModifierGreaterThan, models.CriterionModifierLessThan, models.CriterionModifierIsNull, models.CriterionModifierNotNull:
 		default:
 			return query, fmt.Errorf("unsupported modifier %s for scenes.date", input.Date.Modifier)
 		}
+		queryhelper.ApplyDateCriterion(query, schema.Scenes.Date, input.Date)
 	}
-
-	// Filter by favorites
 	if input.Favorites != nil {
-		var clauses []string
-		var args []any
-
+		clauses, args := []string{}, []any{}
 		if *input.Favorites == models.FavoriteFilterPerformer || *input.Favorites == models.FavoriteFilterAll {
-			clauses = append(clauses, `(
-				SELECT scene_id FROM performer_favorites PF
-				JOIN scene_performers SP ON PF.performer_id = SP.performer_id
-				WHERE PF.user_id = ?
-			)`)
+			clauses = append(clauses, `(SELECT scene_id FROM performer_favorites PF JOIN scene_performers SP ON PF.performer_id = SP.performer_id WHERE PF.user_id = ?)`)
 			args = append(args, userID)
 		}
 		if *input.Favorites == models.FavoriteFilterStudio || *input.Favorites == models.FavoriteFilterAll {
-			clauses = append(clauses, `(
-				SELECT S.id FROM studio_favorites SF
-				JOIN scenes S ON SF.studio_id = S.studio_id
-				WHERE SF.user_id = ?
-			)`)
+			clauses = append(clauses, `(SELECT S.id FROM studio_favorites SF JOIN scenes S ON SF.studio_id = S.studio_id WHERE SF.user_id = ?)`)
 			args = append(args, userID)
 		}
-
 		if len(clauses) > 0 {
-			query = query.Where(sq.Expr("scenes.id IN ("+strings.Join(clauses, " UNION ")+")", args...))
+			query.Where(qb.Raw[bool]("scenes.id IN ("+strings.Join(clauses, " UNION ")+")", args...))
 		}
 	}
+	query.Where(schema.Scenes.Deleted.EQ(qb.Bool(false)))
+	s.applySceneSort(query, input, performerID, forCount)
+	return query, nil
+}
 
-	// Only non-deleted scenes
-	query = query.Where(sq.Eq{"scenes.deleted": false})
+func sceneOrder(expression qb.Expression, direction string) qb.OrderByClause {
+	if direction == "DESC" {
+		return qb.Desc(expression)
+	}
+	return qb.Asc(expression)
+}
 
-	// Apply sort and pagination
+func (s *Scene) applySceneSort(query *qb.Builder, input models.SceneQueryInput, performerID *uuid.UUID, forCount bool) {
+	if forCount {
+		return
+	}
+	dir := "ASC"
+	if input.Direction != "" {
+		dir = strings.ToUpper(input.Direction.String())
+	}
 	switch input.Sort {
 	case models.SceneSortEnumPopularity:
-		query = query.LeftJoin("scene_popularity_all_time ON scenes.id = scene_popularity_all_time.scene_id")
-
-		if !forCount {
-			sortDir := "DESC"
-			if input.Direction != "" {
-				sortDir = strings.ToUpper(input.Direction.String())
-			}
-			query = query.OrderBy(fmt.Sprintf("COALESCE(scene_popularity_all_time.user_count, 0) %s, scenes.id %s", sortDir, sortDir))
-			query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
+		if input.Direction == "" {
+			dir = "DESC"
 		}
+		query.LeftJoin(schema.ScenePopularityAllTime, schema.Scenes.ID.EQ(schema.ScenePopularityAllTime.SceneID)).OrderBy(sceneOrder(qb.Raw[any]("COALESCE(scene_popularity_all_time.user_count, 0)"), dir), sceneOrder(schema.Scenes.ID, dir))
 	case models.SceneSortEnumTrending:
-		// Check if we can optimize by limiting the trending subquery
-		// This is only safe when there are no other filters applied
-		hasOtherFilters := performerID != nil ||
-			input.URL != nil || input.ParentStudio != nil ||
-			(input.Performers != nil && len(input.Performers.Value) > 0) ||
-			(input.Tags != nil && len(input.Tags.Value) > 0) ||
-			(input.Fingerprints != nil && len(input.Fingerprints.Value) > 0) ||
-			(input.HasFingerprintSubmissions != nil && *input.HasFingerprintSubmissions) ||
-			(input.Text != nil && *input.Text != "") ||
-			(input.Title != nil && *input.Title != "") ||
-			(input.Studios != nil && len(input.Studios.Value) > 0) ||
-			input.Date != nil || input.Favorites != nil ||
-			input.Code != nil
-
-		if !hasOtherFilters && !forCount {
-			// Optimize: limit the trending subquery directly
-			// Note: Use manual pagination here since we're limiting in the subquery
-			p := queryhelper.Pagination(input.Page, input.PerPage)
-
-			query = query.Join(fmt.Sprintf(`(
-				SELECT scene_id, trending_count AS count
-				FROM scene_popularity_trending
-				ORDER BY trending_count DESC, scene_id DESC
-				LIMIT %d OFFSET %d
-			) TRENDING ON scenes.id = TRENDING.scene_id`, p.Limit, p.Offset))
-			query = query.OrderBy("TRENDING.count DESC, TRENDING.scene_id DESC")
-			// Don't apply pagination again below since we already limited in the subquery
-		} else {
-			// Standard trending query without optimization
-			query = query.Join(`(
-				SELECT scene_id, trending_count AS count
-				FROM scene_popularity_trending
-			) TRENDING ON scenes.id = TRENDING.scene_id`)
-
-			if !forCount {
-				query = query.OrderBy("TRENDING.count DESC, TRENDING.scene_id DESC")
-				query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
-			}
+		if input.Direction == "" {
+			dir = "DESC"
 		}
+		query.Join(schema.ScenePopularityTrending, schema.Scenes.ID.EQ(schema.ScenePopularityTrending.SceneID)).OrderBy(sceneOrder(schema.ScenePopularityTrending.TrendingCount, dir), sceneOrder(schema.ScenePopularityTrending.SceneID, dir))
 	default:
-		if !forCount {
-			// Only apply sorting for non-count queries
-			sortField := "title"
-			sortDir := "ASC"
-			if input.Sort != "" {
-				sortField = strings.ToLower(input.Sort.String())
-			}
-			if input.Direction != "" {
-				sortDir = strings.ToUpper(input.Direction.String())
-			}
-
-			secondary := "title"
-			if input.Sort != models.SceneSortEnumTitle {
-				secondary = "id"
-			}
-			nullsClause := ""
-			if input.Sort == models.SceneSortEnumDuration {
-				nullsClause = " NULLS LAST"
-			}
-			query = query.OrderBy(fmt.Sprintf("scenes.%s %s%s, scenes.%s %s", sortField, sortDir, nullsClause, secondary, sortDir))
-			query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
+		field := qb.Expression(schema.Scenes.Title)
+		switch input.Sort {
+		case models.SceneSortEnumDate:
+			field = schema.Scenes.Date
+		case models.SceneSortEnumDuration:
+			field = schema.Scenes.Duration
+		case models.SceneSortEnumCreatedAt:
+			field = schema.Scenes.CreatedAt
+		case models.SceneSortEnumUpdatedAt:
+			field = schema.Scenes.UpdatedAt
 		}
+		primary := sceneOrder(field, dir)
+		if input.Sort == models.SceneSortEnumDuration {
+			primary = primary.NULLS_LAST()
+		}
+		secondary := qb.Expression(schema.Scenes.ID)
+		if input.Sort == models.SceneSortEnumTitle || input.Sort == "" {
+			secondary = schema.Scenes.Title
+		}
+		query.OrderBy(primary, sceneOrder(secondary, dir))
 	}
-
-	return query, nil
+	queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 }

@@ -5,21 +5,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/gofrs/uuid"
 	"strings"
 
-	sq "github.com/Masterminds/squirrel"
-	"github.com/gofrs/uuid"
+	qb "github.com/stashapp/stash-box/pkg/querybuilder"
 
 	"github.com/stashapp/stash-box/internal/auth"
 	"github.com/stashapp/stash-box/internal/models"
 	queryhelper "github.com/stashapp/stash-box/internal/service/query"
+	schema "github.com/stashapp/stash-box/internal/service/query/schema"
 )
 
 func (s *Edit) QueryCount(ctx context.Context, filter models.EditQueryInput) (int, error) {
 	user := auth.GetCurrentUser(ctx)
 
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, err := s.buildEditQuery(psql, filter, user.ID, true)
+	query, err := s.buildEditQuery(filter, user.ID, true)
 	if err != nil {
 		return 0, err
 	}
@@ -30,31 +30,27 @@ func (s *Edit) QueryCount(ctx context.Context, filter models.EditQueryInput) (in
 func (s *Edit) QueryEdits(ctx context.Context, filter models.EditQueryInput) ([]models.Edit, error) {
 	user := auth.GetCurrentUser(ctx)
 
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, err := s.buildEditQuery(psql, filter, user.ID, false)
+	query, err := s.buildEditQuery(filter, user.ID, false)
 	if err != nil {
 		return nil, err
 	}
 
 	// Apply sort
-	sortField := "created_at"
 	sortDir := "DESC"
-	if filter.Sort != "" {
-		sortField = strings.ToLower(filter.Sort.String())
-	}
 	if filter.Direction != "" {
 		sortDir = strings.ToUpper(filter.Direction.String())
 	}
-
-	// Special handling for closed_at and updated_at - use created_at as fallback
-	if filter.Sort == models.EditSortEnumClosedAt || filter.Sort == models.EditSortEnumUpdatedAt {
-		query = query.OrderBy(fmt.Sprintf("COALESCE(edits.%s, edits.created_at) %s, edits.id %s", sortField, sortDir, sortDir))
-	} else {
-		query = query.OrderBy(fmt.Sprintf("edits.%s %s, edits.id %s", sortField, sortDir, sortDir))
+	sort := qb.Expression(schema.Edits.CreatedAt)
+	switch filter.Sort {
+	case models.EditSortEnumUpdatedAt:
+		sort = schema.Edits.UpdatedAt.Coalesce(schema.Edits.CreatedAt)
+	case models.EditSortEnumClosedAt:
+		sort = schema.Edits.ClosedAt.Coalesce(schema.Edits.CreatedAt)
 	}
+	query.OrderBy(editOrder(sort, sortDir), editOrder(schema.Edits.ID, sortDir))
 
 	// Apply pagination
-	query = queryhelper.ApplyPagination(query, filter.Page, filter.PerPage)
+	queryhelper.ApplyPagination(query, filter.Page, filter.PerPage)
 
 	ids, err := queryhelper.ExecuteIDQuery(ctx, query, s.queries.DB(), "QueryEdits")
 	if err != nil {
@@ -77,28 +73,30 @@ func (s *Edit) QueryEdits(ctx context.Context, filter models.EditQueryInput) ([]
 	return edits, nil
 }
 
-func (s *Edit) buildEditQuery(psql sq.StatementBuilderType, filter models.EditQueryInput, userID uuid.UUID, forCount bool) (sq.SelectBuilder, error) {
-	var query sq.SelectBuilder
+func editOrder(expression qb.Expression, direction string) qb.OrderByClause {
+	if direction == "DESC" {
+		return qb.Desc(expression)
+	}
+	return qb.Asc(expression)
+}
+
+func (s *Edit) buildEditQuery(filter models.EditQueryInput, userID uuid.UUID, forCount bool) (*qb.Builder, error) {
+	projection := qb.Projection(schema.Edits.ID)
 	if forCount {
 		// No filter fans out rows, so DISTINCT would only add a sort of every
 		// matching id. The one join, edit_votes, is unique per (edit, user).
-		query = psql.Select("COUNT(*)").From("edits")
-	} else {
-		query = psql.Select("edits.id").From("edits")
+		projection = qb.COUNT(qb.STAR)
 	}
+	query := qb.Select(projection).From(schema.Edits)
 
 	// Filter by voted status
 	if filter.Voted != nil && *filter.Voted != "" {
 		switch *filter.Voted {
 		case models.UserVotedFilterEnumNotVoted:
-			query = query.Where(
-				"NOT EXISTS (SELECT 1 FROM edit_votes WHERE edit_id = edits.id AND user_id = ?)",
-				userID,
-			)
+			query.Where(qb.Raw[bool]("NOT EXISTS (SELECT 1 FROM edit_votes WHERE edit_id = edits.id AND user_id = ?)", userID))
 		default:
-			query = query.
-				Join("edit_votes ON edits.id = edit_votes.edit_id").
-				Where(sq.Eq{"edit_votes.user_id": userID, "edit_votes.vote": filter.Voted.String()})
+			query.Join(schema.EditVotes, schema.Edits.ID.EQ(schema.EditVotes.EditID)).
+				Where(schema.EditVotes.UserID.EQ(qb.UUID(userID)), schema.EditVotes.Vote.EQ(qb.String(filter.Voted.String())))
 		}
 	}
 
@@ -123,7 +121,7 @@ func (s *Edit) buildEditQuery(psql sq.StatementBuilderType, filter models.EditQu
 					WHERE jsonb_path_query_array(data, '$.new_data.added_performers[*].performer_id') @> ?
 					AND E.status = 'PENDING' AND E.target_type = 'SCENE'
 				)`, targetType, targetType)
-			query = query.Where(sq.Expr(subquery, string(jsonID), *filter.TargetID, string(jsonID)))
+			query.Where(qb.Raw[bool](subquery, string(jsonID), *filter.TargetID, string(jsonID)))
 		case models.TargetTypeEnumStudio:
 			subquery := fmt.Sprintf(`
 				edits.id IN (
@@ -135,7 +133,7 @@ func (s *Edit) buildEditQuery(psql sq.StatementBuilderType, filter models.EditQu
 					WHERE E.status = 'PENDING' AND E.target_type = 'SCENE'
 					AND E.data->'new_data'->'studio_id' @> ?
 				)`, targetType, targetType)
-			query = query.Where(sq.Expr(subquery, string(jsonID), *filter.TargetID, string(jsonID)))
+			query.Where(qb.Raw[bool](subquery, string(jsonID), *filter.TargetID, string(jsonID)))
 		case models.TargetTypeEnumTag:
 			subquery := fmt.Sprintf(`
 				edits.id IN (
@@ -147,7 +145,7 @@ func (s *Edit) buildEditQuery(psql sq.StatementBuilderType, filter models.EditQu
 					WHERE E.status = 'PENDING' AND E.target_type = 'SCENE'
 					AND E.data->'new_data'->'added_tags' @> ?
 				)`, targetType, targetType)
-			query = query.Where(sq.Expr(subquery, string(jsonID), *filter.TargetID, string(jsonID)))
+			query.Where(qb.Raw[bool](subquery, string(jsonID), *filter.TargetID, string(jsonID)))
 		default:
 			subquery := fmt.Sprintf(`
 				edits.id IN (
@@ -155,10 +153,10 @@ func (s *Edit) buildEditQuery(psql sq.StatementBuilderType, filter models.EditQu
 					UNION
 					SELECT edit_id FROM %s_edits WHERE %s_id = ?
 				)`, targetType, targetType)
-			query = query.Where(sq.Expr(subquery, string(jsonID), *filter.TargetID))
+			query.Where(qb.Raw[bool](subquery, string(jsonID), *filter.TargetID))
 		}
 	} else if filter.TargetType != nil && *filter.TargetType != "" {
-		query = query.Where(sq.Eq{"target_type": filter.TargetType.String()})
+		query.Where(schema.Edits.TargetType.EQ(qb.String(filter.TargetType.String())))
 	}
 
 	// Filter by favorite status
@@ -184,27 +182,27 @@ func (s *Edit) buildEditQuery(psql sq.StatementBuilderType, filter models.EditQu
 				 WHERE E.target_type = 'SCENE' AND TF.user_id = ?)
 			)
 		`
-		query = query.Where(sq.Expr(favoriteClause, userID, userID, userID, userID, userID, userID))
+		query.Where(qb.Raw[bool](favoriteClause, userID, userID, userID, userID, userID, userID))
 	}
 
 	// Simple filters
 	if filter.UserID != nil {
-		query = query.Where(sq.Eq{"edits.user_id": *filter.UserID})
+		query.Where(schema.Edits.UserID.EQ(qb.UUID(*filter.UserID)))
 	}
 	if filter.Status != nil {
-		query = query.Where(sq.Eq{"status": filter.Status.String()})
+		query.Where(schema.Edits.Status.EQ(qb.String(filter.Status.String())))
 	}
 	if filter.Operation != nil {
-		query = query.Where(sq.Eq{"operation": filter.Operation.String()})
+		query.Where(schema.Edits.Operation.EQ(qb.String(filter.Operation.String())))
 	}
 	if filter.Applied != nil {
-		query = query.Where(sq.Eq{"applied": *filter.Applied})
+		query.Where(schema.Edits.Applied.EQ(qb.Bool(*filter.Applied)))
 	}
 	if filter.IsBot != nil {
-		query = query.Where(sq.Eq{"bot": *filter.IsBot})
+		query.Where(schema.Edits.Bot.EQ(qb.Bool(*filter.IsBot)))
 	}
 	if filter.IncludeUserSubmitted != nil && !*filter.IncludeUserSubmitted {
-		query = query.Where(sq.NotEq{"edits.user_id": userID})
+		query.Where(schema.Edits.UserID.NOT_EQ(qb.UUID(userID)))
 	}
 
 	return query, nil

@@ -3,41 +3,26 @@ package user
 import (
 	"context"
 
-	sq "github.com/Masterminds/squirrel"
+	qb "github.com/stashapp/stash-box/pkg/querybuilder"
 
 	"github.com/stashapp/stash-box/internal/models"
 	queryhelper "github.com/stashapp/stash-box/internal/service/query"
+	schema "github.com/stashapp/stash-box/internal/service/query/schema"
 )
 
 func (s *User) Query(ctx context.Context, input models.UserQueryInput) (*models.QueryUsersResultType, error) {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query := psql.Select("users.id").From("users")
-
-	// Apply name filter - search across name and email columns
+	query := qb.Select(schema.Users.ID).From(schema.Users)
 	if input.Name != nil && *input.Name != "" {
-		searchTerm := "%" + *input.Name + "%"
-		query = query.Where(
-			sq.Or{
-				sq.ILike{"users.name": searchTerm},
-				sq.ILike{"users.email": searchTerm},
-			},
-		)
+		term := "%" + *input.Name + "%"
+		query.Where(qb.OR(queryhelper.ILike(schema.Users.Name, term), queryhelper.ILike(schema.Users.Email, term)))
 	}
 
-	// Get count
-	countQuery := psql.Select("COUNT(*)").FromSelect(query, "subquery")
-	count, err := queryhelper.ExecuteCount(ctx, countQuery, s.queries.DB(), "QueryUsersCount")
+	count, err := queryhelper.ExecuteCount(ctx, qb.Count(query, "subquery"), s.queries.DB(), "QueryUsersCount")
 	if err != nil {
 		return nil, err
 	}
-
-	// Apply sort
-	query = query.OrderBy("name ASC")
-
-	// Apply pagination
-	query = queryhelper.ApplyPagination(query, input.Page, input.PerPage)
-
-	// Execute query
+	query.OrderBy(schema.Users.Name.ASC())
+	queryhelper.ApplyPagination(query, input.Page, input.PerPage)
 	ids, err := queryhelper.ExecuteIDQuery(ctx, query, s.queries.DB(), "QueryUsers")
 	if err != nil {
 		return nil, err
@@ -55,9 +40,5 @@ func (s *User) Query(ctx context.Context, input models.UserQueryInput) (*models.
 			users = append(users, *user)
 		}
 	}
-
-	return &models.QueryUsersResultType{
-		Count: count,
-		Users: users,
-	}, nil
+	return &models.QueryUsersResultType{Count: count, Users: users}, nil
 }

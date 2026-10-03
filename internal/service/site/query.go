@@ -3,29 +3,24 @@ package site
 import (
 	"context"
 
-	sq "github.com/Masterminds/squirrel"
+	qb "github.com/stashapp/stash-box/pkg/querybuilder"
 
 	"github.com/stashapp/stash-box/internal/converter"
 	"github.com/stashapp/stash-box/internal/models"
 	queryhelper "github.com/stashapp/stash-box/internal/service/query"
+	schema "github.com/stashapp/stash-box/internal/service/query/schema"
 )
 
 func (s *Site) Query(ctx context.Context) ([]models.Site, int, error) {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query := psql.Select("*").From("sites").OrderBy("name ASC")
-
-	// Get count
-	countQuery := psql.Select("COUNT(*)").From("sites")
+	query := qb.Select(schema.Sites.AllColumns).From(schema.Sites).OrderBy(schema.Sites.Name.ASC())
+	countQuery := qb.Select(qb.COUNT(qb.STAR)).From(schema.Sites)
 	count, err := queryhelper.ExecuteCount(ctx, countQuery, s.queries.DB(), "QuerySitesCount")
 	if err != nil {
 		return nil, 0, err
 	}
-
-	// Execute query
 	sites, err := queryhelper.ExecuteQuery(ctx, query, s.queries.DB(), converter.SiteToModel, "QuerySites")
 	if err != nil {
 		return nil, 0, err
 	}
-
 	return sites, count, nil
 }

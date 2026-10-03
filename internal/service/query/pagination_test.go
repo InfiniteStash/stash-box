@@ -3,7 +3,8 @@ package query
 import (
 	"testing"
 
-	sq "github.com/Masterminds/squirrel"
+	schema "github.com/stashapp/stash-box/internal/service/query/schema"
+	qb "github.com/stashapp/stash-box/pkg/querybuilder"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,28 +34,25 @@ func TestPagination(t *testing.T) {
 		})
 	}
 }
-
 func TestApplyPaginationNormalizes(t *testing.T) {
-	q := sq.Select("scenes.*").From("scenes")
+	q := qb.Select(schema.Scenes.AllColumns).From(schema.Scenes)
 
-	sql, _, err := ApplyPagination(q, 1, 500).ToSql()
-	assert.NoError(t, err)
-	assert.Contains(t, sql, "LIMIT 100")
-	assert.Contains(t, sql, "OFFSET 0")
+	sql, args := ApplyPagination(q, 1, 500).Sql()
+	assert.Contains(t, sql, "LIMIT $1")
+	assert.Contains(t, sql, "OFFSET $2")
+	assert.Equal(t, []any{int64(100), int64(0)}, args)
 
-	sql, _, err = ApplyPagination(q, 2, 40).ToSql()
-	assert.NoError(t, err)
-	assert.Contains(t, sql, "LIMIT 40")
-	assert.Contains(t, sql, "OFFSET 40")
+	q = qb.Select(schema.Scenes.AllColumns).From(schema.Scenes)
+	sql, args = ApplyPagination(q, 2, 40).Sql()
+	assert.Equal(t, []any{int64(40), int64(40)}, args)
 
 	// Unset per_page defaults to 25.
-	sql, _, err = ApplyPagination(q, 1, 0).ToSql()
-	assert.NoError(t, err)
-	assert.Contains(t, sql, "LIMIT 25")
+	q = qb.Select(schema.Scenes.AllColumns).From(schema.Scenes)
+	sql, args = ApplyPagination(q, 1, 0).Sql()
+	assert.Equal(t, []any{int64(25), int64(0)}, args)
 
 	// Unset page defaults to 1 (offset 0).
-	sql, _, err = ApplyPagination(q, 0, 40).ToSql()
-	assert.NoError(t, err)
-	assert.Contains(t, sql, "LIMIT 40")
-	assert.Contains(t, sql, "OFFSET 0")
+	q = qb.Select(schema.Scenes.AllColumns).From(schema.Scenes)
+	sql, args = ApplyPagination(q, 0, 40).Sql()
+	assert.Equal(t, []any{int64(40), int64(0)}, args)
 }

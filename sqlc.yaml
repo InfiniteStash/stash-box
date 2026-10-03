@@ -1,4 +1,14 @@
 version: "2"
+plugins:
+  - name: querybuilder
+    env:
+      - PATH
+      - GOPATH
+      - GOMODCACHE
+      - HOME
+      - GOCACHE
+    process:
+      cmd: ./scripts/sqlc-gen-querybuilder
 sql:
   - engine: "postgresql"
     schema: "internal/database/migrations/postgres"
@@ -66,3 +76,6 @@ sql:
           go_type: "*github.com/stashapp/stash-box/internal/models.HairColorEnum"
         - column: "performers.breast_type"
           go_type: "*github.com/stashapp/stash-box/internal/models.BreastTypeEnum"
+    codegen:
+      - plugin: querybuilder
+        out: internal/service/query/schema
