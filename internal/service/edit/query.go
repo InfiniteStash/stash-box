@@ -36,22 +36,7 @@ func (s *Edit) QueryEdits(ctx context.Context, filter models.EditQueryInput) ([]
 		return nil, err
 	}
 
-	// Apply sort
-	sortField := "created_at"
-	sortDir := "DESC"
-	if filter.Sort != "" {
-		sortField = strings.ToLower(filter.Sort.String())
-	}
-	if filter.Direction != "" {
-		sortDir = strings.ToUpper(filter.Direction.String())
-	}
-
-	// Special handling for closed_at and updated_at - use created_at as fallback
-	if filter.Sort == models.EditSortEnumClosedAt || filter.Sort == models.EditSortEnumUpdatedAt {
-		query = query.OrderBy(fmt.Sprintf("COALESCE(edits.%s, edits.created_at) %s, edits.id %s", sortField, sortDir, sortDir))
-	} else {
-		query = query.OrderBy(fmt.Sprintf("edits.%s %s, edits.id %s", sortField, sortDir, sortDir))
-	}
+	query = applyEditSort(query, filter)
 
 	// Apply pagination
 	query = queryhelper.ApplyPagination(query, filter.Page, filter.PerPage)
@@ -75,6 +60,25 @@ func (s *Edit) QueryEdits(ctx context.Context, filter models.EditQueryInput) ([]
 	}
 
 	return edits, nil
+}
+
+func applyEditSort(query sq.SelectBuilder, filter models.EditQueryInput) sq.SelectBuilder {
+	sortField := "created_at"
+	sortDir := "DESC"
+	if filter.Sort != "" {
+		sortField = strings.ToLower(filter.Sort.String())
+	}
+	if filter.Direction != "" {
+		sortDir = strings.ToUpper(filter.Direction.String())
+	}
+
+	// Special handling for closed_at and updated_at - use created_at as fallback
+	if filter.Sort == models.EditSortEnumClosedAt || filter.Sort == models.EditSortEnumUpdatedAt {
+		query = query.OrderBy(fmt.Sprintf("COALESCE(edits.%s, edits.created_at) %s, edits.id %s", sortField, sortDir, sortDir))
+	} else {
+		query = query.OrderBy(fmt.Sprintf("edits.%s %s, edits.id %s", sortField, sortDir, sortDir))
+	}
+	return query
 }
 
 func (s *Edit) buildEditQuery(psql sq.StatementBuilderType, filter models.EditQueryInput, userID uuid.UUID, forCount bool) (sq.SelectBuilder, error) {
