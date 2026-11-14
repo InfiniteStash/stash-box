@@ -21,7 +21,7 @@ const popupClasses =
 const itemClasses =
   "flex cursor-pointer select-none flex-col rounded px-3 py-2 text-sm data-[highlighted]:bg-accent data-[selected]:bg-primary/25";
 const inputClasses =
-  "flex h-9 w-full rounded-md border border-input bg-input-bg px-3 py-1 text-sm text-input-foreground transition-colors placeholder:text-input-foreground/50 focus-visible:outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40";
+  "flex h-9 w-full rounded-md border border-input bg-input-bg px-3 py-1 text-base text-input-foreground transition-colors placeholder:text-input-foreground/50 focus-visible:outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40";
 
 // Shared async option loader: debounced server-side search with stale-response
 // dropping and URL-paste ID extraction. The debounced wrapper is kept stable
@@ -42,7 +42,8 @@ function useAsyncOptions<T>(loadOptions: (term: string) => Promise<T[]>) {
 
   const runSearch = async (raw: string) => {
     const next = extractIdFromUrl(raw);
-    setTerm(next);
+    // Preserve spaces while typing; normalize only the server query.
+    setTerm(raw);
     if (!next.trim()) {
       setItems([]);
       setLoading(false);
@@ -312,7 +313,7 @@ export function MultiCombobox<T extends ComboboxOption>({
         <Combobox.Input
           id={inputId}
           placeholder={selected.length === 0 ? placeholder : ""}
-          className="h-7 min-w-24 flex-1 bg-transparent text-sm outline-none placeholder:text-input-foreground/50"
+          className="h-7 min-w-24 flex-1 bg-transparent text-base outline-none placeholder:text-input-foreground/50"
         />
       </label>
       <Combobox.Portal>

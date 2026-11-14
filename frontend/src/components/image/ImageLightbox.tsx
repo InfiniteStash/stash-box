@@ -16,7 +16,12 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { Icon } from "src/components/fragments";
 import { Button } from "src/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "src/components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "src/components/ui/tabs";
 import { imageHref } from "src/utils/route";
 import Image from "./Image";
 import ImageCategorization, {
@@ -142,7 +147,10 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
     <BaseDialog.Root open onOpenChange={(open) => !open && handleClose()}>
       <BaseDialog.Portal>
         <BaseDialog.Backdrop className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md" />
-        <BaseDialog.Popup className="ImageLightbox fixed inset-0 z-50 outline-none">
+        <BaseDialog.Popup
+          aria-label="Image viewer"
+          className="ImageLightbox fixed inset-0 z-50 outline-none"
+        >
           {/* biome-ignore lint/a11y/noStaticElementInteractions: background click closes the dialog; Escape and close button support keyboard access */}
           {/* biome-ignore lint/a11y/useKeyWithClickEvents: Escape and close button support keyboard access */}
           <div className="ImageLightbox-body" onClick={closeOnBackgroundClick}>
@@ -185,6 +193,7 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
             {showCategorization ? (
               <div className="ImageLightbox-side">
                 <Tabs
+                  className="flex min-h-0 flex-1 flex-col gap-3"
                   value={sideTab}
                   onValueChange={(key) =>
                     key &&
@@ -198,9 +207,10 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
                       Categorization
                     </TabsTrigger>
                   </TabsList>
-                </Tabs>
-                {sideTab === "categorization" ? (
-                  <>
+                  <TabsContent
+                    value="categorization"
+                    className="flex min-h-0 flex-1 flex-col py-0"
+                  >
                     <div className="ImageLightbox-editor-navigation">
                       <Button
                         variant="link"
@@ -235,16 +245,18 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
                         imageId={focused.id}
                       />
                     </div>
-                  </>
-                ) : (
-                  thumbnails
-                )}
+                  </TabsContent>
+                  <TabsContent value="images" className="min-h-0 flex-1 py-0">
+                    {thumbnails}
+                  </TabsContent>
+                </Tabs>
               </div>
             ) : (
               images.length > 1 && thumbnails
             )}
             <Button
-              className="ImageLightbox-close minimal"
+              aria-label="Close"
+              className="ImageLightbox-close"
               onClick={handleClose}
               variant="link"
             >

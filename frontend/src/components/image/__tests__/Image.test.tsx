@@ -329,7 +329,7 @@ describe("ImageLightbox (via Image)", () => {
       );
       await user.click(screen.getByRole("button", { name: /3/ }));
       expect(screen.queryByTestId("editing")).toBeNull();
-      await user.click(screen.getByRole("button", { name: "Categorization" }));
+      await user.click(screen.getByRole("tab", { name: "Categorization" }));
       return { user };
     };
 
@@ -339,8 +339,9 @@ describe("ImageLightbox (via Image)", () => {
       );
       await user.click(screen.getByRole("button", { name: /3/ }));
 
-      expect(screen.getByRole("button", { name: "Images" })).toHaveClass(
-        "active",
+      expect(screen.getByRole("tab", { name: "Images" })).toHaveAttribute(
+        "aria-selected",
+        "true",
       );
       expect(screen.queryByTestId("editing")).toBeNull();
       expect(document.querySelector(".ImageLightbox-editor")).toBeNull();
@@ -376,7 +377,7 @@ describe("ImageLightbox (via Image)", () => {
         b: ["Bust"],
         c: ["Wide"],
       });
-      await user.click(screen.getByRole("button", { name: "Images" }));
+      await user.click(screen.getByRole("tab", { name: "Images" }));
       const thumbs = [...document.querySelectorAll(".ImageLightbox-thumb")];
 
       const thumbLabels = (t: Element) =>

@@ -1,5 +1,5 @@
 import type React from "react";
-import { Card } from "react-bootstrap";
+import { Card, CardBody, CardHeader } from "src/components/ui/card";
 
 interface Props {
   heading: string;
@@ -10,8 +10,8 @@ const CLASSNAME = "EditorCard";
 
 const EditorCard: React.FC<Props> = ({ heading, children }) => (
   <Card className={CLASSNAME}>
-    <Card.Header className={`${CLASSNAME}-heading`}>{heading}</Card.Header>
-    <Card.Body>{children}</Card.Body>
+    <CardHeader className="pb-0 text-sm font-semibold">{heading}</CardHeader>
+    <CardBody>{children}</CardBody>
   </Card>
 );
 

@@ -5,10 +5,12 @@ import {
   useImperativeHandle,
   useState,
 } from "react";
-import { Button, Form, Modal } from "react-bootstrap";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import ImageCategorizationFields from "src/components/image/ImageCategorizationFields";
 import type { ImageCategorization } from "src/components/image/types";
+import { Button } from "src/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "src/components/ui/dialog";
+import { Switch } from "src/components/ui/switch";
 import {
   ImageTypeScopeEnum,
   useImageCategorization,
@@ -146,14 +148,13 @@ const ImageCategorizationEditor = forwardRef<CategorizationEditor, Props>(
     return (
       <div className="ImageCategorization">
         {isModerator && (
-          <Form.Check
+          <Switch
             className="ImageCategorization-organized-toggle"
-            type="switch"
             id={`${controlId}-organized`}
             label="Organized"
             checked={image.organized}
             disabled={saving || organizing || !!dateError}
-            onChange={toggleOrganized}
+            onCheckedChange={toggleOrganized}
           />
         )}
         <ImageCategorizationFields
@@ -162,7 +163,7 @@ const ImageCategorizationEditor = forwardRef<CategorizationEditor, Props>(
           onChange={setDraft}
           readOnly={!isEditor || image.organized}
         />
-        {saveError && <p className="text-danger">{saveError}</p>}
+        {saveError && <p className="text-destructive">{saveError}</p>}
         {isEditor && !image.organized && (
           <Button
             onClick={commitState}
@@ -171,31 +172,30 @@ const ImageCategorizationEditor = forwardRef<CategorizationEditor, Props>(
             {saving ? "Saving..." : "Save"}
           </Button>
         )}
-        <Modal
-          show={!!pendingLeave}
-          onHide={() => setPendingLeave(null)}
-          centered
+        <Dialog
+          open={!!pendingLeave}
+          onOpenChange={(open) => !open && setPendingLeave(null)}
         >
-          <Modal.Header closeButton>
-            <Modal.Title>Discard categorization changes?</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>Your changes have not been saved.</Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => setPendingLeave(null)}>
-              Keep editing
-            </Button>
-            <Button
-              variant="danger"
-              onClick={() => {
-                const proceed = pendingLeave;
-                setPendingLeave(null);
-                proceed?.();
-              }}
-            >
-              Discard changes
-            </Button>
-          </Modal.Footer>
-        </Modal>
+          <DialogContent>
+            <DialogTitle>Discard categorization changes?</DialogTitle>
+            <p>Your changes have not been saved.</p>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="secondary" onClick={() => setPendingLeave(null)}>
+                Keep editing
+              </Button>
+              <Button
+                variant="danger"
+                onClick={() => {
+                  const proceed = pendingLeave;
+                  setPendingLeave(null);
+                  proceed?.();
+                }}
+              >
+                Discard changes
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   },

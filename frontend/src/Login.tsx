@@ -9,7 +9,6 @@ import { ROUTE_FORGOT_PASSWORD, ROUTE_REGISTER } from "src/constants/route";
 import { baseHref } from "src/utils";
 import { getCredentialsSetting, getPlatformURL } from "src/utils/createClient";
 import * as yup from "yup";
-import "./styles/legacy.css";
 import { useCurrentUser } from "./hooks";
 
 const schema = yup.object({

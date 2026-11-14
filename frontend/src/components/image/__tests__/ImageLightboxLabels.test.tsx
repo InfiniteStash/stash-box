@@ -67,7 +67,7 @@ describe("ImageLightbox cached labels", () => {
         </MockedProvider>
       </MemoryRouter>,
     );
-    expect(!!screen.queryByRole("button", { name: "Categorization" })).toBe(
+    expect(!!screen.queryByRole("tab", { name: "Categorization" })).toBe(
       showCategorization === true,
     );
     await act(async () => {

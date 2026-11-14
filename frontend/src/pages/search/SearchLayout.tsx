@@ -1,5 +1,4 @@
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
-import cx from "classnames";
 import { type FC, useCallback, useEffect, useRef } from "react";
 import {
   NavLink,
@@ -18,10 +17,9 @@ import { cn } from "src/lib/utils";
 
 const tabClass =
   "-mb-px border-b-2 border-transparent px-4 py-2 text-muted-foreground hover:text-foreground";
-const activeTabClass = "border-primary text-foreground";
+const activeTabClass = "border-tab-active font-medium text-tab-active";
 
 const CLASSNAME = "SearchPage";
-const CLASSNAME_INPUT = `${CLASSNAME}-input`;
 
 export const SearchLayout: FC = () => {
   const navigate = useNavigate();
@@ -63,10 +61,14 @@ export const SearchLayout: FC = () => {
   return (
     <div className={CLASSNAME}>
       <Title page={term || "Search"} />
-      <div className={cx(CLASSNAME_INPUT, "mb-3")}>
-        <Icon icon={faMagnifyingGlass} />
+      <div className="relative mb-3">
+        <Icon
+          icon={faMagnifyingGlass}
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+        />
         <Input
           ref={inputRef}
+          className="h-12 pl-10 text-lg"
           defaultValue={term}
           onChange={(e) => handleSearch(e.currentTarget.value)}
           placeholder="Search for performer or scene"

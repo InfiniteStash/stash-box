@@ -1,5 +1,5 @@
 import { type FC, useState } from "react";
-import { Col, Row } from "react-bootstrap";
+
 import { LoadingIndicator } from "src/components/fragments";
 import Pagination from "src/components/pagination";
 import PerformerCard from "src/components/performerCard";
@@ -38,12 +38,12 @@ export const PairingRow: FC<Props> = ({
     page === 1 ? firstPage : (data?.findPerformer?.queryScenes.scenes ?? []);
 
   return (
-    <Row>
-      <Col xs={3}>
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
+      <div className="md:col-span-3">
         <PerformerCard performer={partner} />
-      </Col>
-      <Col xs={9}>
-        <div className="d-flex align-items-start">
+      </div>
+      <div className="md:col-span-9">
+        <div className="flex items-start">
           <b className="mt-2">
             {new Intl.NumberFormat().format(sceneCount)} scenes together
           </b>
@@ -59,15 +59,15 @@ export const PairingRow: FC<Props> = ({
         {loading ? (
           <LoadingIndicator message="Loading scenes..." />
         ) : (
-          <Row>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {scenes.map((scene) => (
-              <Col xs={4} key={scene.id}>
+              <div key={scene.id}>
                 <SceneCard scene={scene} />
-              </Col>
+              </div>
             ))}
-          </Row>
+          </div>
         )}
-      </Col>
-    </Row>
+      </div>
+    </div>
   );
 };

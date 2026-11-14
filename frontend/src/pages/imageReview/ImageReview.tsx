@@ -1,11 +1,12 @@
 import { faFilter } from "@fortawesome/free-solid-svg-icons";
 import { type FC, useState } from "react";
-import { Button, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import Image from "src/components/image";
 import { List } from "src/components/list";
 import Title from "src/components/title";
+import { Button } from "src/components/ui/button";
+import { Table } from "src/components/ui/table";
 import { ROUTE_IMAGE_REVIEW, ROUTE_USER } from "src/constants/route";
 import {
   useRevertImageCategorization,
@@ -99,10 +100,10 @@ const ImageReview: FC = () => {
           ...(image.date ? [image.date] : []),
         ].join(", ")}
       </td>
-      <td className="text-nowrap">
+      <td className="whitespace-nowrap">
         {image.categorized_at ? formatDateTime(image.categorized_at) : null}
       </td>
-      <td className="text-nowrap">
+      <td className="whitespace-nowrap">
         {image.categorized_by && (
           <>
             <Link to={createHref(ROUTE_USER, image.categorized_by)}>
@@ -127,7 +128,7 @@ const ImageReview: FC = () => {
         <Button
           size="sm"
           variant="danger"
-          className="ms-2"
+          className="ml-2"
           disabled={saving}
           title="Restore the labels and date from before the last change; if they arrived with the image, clear them"
           onClick={() => revert(image.id)}
@@ -142,23 +143,23 @@ const ImageReview: FC = () => {
     <>
       <Title page="Image Review" />
       <h3>Image Review</h3>
-      <p className="text-muted">
+      <p className="text-muted-foreground">
         Images with contributor-set labels or dates awaiting a moderator's
         sign-off. Marking one organized locks its categorization; reverting one
         restores the labels from before the last change.
       </p>
-      {error && <div className="text-danger mb-2">Error: {error}</div>}
+      {error && <div className="text-destructive mb-2">Error: {error}</div>}
       <List
         entityName="images"
         filters={
           (performerFilter || userFilter) && (
             <>
-              <span className="text-muted">
+              <span className="text-muted-foreground">
                 Filtered to {performerFilter ? "one performer's images" : null}
                 {performerFilter && userFilter ? " and " : null}
                 {userFilter ? "one user's categorizations" : null}
               </span>
-              <Link to={ROUTE_IMAGE_REVIEW} className="ms-2">
+              <Link to={ROUTE_IMAGE_REVIEW} className="ml-2">
                 <Button variant="secondary" size="sm">
                   Show everything
                 </Button>
@@ -174,19 +175,21 @@ const ImageReview: FC = () => {
           data ? data.queryUnorganizedImages.count - hiddenCount : undefined
         }
       >
-        <Table striped variant="dark">
-          <thead>
-            <tr>
-              <th style={{ width: "120px" }}>Image</th>
-              <th>Performers</th>
-              <th>Labels</th>
-              <th>Categorized</th>
-              <th>By</th>
-              <th style={{ width: "160px" }}></th>
-            </tr>
-          </thead>
-          <tbody>{rows}</tbody>
-        </Table>
+        <div className="overflow-x-auto">
+          <Table striped>
+            <thead>
+              <tr>
+                <th style={{ width: "120px" }}>Image</th>
+                <th>Performers</th>
+                <th>Labels</th>
+                <th>Categorized</th>
+                <th>By</th>
+                <th style={{ width: "160px" }}></th>
+              </tr>
+            </thead>
+            <tbody>{rows}</tbody>
+          </Table>
+        </div>
       </List>
     </>
   );

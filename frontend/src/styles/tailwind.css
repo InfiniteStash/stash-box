@@ -1,55 +1,62 @@
-/*
- * Tailwind entry. Bootstrap and all SCSS have been removed; preflight is the
- * reset and the remaining component styles live in styles/legacy.css (plain
- * CSS, imported before this file so utilities win same-specificity ties).
- * @source is required because importing the sub-files (instead of the full
- * `tailwindcss`) disables automatic content detection.
- */
-@import "tailwindcss/theme.css";
-@import "tailwindcss/preflight.css";
-@import "tailwindcss/utilities.css";
+/* Keep defaults, component styles, and utilities in a predictable cascade. */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "./legacy.css" layer(components);
+@import "tailwindcss/utilities.css" layer(utilities);
 @source "../**/*.{ts,tsx}";
 
-/* Page background/text — Bootstrap reboot set this; preflight does not. */
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-}
-
-/*
- * Global heading scale. Preflight unstyles h1–h6 (font-size/weight: inherit);
- * shadcn normally re-applies size via per-element utilities, but this app uses
- * bare headings as page titles, so map its documented scale here instead.
- * Must come after the preflight import to win at equal specificity; utility
- * classes (text-xl, etc.) still override where a heading is deliberately sized.
+/* Match bare headings to Tailwind's size/line-height pairs. Utilities can
+ * override these defaults without specificity or import-order workarounds.
+ * Root sizing remains the browser/user default; body copy is 1rem.
  */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-weight: 600;
-  letter-spacing: -0.025em;
-}
-h1 {
-  font-size: 2.25rem;
-  font-weight: 800;
-}
-h2 {
-  font-size: 1.875rem;
-}
-h3 {
-  font-size: 1.5rem;
-}
-h4 {
-  font-size: 1.25rem;
-}
-h5 {
-  font-size: 1.125rem;
-}
-h6 {
-  font-size: 1rem;
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: normal;
+  }
+  h1 {
+    font-size: var(--text-4xl);
+    line-height: var(--text-4xl--line-height);
+  }
+  h2 {
+    font-size: var(--text-3xl);
+    line-height: var(--text-3xl--line-height);
+  }
+  h3 {
+    font-size: var(--text-2xl);
+    line-height: var(--text-2xl--line-height);
+  }
+  h4 {
+    font-size: var(--text-xl);
+    line-height: var(--text-xl--line-height);
+  }
+  h5 {
+    font-size: var(--text-lg);
+    line-height: var(--text-lg--line-height);
+  }
+  h6 {
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
+  }
+
+  /* Fixed metadata sizing avoids compounding percentages in nested content. */
+  small {
+    font-size: var(--text-xs);
+    line-height: var(--text-xs--line-height);
+  }
 }
 
 /*
@@ -86,6 +93,7 @@ h6 {
   /* Links are regular foreground text (no distinct color); hover underline
    * still provides the affordance. */
   --link: var(--foreground);
+  --tab-active: #48aff0;
 
   --border: rgba(255 255 255 / 10%);
   --input: rgba(255 255 255 / 14%);
@@ -119,6 +127,7 @@ h6 {
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-link: var(--link);
+  --color-tab-active: var(--tab-active);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-input-bg: var(--input-bg);

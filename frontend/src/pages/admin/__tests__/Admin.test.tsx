@@ -50,7 +50,7 @@ describe("Admin", () => {
       "site-categories",
     ]) {
       expect(
-        document.querySelector(`.card a[href="/admin/${path}"]`),
+        document.querySelector(`a[href="/admin/${path}"]`),
       ).toBeInTheDocument();
     }
   });
@@ -58,15 +58,19 @@ describe("Admin", () => {
   it("renders image type settings inside admin", () => {
     renderAdmin("/admin/image-types", true);
     expect(screen.getByText("Image type settings")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Image Types" })).toHaveClass(
-      "active",
+    expect(screen.getByRole("link", { name: "Image Types" })).toHaveAttribute(
+      "aria-current",
+      "page",
     );
   });
 
   it("renders nested user tools with the admin navigation", () => {
     renderAdmin("/admin/users/add", true);
     expect(screen.getByText("User management")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Users" })).toHaveClass("active");
+    expect(screen.getByRole("link", { name: "Users" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
     expect(screen.getByRole("link", { name: "Overview" })).toHaveAttribute(
       "href",
       "/admin",

@@ -98,21 +98,27 @@ const PerformerComponent: FC<Props> = ({ performer }) => {
           <TabsTrigger value="links">Links</TabsTrigger>
           <TabsTrigger
             value="edits"
-            className={pendingEditCount ? "text-warning" : undefined}
+            className={
+              pendingEditCount
+                ? "text-warning data-[active]:text-warning data-[active]:border-warning"
+                : undefined
+            }
           >
             {`Edits${formatPendingEdits(pendingEditCount)}`}
           </TabsTrigger>
         </TabsList>
         <TabsContent value="scenes">
-          <CheckboxSelect
-            values={obj}
-            onChange={(ids) => setParams("studioFilter", ids)}
-            placeholder="Filter by studios"
-            plural="studios"
-            key={`performer-${performer.id}-studio-select`}
-            selected={studioFilter}
-          />
           <SceneList
+            additionalFilters={
+              <CheckboxSelect
+                values={obj}
+                onChange={(ids) => setParams("studioFilter", ids)}
+                placeholder="Filter by studios"
+                plural="studios"
+                key={`performer-${performer.id}-studio-select`}
+                selected={studioFilter}
+              />
+            }
             perPage={40}
             filter={{
               performers: {

@@ -1,10 +1,12 @@
 import cx from "classnames";
 import { type FC, useEffect, useState } from "react";
-import { Button, Card, Form } from "react-bootstrap";
 import DragList from "src/components/dragList";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
 import Modal from "src/components/modal";
 import Title from "src/components/title";
+import { Button } from "src/components/ui/button";
+import { Card, CardBody, CardHeader } from "src/components/ui/card";
+import { Switch } from "src/components/ui/switch";
 import {
   type ImageTypeEnum,
   type ImageTypeGroupEnum,
@@ -114,31 +116,31 @@ const ImageTypeOrder: FC = () => {
   return (
     <>
       <Title page="Image Types" />
-      <div className="d-flex align-items-center mb-2">
-        <h3 className="me-4">Image Types</h3>
+      <div className="flex items-center mb-2">
+        <h3 className="mr-4">Image Types</h3>
         <Button
           onClick={() => setConfirming(true)}
           disabled={saving}
-          className="ms-auto"
+          className="ml-auto"
         >
           {saving ? "Saving..." : "Save Order"}
         </Button>
       </div>
 
-      <p className="text-muted">
+      <p className="text-muted-foreground">
         Which of the vocabulary this instance uses, and which image ranks first{" "}
         <b>instance-wide</b>. Groups are compared in this order, and within a
         group its types are. Drag by the handles to reorder, or focus a handle
         and use the arrow keys. Users may reorder all of this for themselves:
         what you set here is the default they start from
       </p>
-      <p className="text-muted">
+      <p className="text-muted-foreground">
         Switching something off hides it when labelling and drops it from
         ranking. <b>Nothing is deleted</b>: labels already applied are kept and
         come back if you switch it on again.
       </p>
 
-      {error && <div className="text-danger mb-2">Error: {error}</div>}
+      {error && <div className="text-destructive mb-2">Error: {error}</div>}
       {saved && <div className="text-success mb-2">Order saved.</div>}
 
       <div className={CLASSNAME}>
@@ -155,21 +157,22 @@ const ImageTypeOrder: FC = () => {
                 disabled: !group.enabled,
               })}
             >
-              <Card.Header className="d-flex align-items-center">
+              <CardHeader className="flex-row flex-wrap items-center gap-2">
                 <b>{group.name}</b>
                 {group.description && (
-                  <small className="text-muted ms-2">{group.description}</small>
+                  <small className="text-muted-foreground ml-2">
+                    {group.description}
+                  </small>
                 )}
-                <Form.Check
-                  type="switch"
-                  className="ms-auto"
+                <Switch
+                  className="ml-auto"
                   id={`enabled-${group.key}`}
                   label={group.enabled ? "In use" : "Off"}
                   checked={group.enabled}
-                  onChange={() => toggleGroup(group.key)}
+                  onCheckedChange={() => toggleGroup(group.key)}
                 />
-              </Card.Header>
-              <Card.Body>
+              </CardHeader>
+              <CardBody>
                 <DragList
                   items={group.types}
                   keyOf={(type) => type.key}
@@ -182,17 +185,19 @@ const ImageTypeOrder: FC = () => {
                         className={cx({
                           // A type inside a switched-off group is unusable
                           // whatever its own setting, so it reads as off
-                          "text-muted": !type.enabled || !group.enabled,
+                          "text-muted-foreground":
+                            !type.enabled || !group.enabled,
                         })}
                       >
                         {type.name}
                       </span>
                       {type.description && (
-                        <small className="text-muted">{type.description}</small>
+                        <small className="text-muted-foreground">
+                          {type.description}
+                        </small>
                       )}
-                      <Form.Check
-                        type="switch"
-                        className="ms-auto"
+                      <Switch
+                        className="ml-auto"
                         id={`enabled-${type.key}`}
                         label={type.enabled ? "In use" : "Off"}
                         checked={type.enabled}
@@ -202,12 +207,12 @@ const ImageTypeOrder: FC = () => {
                             ? undefined
                             : `${group.name} is switched off, so none of its types are in use`
                         }
-                        onChange={() => toggleType(type.key)}
+                        onCheckedChange={() => toggleType(type.key)}
                       />
                     </>
                   )}
                 </DragList>
-              </Card.Body>
+              </CardBody>
             </Card>
           )}
         </DragList>

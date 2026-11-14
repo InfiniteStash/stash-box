@@ -10,6 +10,8 @@ interface Props {
   perPage?: number;
   listCount?: number;
   loading: boolean;
+  refreshing?: boolean;
+  hasResults?: boolean;
   filters?: ReactNode;
   entityName?: string;
   children?: React.ReactNode;
@@ -21,6 +23,8 @@ const List: FC<Props> = ({
   perPage = PER_PAGE,
   listCount,
   loading,
+  refreshing = false,
+  hasResults,
   filters,
   children,
   entityName = "data",
@@ -31,10 +35,13 @@ const List: FC<Props> = ({
     if (!loading && listCount !== undefined) setCount(listCount);
   }, [loading, listCount]);
 
-  const currentCount = count ?? listCount;
+  const currentCount = listCount ?? count;
+  const showResults =
+    hasResults ?? (currentCount !== undefined && currentCount > 0);
+  const showEmpty = hasResults === false || currentCount === 0;
 
   return (
-    <div className={`${entityName}-list`}>
+    <div className={`${entityName}-list`} aria-busy={loading || refreshing}>
       <div className="mt-2 flex flex-wrap items-center gap-3">
         {filters}
         <Pagination
@@ -47,9 +54,9 @@ const List: FC<Props> = ({
       </div>
       {loading ? (
         <LoadingIndicator message={`Loading ${entityName}...`} />
-      ) : currentCount && currentCount > 0 ? (
+      ) : showResults ? (
         children
-      ) : currentCount === 0 ? (
+      ) : showEmpty ? (
         <h4 className="m-4 p-4 text-center text-lg text-muted-foreground">
           No results
         </h4>

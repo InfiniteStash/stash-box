@@ -27,6 +27,11 @@ const typePolicies: TypePolicies = {
   },
   Query: {
     fields: {
+      // Rows and totals arrive in separate queries for the same arguments.
+      // Preserve both selections without mixing different filters or pages.
+      queryScenes: {
+        merge: true,
+      },
       findImage: {
         read(_, { args, toReference }) {
           return toReference({ __typename: "Image", id: args?.id });
@@ -89,6 +94,8 @@ const errorLink = new ErrorLink(({ error }) => {
   }
 });
 
+export const createCache = () => new InMemoryCache({ typePolicies });
+
 const createClient = () =>
   new ApolloClient({
     link: ApolloLink.from([
@@ -97,7 +104,7 @@ const createClient = () =>
       new RemoveTypenameFromVariablesLink(),
       httpLink,
     ]),
-    cache: new InMemoryCache({ typePolicies }),
+    cache: createCache(),
   });
 
 export const setToken = (token: string) => {

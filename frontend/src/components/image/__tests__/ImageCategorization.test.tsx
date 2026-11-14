@@ -97,15 +97,15 @@ describe("ImageCategorization", () => {
     await user.click(screen.getByText("Future date"));
 
     expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
-    expect(screen.getByLabelText("Organized")).toBeDisabled();
+    expect(screen.getByRole("switch", { name: "Organized" })).toBeDisabled();
     await user.click(screen.getByRole("button", { name: "Save" }));
-    await user.click(screen.getByLabelText("Organized"));
+    await user.click(screen.getByRole("switch", { name: "Organized" }));
     expect(state.update).not.toHaveBeenCalled();
     expect(state.organize).not.toHaveBeenCalled();
 
     await user.click(screen.getByText("Change labels"));
     expect(screen.getByRole("button", { name: "Save" })).toBeEnabled();
-    expect(screen.getByLabelText("Organized")).toBeEnabled();
+    expect(screen.getByRole("switch", { name: "Organized" })).toBeEnabled();
   });
 
   it("guards leaving until changes are explicitly discarded", async () => {
@@ -126,7 +126,7 @@ describe("ImageCategorization", () => {
   it("organizes without saving when labels are unchanged", async () => {
     const user = userEvent.setup();
     render(<ImageCategorization imageId="1" />);
-    await user.click(screen.getByLabelText("Organized"));
+    await user.click(screen.getByRole("switch", { name: "Organized" }));
     expect(state.update).not.toHaveBeenCalled();
     expect(state.organize).toHaveBeenCalledOnce();
   });
@@ -142,7 +142,7 @@ describe("ImageCategorization", () => {
     const user = userEvent.setup();
     render(<ImageCategorization imageId="1" />);
     await user.click(screen.getByText("Change labels"));
-    await user.click(screen.getByLabelText("Organized"));
+    await user.click(screen.getByRole("switch", { name: "Organized" }));
     expect(state.update).toHaveBeenCalledWith({
       variables: { imageData: { id: "1", types: [], date: "2020-01-01" } },
     });
@@ -162,7 +162,7 @@ describe("ImageCategorization", () => {
     const user = userEvent.setup();
     render(<ImageCategorization imageId="1" />);
     await user.click(screen.getByText("Change labels"));
-    await user.click(screen.getByLabelText("Organized"));
+    await user.click(screen.getByRole("switch", { name: "Organized" }));
     expect(state.organize).not.toHaveBeenCalled();
     expect(screen.getByText("Save failed")).toBeInTheDocument();
   });

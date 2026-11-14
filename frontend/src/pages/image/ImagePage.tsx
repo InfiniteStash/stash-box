@@ -6,9 +6,7 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { useRef } from "react";
-import { Button, Card, Col, Row } from "react-bootstrap";
 import { Link, useNavigate, useParams } from "react-router-dom";
-
 import { ErrorMessage, Icon, LoadingIndicator } from "src/components/fragments";
 import Image from "src/components/image";
 import ImageCategorization, {
@@ -16,6 +14,8 @@ import ImageCategorization, {
 } from "src/components/image/ImageCategorization";
 import ImageOrganizedIndicator from "src/components/image/ImageOrganizedIndicator";
 import Title from "src/components/title";
+import { Button } from "src/components/ui/button";
+import { Card, CardBody } from "src/components/ui/card";
 import { EditStatusTypes } from "src/constants/enums";
 import { ROUTE_IMAGE, ROUTE_IMAGE_EDIT } from "src/constants/route";
 import { type ImageQuery, useImage, VoteStatusEnum } from "src/graphql";
@@ -77,7 +77,7 @@ const ImageEditDescription = ({
         return {
           icon: faXmark,
           variant: "danger",
-          className: "me-2",
+          className: "mr-2",
           title: "Removed",
           action: "Removed from ",
         } as const;
@@ -85,7 +85,7 @@ const ImageEditDescription = ({
       return {
         icon: faCheck,
         variant: "success",
-        className: "me-2",
+        className: "mr-2",
         title: "Added",
         action: "Added to ",
       } as const;
@@ -101,21 +101,21 @@ const ImageEditDescription = ({
           ...description,
           icon: faTriangleExclamation,
           variant: "warning",
-          className: "me-2",
+          className: "mr-2",
         } as const;
       case VoteStatusEnum.PENDING:
         return {
           ...description,
           icon: faClock,
           variant: "warning",
-          className: "me-2",
+          className: "mr-2",
         } as const;
       default:
         return {
           ...description,
           icon: faBan,
           variant: undefined,
-          className: "me-2 text-muted",
+          className: "mr-2 text-muted-foreground",
         } as const;
     }
   })();
@@ -200,11 +200,11 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
     <div className="ImagePage">
       <Title page="Image" />
       {(editing || isEditor) && (
-        <div className="d-flex justify-content-end mb-3">
+        <div className="flex justify-end mb-3">
           {editing ? (
             <Button
               variant="secondary"
-              className="ms-auto"
+              className="ml-auto"
               onClick={() => {
                 const proceed = () =>
                   navigate(createHref(ROUTE_IMAGE, image), { replace: true });
@@ -218,7 +218,7 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
             <Link
               to={createHref(ROUTE_IMAGE_EDIT, image)}
               replace
-              className="ms-auto"
+              className="ml-auto"
             >
               <Button>Edit categorization</Button>
             </Link>
@@ -226,25 +226,25 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
         </div>
       )}
 
-      <Row className="g-4">
-        <Col lg={8}>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
           <div className="ImagePage-image">
             <Image images={image} size="full" alt="" />
           </div>
-          <div className="text-center text-muted mt-2">
+          <div className="text-center text-muted-foreground mt-2">
             {image.width} × {image.height}
           </div>
-        </Col>
-        <Col lg={4}>
+        </div>
+        <div>
           {editing ? (
             <Card>
-              <Card.Body>
+              <CardBody>
                 <ImageCategorization ref={editor} imageId={image.id} />
-              </Card.Body>
+              </CardBody>
             </Card>
           ) : (
             <Card>
-              <Card.Body className="position-relative">
+              <CardBody className="relative">
                 <ImageOrganizedIndicator imageId={image.id} />
                 <h5>Categorization</h5>
                 <dl>
@@ -284,7 +284,7 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-muted">No image edits found.</p>
+                  <p className="text-muted-foreground">No image edits found.</p>
                 )}
 
                 <h5>Attached to</h5>
@@ -304,11 +304,11 @@ const ImagePage = ({ editing = false }: { editing?: boolean }) => {
                   entities={studios}
                   href={studioHref}
                 />
-              </Card.Body>
+              </CardBody>
             </Card>
           )}
-        </Col>
-      </Row>
+        </div>
+      </div>
     </div>
   );
 };

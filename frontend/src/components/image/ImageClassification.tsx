@@ -1,9 +1,8 @@
 import cx from "classnames";
 import type React from "react";
 import { useId } from "react";
-import { Form } from "react-bootstrap";
-
 import { EditorCard, Tooltip } from "src/components/fragments";
+import { FormGroup, Label } from "src/components/ui/field";
 import type { ImageTypeEnum, ImageTypeGroupsQuery } from "src/graphql";
 
 import type { ImageCategorization } from "./types";
@@ -88,8 +87,7 @@ const ImageClassification: React.FC<Props> = ({
                   {group.name}
                 </legend>
                 <div className={`${CLASSNAME}-group-options`}>
-                  <Form.Group
-                    controlId={`${idPrefix}-${group.key}-none`}
+                  <FormGroup
                     className={cx(
                       `${CLASSNAME}-option`,
                       `${CLASSNAME}-option-none`,
@@ -98,16 +96,26 @@ const ImageClassification: React.FC<Props> = ({
                       },
                     )}
                   >
-                    <Form.Label title="It's always valid to leave an image unlabeled">
-                      <Form.Check
+                    <Label
+                      className={
+                        !selected
+                          ? "text-primary-foreground"
+                          : "text-input-foreground"
+                      }
+                      htmlFor={`${idPrefix}-${group.key}-none`}
+                      title="It's always valid to leave an image unlabeled"
+                    >
+                      <input
+                        className="sr-only"
+                        id={`${idPrefix}-${group.key}-none`}
                         type="radio"
                         name={`${idPrefix}-${group.key}`}
                         checked={!selected}
                         onChange={() => chooseType(group, null)}
                       />
                       <span>None</span>
-                    </Form.Label>
-                  </Form.Group>
+                    </Label>
+                  </FormGroup>
                   {offered.map((type) => {
                     const blocker =
                       type.key === selected?.key
@@ -120,9 +128,8 @@ const ImageClassification: React.FC<Props> = ({
                       ? `Conflicts with "${blocker.name}"`
                       : (type.description ?? "");
                     return (
-                      <Form.Group
+                      <FormGroup
                         key={type.key}
-                        controlId={`${idPrefix}-${type.key}`}
                         className={cx(`${CLASSNAME}-option`, {
                           [`${CLASSNAME}-option-selected`]:
                             type.key === selected?.key,
@@ -130,8 +137,18 @@ const ImageClassification: React.FC<Props> = ({
                         })}
                       >
                         <Tooltip text={hint} placement="top">
-                          <Form.Label>
-                            <Form.Check
+                          <label
+                            className={cx(
+                              "text-sm font-medium",
+                              type.key === selected?.key
+                                ? "text-primary-foreground"
+                                : "text-input-foreground",
+                            )}
+                            htmlFor={`${idPrefix}-${type.key}`}
+                          >
+                            <input
+                              className="sr-only"
+                              id={`${idPrefix}-${type.key}`}
                               type="radio"
                               name={`${idPrefix}-${group.key}`}
                               checked={type.key === selected?.key}
@@ -139,9 +156,9 @@ const ImageClassification: React.FC<Props> = ({
                               onChange={() => chooseType(group, type.key)}
                             />
                             <span>{type.name}</span>
-                          </Form.Label>
+                          </label>
                         </Tooltip>
-                      </Form.Group>
+                      </FormGroup>
                     );
                   })}
                 </div>

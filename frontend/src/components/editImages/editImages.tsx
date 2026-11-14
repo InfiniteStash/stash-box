@@ -6,8 +6,8 @@ import { Image as ImageInput } from "src/components/form";
 import { Icon, LoadingIndicator } from "src/components/fragments";
 import { Button } from "src/components/ui/button";
 import { type ImageFragment as Image, useAddImage } from "src/graphql";
-import { errorMessage } from "src/utils";
 import { cn } from "src/lib/utils";
+import { errorMessage } from "src/utils";
 
 const CLASSNAME = "EditImages";
 const CLASSNAME_IMAGES = `${CLASSNAME}-images`;

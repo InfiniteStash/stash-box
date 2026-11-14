@@ -1,8 +1,9 @@
 import type { FC } from "react";
-import { Nav } from "react-bootstrap";
+
 import { Link, NavLink, Route, Routes } from "react-router-dom";
 import { ErrorMessage } from "src/components/fragments";
 import Title from "src/components/title";
+import { Card, CardBody } from "src/components/ui/card";
 import { ROUTE_ADMIN } from "src/constants/route";
 import { useCurrentUser } from "src/hooks";
 import Audits from "src/pages/audits";
@@ -52,35 +53,49 @@ const Admin: FC = () => {
     <>
       <Title page="Admin" />
       <h2>Admin</h2>
-      <Nav variant="tabs" className="mb-4">
-        <Nav.Item>
-          <NavLink to={ROUTE_ADMIN} end className="nav-link">
+      <nav
+        aria-label="Admin sections"
+        className="mb-4 flex flex-wrap gap-1 border-b border-border"
+      >
+        <div>
+          <NavLink
+            to={ROUTE_ADMIN}
+            end
+            className={({ isActive }) =>
+              `block rounded-t-md px-4 py-2 text-sm ${isActive ? "bg-secondary font-medium text-foreground" : "text-muted-foreground hover:bg-accent"}`
+            }
+          >
             Overview
           </NavLink>
-        </Nav.Item>
+        </div>
         {sections.map(({ path, title }) => (
-          <Nav.Item key={path}>
-            <NavLink to={`${ROUTE_ADMIN}/${path}`} className="nav-link">
+          <div key={path}>
+            <NavLink
+              to={`${ROUTE_ADMIN}/${path}`}
+              className={({ isActive }) =>
+                `block rounded-t-md px-4 py-2 text-sm ${isActive ? "bg-secondary font-medium text-foreground" : "text-muted-foreground hover:bg-accent"}`
+              }
+            >
               {title}
             </NavLink>
-          </Nav.Item>
+          </div>
         ))}
-      </Nav>
+      </nav>
       <Routes>
         <Route
           index
           element={
-            <div className="row g-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {sections.map(({ path, title, description }) => (
-                <div className="col-md-6" key={path}>
-                  <div className="card h-100">
-                    <div className="card-body">
-                      <h3 className="h5">
+                <div className="min-w-0" key={path}>
+                  <Card className="h-full">
+                    <CardBody>
+                      <h3 className="text-lg font-semibold">
                         <Link to={`${ROUTE_ADMIN}/${path}`}>{title}</Link>
                       </h3>
                       <p className="mb-0">{description}</p>
-                    </div>
-                  </div>
+                    </CardBody>
+                  </Card>
                 </div>
               ))}
             </div>

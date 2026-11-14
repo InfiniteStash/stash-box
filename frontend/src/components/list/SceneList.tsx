@@ -2,7 +2,7 @@ import {
   faSortAmountDown,
   faSortAmountUp,
 } from "@fortawesome/free-solid-svg-icons";
-import type { FC } from "react";
+import type { FC, ReactNode } from "react";
 import { ErrorMessage, Icon } from "src/components/fragments";
 import SceneCard from "src/components/sceneCard";
 import TagFilter from "src/components/tagFilter";
@@ -28,6 +28,7 @@ const PER_PAGE = 20;
 
 interface Props {
   perPage?: number;
+  additionalFilters?: ReactNode;
   filter?: Partial<SceneQueryInput>;
   favoriteFilter?: "performer" | "studio" | "all";
   tagsFilter?: SceneQueryInput["tags"];
@@ -60,6 +61,7 @@ const favoriteOptions = [
 
 const SceneList: FC<Props> = ({
   perPage = PER_PAGE,
+  additionalFilters,
   filter,
   favoriteFilter,
   tagsFilter,
@@ -90,13 +92,19 @@ const SceneList: FC<Props> = ({
         : undefined),
   };
 
-  const { loading, data } = useScenes({ input });
+  const { loading, data, previousData } = useScenes({ input });
 
+  const currentScenes = data?.queryScenes.scenes;
+  // Keep the grid mounted while fetching a new page/filter. The count may
+  // arrive later; it must not decide whether fetched cards are displayed.
+  const scenes = currentScenes ?? previousData?.queryScenes.scenes;
   // A page that isn't full is the last one, so the total is known from the rows.
-  const scenes = data?.queryScenes.scenes;
   const derivedCount =
-    scenes && scenes.length > 0 && scenes.length < perPage
-      ? (page - 1) * perPage + scenes.length
+    !loading &&
+    currentScenes &&
+    currentScenes.length > 0 &&
+    currentScenes.length < perPage
+      ? (page - 1) * perPage + currentScenes.length
       : undefined;
 
   // Pinned to page 1 so the cache key is the filter alone and paging within a
@@ -111,6 +119,7 @@ const SceneList: FC<Props> = ({
 
   const filters = (
     <>
+      {additionalFilters}
       {!tagsFilter && (
         <TagFilter tag={params.tag} onChange={(t) => setParams("tag", t?.id)} />
       )}
@@ -183,7 +192,9 @@ const SceneList: FC<Props> = ({
       setPage={setPage}
       perPage={perPage}
       listCount={count}
-      loading={loading}
+      loading={loading && scenes === undefined}
+      refreshing={loading && scenes !== undefined}
+      hasResults={scenes !== undefined ? scenes.length > 0 : undefined}
       filters={filters}
       entityName="scenes"
     >

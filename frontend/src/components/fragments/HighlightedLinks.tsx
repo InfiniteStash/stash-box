@@ -21,7 +21,7 @@ interface Props {
 // Right-aligned row; render in reverse sort order to keep the first-sorted
 // links anchored at the right edge as the list grows.
 const HighlightedLinks: FC<Props> = ({ urls }) => (
-  <div className="flex items-center justify-end">
+  <div className="my-3 flex flex-wrap items-center justify-end gap-2 empty:hidden">
     {sortBy(
       urls.filter((u) => u.site.highlighted),
       [
@@ -35,7 +35,7 @@ const HighlightedLinks: FC<Props> = ({ urls }) => (
       .reverse()
       .map((u) => (
         <a href={u.url} target="_blank" rel="noreferrer noopener" key={u.url}>
-          <img src={u.site.icon} alt="" className="SiteLink-icon" />
+          <img src={u.site.icon} alt="" className="SiteLink-icon mr-0" />
         </a>
       ))}
   </div>

@@ -53,7 +53,7 @@ const Actions: FC<Props> = ({ performer }) => {
   if (!isEditor || performer.deleted) return null;
 
   return (
-    <div className={CLASSNAME_ACTIONS}>
+    <div className={`${CLASSNAME_ACTIONS} mb-4`}>
       <div className="flex justify-end gap-2 md:w-1/2">
         <Link
           to={createHref(ROUTE_PERFORMER_EDIT, performer)}

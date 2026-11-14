@@ -16,23 +16,23 @@ const PerformerName: FC<PerformerNameProps> = ({ performer, as }) => {
           <span>{performer.name}</span>
         )}
         {performer.disambiguation && (
-          <small className="ms-1 text-small text-muted">
+          <span className="ml-1 text-xs font-normal text-muted-foreground">
             ({performer.disambiguation})
-          </small>
+          </span>
         )}
       </>
     );
   return (
     <>
       <span>{as}</span>
-      <small className="ms-1 text-small text-muted">
+      <span className="ml-1 text-xs font-normal text-muted-foreground">
         ({performer.name})
         {performer.disambiguation && (
-          <small className="ms-1 text-small text-muted">
+          <span className="ml-1 text-xs font-normal text-muted-foreground">
             ({performer.disambiguation})
-          </small>
+          </span>
         )}
-      </small>
+      </span>
     </>
   );
 };

@@ -130,7 +130,7 @@ const useEditFilter = ({
     ));
 
   const editFilter = (
-    <div className="flex flex-wrap items-end gap-x-2 font-bold">
+    <div className="flex flex-wrap items-end gap-x-2">
       <div className="mb-3 flex flex-col gap-1">
         <Label>Order</Label>
         <ButtonGroup>

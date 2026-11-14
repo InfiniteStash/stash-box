@@ -78,7 +78,7 @@ export function TagsInput({
         onKeyDown={onKeyDown}
         onBlur={add}
         placeholder={values.length === 0 ? placeholder : ""}
-        className="h-7 min-w-24 flex-1 bg-transparent text-sm outline-none placeholder:text-input-foreground/50"
+        className="h-7 min-w-24 flex-1 bg-transparent text-base outline-none placeholder:text-input-foreground/50"
       />
     </label>
   );

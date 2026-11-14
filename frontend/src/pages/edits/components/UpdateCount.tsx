@@ -14,7 +14,7 @@ export const UpdateCount: FC<Props> = ({ updatable, updateCount }) => {
 
   const updates = updateLimit - updateCount;
   return (
-    <small className="text-muted align-content-center me-3">
+    <small className="text-muted-foreground content-center mr-3">
       Edit can be updated{" "}
       {updates === 1 ? "one more time" : `${updates} more times`}
     </small>

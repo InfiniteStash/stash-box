@@ -154,7 +154,11 @@ const StudioComponent: FC<Props> = ({ studio }) => {
           <TabsTrigger value="links">Links</TabsTrigger>
           <TabsTrigger
             value="edits"
-            className={pendingEditCount ? "text-warning" : undefined}
+            className={
+              pendingEditCount
+                ? "text-warning data-[active]:text-warning data-[active]:border-warning"
+                : undefined
+            }
           >
             {`Edits${formatPendingEdits(pendingEditCount)}`}
           </TabsTrigger>

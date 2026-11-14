@@ -10,14 +10,14 @@ interface Props {
 
 export const FingerprintMovedNotification: FC<Props> = ({ notification }) => {
   return (
-    <div className="d-flex flex-wrap align-items-center gap-3">
-      <div className="d-flex flex-column">
-        <small className="text-muted">Moved from</small>
+    <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-col">
+        <small className="text-muted-foreground">Moved from</small>
         <SceneCard scene={notification.data.source_scene} />
       </div>
-      <Icon icon={faArrowRight} className="text-muted fs-4" />
-      <div className="d-flex flex-column">
-        <small className="text-muted">Moved to</small>
+      <Icon icon={faArrowRight} className="text-muted-foreground text-2xl" />
+      <div className="flex flex-col">
+        <small className="text-muted-foreground">Moved to</small>
         <SceneCard scene={notification.data.target_scene} />
       </div>
     </div>

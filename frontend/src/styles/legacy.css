@@ -1,10 +1,5 @@
-/*
- * Component styles ported from the old per-component SCSS during the Tailwind
- * teardown. Plain CSS (no preprocessor): SCSS `&-` nesting is flattened to full
- * selectors and `$vars` resolved to the theme tokens in tailwind.css. Only
- * rules whose selectors are still rendered are kept; Bootstrap-component and
- * react-select rules were dropped. Loaded after Tailwind, so utility classes
- * still win on shared elements.
+/* Complex component styles carried over from SCSS. Imported into the
+ * components layer by tailwind.css so utilities can override them.
  */
 
 /* ---- Gender icon colors (GenderIcon, used app-wide) ---- */
@@ -16,11 +11,6 @@
 }
 .fa-transgender {
   color: #c8a2c8;
-}
-
-/* ---- Global link affordance ---- */
-a[aria-current] {
-  font-weight: bold;
 }
 
 /* ---- LoadingIndicator / fragments ---- */
@@ -71,7 +61,7 @@ a[aria-current] {
   margin-right: 5px;
 }
 .SiteLink-name {
-  font-size: 2ex;
+  font-size: inherit;
   font-weight: bold;
 }
 .SiteLink-name::after {
@@ -117,9 +107,9 @@ a[aria-current] {
 .tag-item {
   background-color: #bfccd6;
   color: #182026;
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: 400;
-  line-height: 16px;
+  line-height: var(--text-xs--line-height);
   margin: 5px;
   padding: 2px 6px;
 }
@@ -128,25 +118,12 @@ a[aria-current] {
 }
 
 /* ---- Image / ImageLightbox ---- */
-.Image {
-  position: relative;
-  display: flex;
-  max-height: 100%;
-  max-width: 100%;
-}
 .Image-image {
   max-width: 100%;
   max-height: 100%;
   z-index: 1;
 }
-.Image .LoadingIndicator {
-  position: absolute;
-  background-color: #6c757d;
-  border-radius: 4px;
-  height: 100%;
-  width: 100%;
-  text-align: center;
-}
+
 .Image-error,
 .Image-missing {
   position: absolute;
@@ -157,18 +134,11 @@ a[aria-current] {
   text-align: center;
   font-size: 24px;
 }
-.Image-error .fa-icon,
-.Image-missing .fa-icon {
-  border-radius: 4px;
-  width: 70px;
-  height: 70px;
-  max-width: 100%;
-  max-height: 100%;
-}
+
 .Image-magnify {
   align-items: center;
-  background-color: rgb(0 0 0 / 15%);
-  color: rgb(255 255 255 / 85%);
+  background-color: rgba(0 0 0 / 15%);
+  color: rgba(255 255 255 / 85%);
   display: flex;
   inset: 0;
   justify-content: center;
@@ -177,14 +147,10 @@ a[aria-current] {
   transition: opacity 0.25s ease;
   z-index: 2;
 }
-.Image-magnify .fa-icon {
-  filter: drop-shadow(0 0 4px rgb(0 0 0 / 50%));
-  height: 1.75rem;
-  width: 1.75rem;
-}
+
 .Image-count {
   align-items: center;
-  background-color: rgb(0 0 0 / 65%);
+  background-color: rgba(0 0 0 / 65%);
   border-radius: 4px;
   bottom: 0.5rem;
   color: var(--foreground);
@@ -195,14 +161,23 @@ a[aria-current] {
   right: 0.5rem;
   z-index: 2;
 }
+
+.Image {
+  position: relative;
+  display: flex;
+  max-height: 100%;
+  max-width: 100%;
+}
+
 button.Image {
   background: none;
   border: 0;
   cursor: zoom-in;
   padding: 0;
 }
-button.Image:hover .Image-magnify {
-  opacity: 1;
+
+.ImageCategorization-organized-toggle {
+  margin-bottom: 1rem;
 }
 
 .ImageLightbox-body {
@@ -210,9 +185,15 @@ button.Image:hover .Image-magnify {
   gap: 1rem;
   height: 100%;
   overflow: hidden;
-  padding: 1rem 88px;
+  padding: 1rem clamp(1rem, 5vw, 88px);
   position: relative;
 }
+
+.ImageLightbox-main img {
+  object-fit: contain;
+  object-position: center;
+}
+
 .ImageLightbox-main {
   align-items: center;
   display: flex;
@@ -221,18 +202,15 @@ button.Image:hover .Image-magnify {
   justify-content: center;
   min-width: 0;
 }
-.ImageLightbox-main .Image {
-  flex: 1;
-  min-height: 0;
-}
-.ImageLightbox-main img {
-  object-fit: contain;
-  object-position: center;
-}
+
 .ImageLightbox-caption {
+  align-items: center;
   color: var(--foreground);
+  display: flex;
+  gap: 0.35rem;
   padding-top: 0.5rem;
 }
+
 .ImageLightbox-close {
   position: absolute;
   top: 1rem;
@@ -241,14 +219,17 @@ button.Image:hover .Image-magnify {
   flex-shrink: 0;
   margin-bottom: 0.25rem;
 }
-.ImageLightbox-close .fa-icon {
-  height: 2rem;
-  opacity: 0.6;
-  width: 2rem;
+
+.ImageLightbox-side {
+  display: flex;
+  flex: 0 1 500px;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 240px;
+  overflow: hidden;
+  width: 28vw;
 }
-.ImageLightbox-close:hover .fa-icon {
-  opacity: 1;
-}
+
 .ImageLightbox-thumbs {
   align-content: start;
   display: flex;
@@ -256,11 +237,50 @@ button.Image:hover .Image-magnify {
   gap: 0.5rem;
   overflow-y: auto;
   padding-right: 0.75rem;
-  width: 500px;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
 }
+
+.ImageLightbox-editor-navigation button {
+  padding: 0.25rem 0.5rem;
+}
+
+.ImageLightbox-editor-navigation {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: space-between;
+}
+
+.ImageLightbox-editor {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.75rem 0.5rem;
+}
+
+.ImageLightbox-thumb img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.ImageLightbox-thumb-footer {
+  align-items: flex-end;
+  bottom: 0.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  justify-content: flex-end;
+  left: 0.25rem;
+  position: absolute;
+  right: 0.25rem;
+}
+
 .ImageLightbox-thumb {
   background: none;
-  border: 2px solid rgb(255 255 255 / 70%);
+  border: 2px solid rgba(255 255 255 / 70%);
   border-radius: 6px;
   cursor: pointer;
   flex-shrink: 0;
@@ -271,23 +291,249 @@ button.Image:hover .Image-magnify {
   width: auto;
   max-width: 100%;
 }
+
+.ImageCategorizationFields-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.ImageCategorizationFields-summary {
+  color: var(--foreground);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+  line-height: var(--text-sm--line-height);
+  gap: 0.3rem 1rem;
+}
+
+.ImageCategorizationFields-summary-group {
+  color: var(--muted-foreground);
+}
+
+.ImageCategorizationFields-group-legend {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs--line-height);
+  font-weight: bold;
+  margin: 0;
+  padding: 0;
+}
+
+.ImageCategorizationFields-group-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.ImageCategorizationFields-group {
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+}
+
+.ImageCategorizationFields-option label {
+  align-items: center;
+  background-color: var(--input-bg);
+  border: 1px solid var(--secondary);
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  margin: 0;
+  padding: 0.3rem 0.65rem;
+}
+
+.ImageCategorizationFields-option-selected label {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  font-weight: bold;
+}
+
+.ImageCategorizationFields-option-none label {
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+.ImageCategorizationFields-option-blocked label {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.ImageCategorizationFields-option {
+  margin: 0;
+}
+
+.ImageCategorizationFields-date-group {
+  align-self: flex-start;
+  width: min(13rem, 100%);
+}
+
+.ImageCategorizationFields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+  max-width: 100%;
+}
+
+.ImageTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  justify-content: flex-end;
+  max-width: 100%;
+  transition: opacity 0.15s ease;
+}
+
+.ImageTags-tag,
+.ImageLightbox-thumb-dims {
+  background-color: rgba(0 0 0 / 65%);
+  border-radius: 3px;
+  color: var(--foreground);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs--line-height);
+  padding: 0.1rem 0.4rem;
+  white-space: nowrap;
+}
+
+.ImageOrganizedIndicator {
+  color: var(--success);
+  filter: drop-shadow(0 0 2px rgba(0 0 0 / 80%));
+  line-height: 1;
+  position: absolute;
+  right: 0.4rem;
+  top: 0.4rem;
+}
+
+.Image .LoadingIndicator {
+  position: absolute;
+  background-color: var(--secondary);
+  border-radius: 4px;
+  height: 100%;
+  width: 100%;
+  text-align: center;
+}
+
+.Image-error .fa-icon,
+.Image-missing .fa-icon {
+  border-radius: 4px;
+  width: 70px;
+  height: 70px;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.Image-magnify .fa-icon {
+  filter: drop-shadow(0 0 4px rgba(0 0 0 / 50%));
+  height: 1.75rem;
+  width: 1.75rem;
+}
+
+.ImageLightbox-main .Image {
+  flex: 1;
+  min-height: 0;
+}
+
+.ImageLightbox-close .fa-icon {
+  height: 2rem;
+  opacity: 0.6;
+  width: 2rem;
+}
+
+.ImageLightbox-side [role="tablist"] {
+  align-self: flex-start;
+  flex: 0 0 auto;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.ImageLightbox-body > .ImageLightbox-thumbs {
+  flex: 0 1 500px;
+  min-width: 240px;
+  width: 28vw;
+}
+
+.ImageLightbox-thumb .ImageTags-tag {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.ImageLightbox-editor .ImageCategorizationFields {
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.ImageLightbox-editor .ImageCategorizationFields-groups {
+  gap: 0.35rem;
+}
+
 .ImageLightbox-thumb.selected {
   border-color: var(--destructive);
 }
-.ImageLightbox-thumb img {
-  height: 100%;
-  object-fit: cover;
-  width: 100%;
+
+.ImageLightbox-thumb-footer .ImageTags {
+  display: contents;
 }
-.ImageLightbox-thumb-dims {
-  background-color: rgb(0 0 0 / 65%);
-  border-radius: 3px 0 0;
-  bottom: 0;
-  color: var(--foreground);
-  font-size: 0.75rem;
-  padding: 0.1rem 0.4rem;
+
+.ImageCategorizationFields-option label:hover {
+  border-color: var(--primary);
+}
+
+.ImageCategorizationFields-option label:focus-within {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.ImageCategorizationFields-option .radio-control {
+  margin: 0;
+  min-height: 0;
+  padding: 0;
+}
+
+.ImageCategorizationFields-option input[type="radio"] {
+  height: 1px;
+  margin: 0;
+  opacity: 0;
   position: absolute;
-  right: 0;
+  width: 1px;
+}
+
+.ImageCategorizationFields-option-none.ImageCategorizationFields-option-selected
+  label {
+  background-color: var(--secondary);
+  color: var(--foreground);
+  font-style: normal;
+}
+
+.ImageCategorizationFields-option-blocked label:hover {
+  border-color: var(--secondary);
+}
+
+button.Image:hover .Image-magnify {
+  opacity: 1;
+}
+
+.ImageLightbox-close:hover .fa-icon {
+  opacity: 1;
+}
+
+.ImageLightbox-thumb:hover .ImageTags-tag {
+  opacity: 1;
+}
+
+.ImageLightbox-main .Image .ImageTags {
+  bottom: 0.5rem;
+  opacity: 0;
+  position: absolute;
+  right: 0.5rem;
+  z-index: 2;
+}
+
+.ImageLightbox-main .Image:hover .ImageTags {
+  opacity: 1;
 }
 
 /* ---- PerformerCard / SceneCard ---- */
@@ -525,37 +771,6 @@ button.Image:hover .Image-magnify {
 .Notification .SceneCard {
   width: 300px;
 }
-.Notification-read-state {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-self: center;
-  align-items: center;
-  justify-content: center;
-}
-.Notification-read-state button {
-  border: none;
-  border-bottom: 2px solid transparent;
-  border-radius: 0;
-  padding: 4px 0;
-}
-.Notification-read-state button .fa-envelope {
-  display: block;
-}
-.Notification-read-state button .fa-envelope-open {
-  display: none;
-}
-.Notification-read-state button:hover {
-  border-color: white;
-}
-.Notification-read-state button:hover .fa-envelope {
-  display: none;
-}
-.Notification-read-state button:hover .fa-envelope-open {
-  display: block;
-  color: white;
-}
-
 /* ---- Performers ---- */
 .PerformerMerge .PerformerCard-image {
   height: 8rem;
@@ -666,24 +881,7 @@ button.Image:hover .Image-magnify {
   height: 10rem;
 }
 
-/* ---- Search page ---- */
-.SearchPage-input {
-  font-size: 1.5rem;
-  position: relative;
-}
-.SearchPage-input input {
-  font-size: 1.5rem;
-  padding-left: 2.5rem;
-}
-.SearchPage-input .fa-magnifying-glass {
-  left: 0.6rem;
-  position: absolute;
-  top: 0.8rem;
-  z-index: 1;
-}
-.SearchPage-input .fa-magnifying-glass path {
-  fill: var(--muted-foreground);
-}
+/* ---- Search results ---- */
 .SearchPage-facets {
   display: flex;
   align-items: center;
@@ -718,9 +916,9 @@ button.Image:hover .Image-magnify {
   color: #fff;
   border-radius: 0.375rem;
   padding: 2px 8px;
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 500;
-  line-height: 1.4;
+  line-height: var(--text-xs--line-height);
   border: 2px solid transparent;
 }
 .SceneChip-seed {
@@ -827,4 +1025,164 @@ button.Image:hover .Image-magnify {
 .NarrowPage {
   margin: auto;
   max-width: 1200px;
+}
+
+.DragList-row.is-dragging {
+  border-color: var(--primary);
+  opacity: 0.6;
+}
+
+.DragList-row {
+  align-items: stretch;
+  background-color: var(--input-bg);
+  border: 1px solid transparent;
+  border-radius: 3px;
+  display: flex;
+  margin-bottom: 0.25rem;
+}
+
+.DragList-row > .DragList-handle:active {
+  cursor: grabbing;
+}
+
+.DragList-row > .DragList-handle {
+  align-items: center;
+  border-radius: 3px 0 0 3px;
+  color: var(--muted-foreground);
+  cursor: grab;
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  padding: 0;
+  width: 2rem;
+}
+
+.DragList-content {
+  align-items: center;
+  display: flex;
+  flex: 1 1 auto;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.4rem 0.75rem;
+}
+
+.DragList.is-block > .DragList-row > .DragList-handle {
+  align-items: flex-start;
+  padding-top: 0.9rem;
+}
+
+.DragList.is-block > .DragList-row > .DragList-content {
+  display: block;
+  padding: 0;
+}
+
+.DragList.is-block > .DragList-row {
+  background: none;
+}
+
+.DragList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ImagePage-image .Image {
+  height: 100%;
+  justify-content: center;
+  max-height: inherit;
+  width: 100%;
+}
+
+.ImagePage-image img {
+  max-height: inherit;
+  object-fit: contain;
+}
+
+.ImagePage-image {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  max-height: calc(100vh - 12rem);
+  min-height: 20rem;
+}
+
+.ImagePage .ImageOrganizedIndicator {
+  color: var(--success);
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+}
+
+.ImagePage dd {
+  margin-bottom: 0.75rem;
+}
+
+.ImageTypeOrder-group.disabled {
+  opacity: 0.55;
+}
+
+.DeletedImage .fa-icon {
+  font-size: 1.75rem;
+}
+
+.DeletedImage span {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm--line-height);
+}
+
+.DeletedImage {
+  align-items: center;
+  background-color: var(--secondary);
+  border-radius: 4px;
+  color: var(--bs-gray-400);
+  display: flex;
+  flex-direction: column;
+  height: 150px;
+  justify-content: center;
+  margin: 5px;
+  padding: 0 1.25rem;
+}
+
+.ImageCategorizationFields-option {
+  margin-bottom: 0;
+}
+.ImageCategorizationFields-option label {
+  position: relative;
+}
+.ImagePage dd {
+  margin-bottom: 0.75rem;
+}
+
+/* Keep native select behavior, with a theme-colored chevron and room for it.
+ * Two diagonal strokes avoid an external image with a hard-coded icon color.
+ */
+.NativeSelect {
+  appearance: none;
+  background-image:
+    linear-gradient(
+      45deg,
+      transparent 40%,
+      var(--input-foreground) 40%,
+      var(--input-foreground) 60%,
+      transparent 60%
+    ),
+    linear-gradient(
+      135deg,
+      transparent 40%,
+      var(--input-foreground) 40%,
+      var(--input-foreground) 60%,
+      transparent 60%
+    );
+  background-position:
+    right 18px center,
+    right 12px center;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+}
+
+@media (forced-colors: active) {
+  .NativeSelect {
+    appearance: auto;
+    background-image: none;
+  }
 }

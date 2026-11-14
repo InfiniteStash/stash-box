@@ -53,7 +53,7 @@ export const TabsTrigger = ({
   <BaseTabs.Tab
     value={value}
     className={cn(
-      "-mb-px cursor-pointer border-b-2 border-transparent px-4 py-2 text-sm text-foreground/70 transition-colors hover:text-foreground data-[active]:border-link data-[active]:font-medium data-[active]:text-link",
+      "-mb-px cursor-pointer border-b-2 border-transparent px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground data-[active]:border-tab-active data-[active]:font-medium data-[active]:text-tab-active",
       className,
     )}
   >

@@ -32,7 +32,7 @@ const Votes: FC<VotesProps> = ({ edit }) => (
               {v.user ? (
                 <Link to={userHref(v.user)}>{v.user.name}</Link>
               ) : (
-                <span className="text-muted">[deleted user]</span>
+                <span className="text-muted-foreground">[deleted user]</span>
               )}
             </Tooltip>
             <span className="mx-2">&bull;</span>

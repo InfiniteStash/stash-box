@@ -10,7 +10,6 @@ import createClient from "src/utils/createClient";
 
 fontAwesomeConfig.autoAddCss = false;
 
-import "./styles/legacy.css";
 import "./styles/tailwind.css";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 

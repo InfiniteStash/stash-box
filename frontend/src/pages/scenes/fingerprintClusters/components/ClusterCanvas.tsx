@@ -93,7 +93,7 @@ export const ClusterCanvas: FC = () => {
 
   if (!activeCluster || nodes.length === 0) {
     return (
-      <div className="text-muted py-4 text-center">
+      <div className="text-muted-foreground py-4 text-center">
         No fingerprints in this cluster.
       </div>
     );

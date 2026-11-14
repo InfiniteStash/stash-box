@@ -86,7 +86,7 @@ const SceneComponent: FC<Props> = ({ scene }) => {
 
   return (
     <>
-      <Card>
+      <Card className="overflow-hidden">
         <CardHeader className="flex-row items-start gap-2">
           <div className="mr-auto">
             <h3 className="text-2xl font-semibold">
@@ -122,15 +122,16 @@ const SceneComponent: FC<Props> = ({ scene }) => {
             </div>
           )}
         </CardHeader>
-        <CardBody className="pt-0">
+        <CardBody className="p-0">
           <Image
             images={scene.images}
+            className="w-full [&_.Image-image]:h-auto [&_.Image-image]:w-full"
             emptyMessage="Scene has no image"
             size={1280}
             lightbox
           />
         </CardBody>
-        <CardFooter className="flex-wrap gap-x-6 gap-y-1 pt-0">
+        <CardFooter className="flex-wrap gap-x-6 gap-y-1 pt-4">
           <div className="mr-auto flex flex-wrap gap-x-2">{performers}</div>
           {scene.code && (
             <div>
@@ -162,7 +163,11 @@ const SceneComponent: FC<Props> = ({ scene }) => {
           <TabsTrigger value="links">Links</TabsTrigger>
           <TabsTrigger
             value="edits"
-            className={pendingEditCount ? "text-warning" : undefined}
+            className={
+              pendingEditCount
+                ? "text-warning data-[active]:text-warning data-[active]:border-warning"
+                : undefined
+            }
           >
             {`Edits${formatPendingEdits(pendingEditCount)}`}
           </TabsTrigger>

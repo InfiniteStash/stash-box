@@ -190,34 +190,45 @@ const NotificationHeader = ({
   };
 
   return (
-    <h5 className="flex items-center gap-2">
-      <Icon
-        icon={faCircle}
-        variant={getUrgencyVariant()}
-        title={isUrgent ? "Urgent" : "Normal"}
-      />
-      <div className="Notification-read-state">
-        {notification.read && <Icon icon={faEnvelopeOpen} />}
-        {!notification.read && (
+    <h5 className="mb-3 flex items-start gap-2">
+      <span className="flex h-7 shrink-0 items-center gap-2">
+        <Icon
+          icon={faCircle}
+          variant={getUrgencyVariant()}
+          title={isUrgent ? "Urgent" : "Normal"}
+        />
+        {notification.read ? (
+          <span
+            className="inline-flex size-7 items-center justify-center"
+            title="Read"
+          >
+            <Icon icon={faEnvelopeOpen} />
+          </span>
+        ) : (
           <Button
-            variant="link"
+            variant="minimal"
+            className="group size-7 shrink-0 p-0"
             onClick={() => markRead()}
-            title="Mark notification as read"
+            aria-label="Mark notification as read"
             disabled={loading}
           >
-            <Icon icon={faEnvelope} variant={"warning"} />
-            <Icon icon={faEnvelopeOpen} />
+            <span className="group-hover:hidden group-focus-visible:hidden">
+              <Icon icon={faEnvelope} variant="warning" />
+            </span>
+            <span className="hidden group-hover:block group-focus-visible:block">
+              <Icon icon={faEnvelopeOpen} />
+            </span>
           </Button>
         )}
-      </div>
-      {headerText()}
+      </span>
+      <span className="min-w-0 flex-1 break-words">{headerText()}</span>
     </h5>
   );
 };
 
 export const Notification: React.FC<Props> = ({ notification }) => {
   return (
-    <div className="Notification">
+    <div className="Notification mb-6 last:mb-0">
       <NotificationHeader notification={notification} />
       <NotificationBody notification={notification} />
     </div>

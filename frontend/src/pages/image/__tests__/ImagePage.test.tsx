@@ -110,7 +110,7 @@ describe("ImagePage", () => {
       removed: true,
       title: "Cancelled",
       icon: "ban",
-      color: "text-muted",
+      color: "text-muted-foreground",
       text: "Removal from",
     },
     {
@@ -137,7 +137,7 @@ describe("ImagePage", () => {
       removed: true,
       title: "Rejected",
       icon: "ban",
-      color: "text-muted",
+      color: "text-muted-foreground",
       text: "Removal from",
     },
   ])("distinguishes $title image edits", async ({

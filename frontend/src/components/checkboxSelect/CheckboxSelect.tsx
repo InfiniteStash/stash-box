@@ -43,7 +43,7 @@ const CheckboxSelect: FC<CheckboxSelectProps> = ({
 
   return (
     <Popover.Root>
-      <Popover.Trigger className="flex h-9 w-full items-center rounded-md border border-input bg-input-bg px-3 text-left text-sm text-input-foreground transition-colors focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 data-[popup-open]:border-ring">
+      <Popover.Trigger className="inline-flex h-9 min-w-56 max-w-full items-center rounded-md border border-input bg-input-bg px-3 text-left text-base text-input-foreground transition-colors focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 data-[popup-open]:border-ring">
         {summary}
       </Popover.Trigger>
       <Popover.Portal>

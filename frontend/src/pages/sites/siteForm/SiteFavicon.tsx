@@ -1,6 +1,8 @@
 import cx from "classnames";
 import { type ChangeEvent, type FC, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Button } from "src/components/ui/button";
+import { FormGroup } from "src/components/ui/field";
+import { Input } from "src/components/ui/input";
 import { useLazyFetchSiteFavicons } from "src/graphql";
 
 const parseMimeType = (dataURL: string) =>
@@ -61,13 +63,13 @@ const SiteFavicon: FC<SiteFaviconProps> = ({
   };
 
   return (
-    <Form.Group className="mb-3">
-      <Form.Label>Favicon</Form.Label>
-      <div className="d-flex align-items-center gap-2 mb-2">
+    <FormGroup className="mb-3">
+      <span className="text-sm font-medium">Favicon</span>
+      <div className="flex flex-wrap items-center gap-2 mb-2">
         {preview ? (
           <img src={preview} alt="" width={24} height={24} />
         ) : (
-          <span className="text-muted">No favicon</span>
+          <span className="text-muted-foreground">No favicon</span>
         )}
         <Button
           type="button"
@@ -81,7 +83,7 @@ const SiteFavicon: FC<SiteFaviconProps> = ({
           <Button
             type="button"
             size="sm"
-            variant="outline-danger"
+            variant="danger"
             onClick={() => {
               onChange("");
               setCandidates([]);
@@ -90,26 +92,26 @@ const SiteFavicon: FC<SiteFaviconProps> = ({
             Remove
           </Button>
         )}
-        <Form.Control
+        <Input
           type="file"
-          size="sm"
-          className="w-auto ms-auto"
+          aria-label="Upload favicon"
+          className="w-auto max-w-full ml-auto"
           onChange={onFileChange}
           accept=".ico,.png,.jpg,.jpeg,.webp,.svg,.gif"
         />
       </div>
 
-      {error && <div className="text-danger small mb-2">{error}</div>}
+      {error && <div className="text-destructive text-sm mb-2">{error}</div>}
 
       {candidates.length > 0 && (
-        <div className="d-flex flex-wrap gap-2 mb-2">
+        <div className="flex flex-wrap gap-2 mb-2">
           {candidates.map((candidate) => (
             <button
               type="button"
               key={candidate.url}
               className={cx(
-                "btn btn-outline-secondary d-flex flex-column align-items-center p-2",
-                { active: value === candidate.image },
+                "flex flex-col items-center rounded-md border border-border bg-secondary p-2 hover:bg-accent",
+                { "ring-2 ring-ring": value === candidate.image },
               )}
               title={candidate.url}
               onClick={() => onChange(candidate.image)}
@@ -127,7 +129,7 @@ const SiteFavicon: FC<SiteFaviconProps> = ({
                   }));
                 }}
               />
-              <span className="small text-muted mt-1">
+              <span className="text-sm text-muted-foreground mt-1">
                 {parseMimeType(candidate.image)}
                 {dimensions[candidate.url]
                   ? ` · ${dimensions[candidate.url]}`
@@ -138,10 +140,10 @@ const SiteFavicon: FC<SiteFaviconProps> = ({
         </div>
       )}
 
-      <Form.Text>
+      <p className="text-sm text-muted-foreground">
         Fetch favicons from the site URL, or upload a custom icon.
-      </Form.Text>
-    </Form.Group>
+      </p>
+    </FormGroup>
   );
 };
 

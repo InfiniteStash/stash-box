@@ -253,8 +253,7 @@ describe("ImageReview", () => {
     });
 
     const revert = await screen.findByRole("button", { name: "Revert" });
-    expect(revert.className).toContain("btn-danger");
-    expect(revert.className).not.toContain("btn-outline-danger");
+    expect(revert.className).toContain("bg-destructive");
   });
 
   it("marks a row organized and drops it from the feed", async () => {

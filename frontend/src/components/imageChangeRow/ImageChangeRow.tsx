@@ -29,7 +29,7 @@ const Images: FC<{
           // biome-ignore lint/suspicious/noArrayIndexKey: Image is deleted, no other key
           <DeletedImage key={`deleted-${i}`} />
         ) : (
-          <div key={image.id} className="m-[5px]">
+          <div key={image.id} className="ImageChangeRow-image m-[5px]">
             <ImageComponent
               images={image}
               alt=""

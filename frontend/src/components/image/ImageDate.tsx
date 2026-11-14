@@ -1,8 +1,8 @@
 import type React from "react";
 import { useId, useState } from "react";
-import { Form } from "react-bootstrap";
-
 import { EditorCard } from "src/components/fragments";
+import { FieldError, FormGroup, Label } from "src/components/ui/field";
+import { Input } from "src/components/ui/input";
 import { maxImageDate, partialDateError } from "src/utils";
 
 import type { ImageCategorization } from "./types";
@@ -35,14 +35,14 @@ const ImageDate: React.FC<Props> = ({ value, onChange, readOnly = false }) => {
           )}
         </div>
       ) : (
-        <Form.Group
-          controlId={`${idPrefix}-date`}
-          className={`${CLASSNAME}-date-group`}
-        >
-          <Form.Label className="visually-hidden">Image date</Form.Label>
-          <Form.Control
+        <FormGroup className={`${CLASSNAME}-date-group`}>
+          <Label htmlFor={`${idPrefix}-date`} className="sr-only">
+            Image date
+          </Label>
+          <Input
+            id={`${idPrefix}-date`}
             type="text"
-            isInvalid={!!dateError}
+            aria-invalid={!!dateError}
             value={value.date ?? ""}
             placeholder="YYYY-MM-DD"
             onFocus={() => setDateFocused(true)}
@@ -51,11 +51,11 @@ const ImageDate: React.FC<Props> = ({ value, onChange, readOnly = false }) => {
               onChange({ ...value, date: e.currentTarget.value || null })
             }
           />
-          <Form.Control.Feedback type="invalid">
-            {dateError}
-          </Form.Control.Feedback>
-          <Form.Text>Leave blank if uncertain.</Form.Text>
-        </Form.Group>
+          <FieldError>{dateError}</FieldError>
+          <p className="text-sm text-muted-foreground">
+            Leave blank if uncertain.
+          </p>
+        </FormGroup>
       )}
     </EditorCard>
   );

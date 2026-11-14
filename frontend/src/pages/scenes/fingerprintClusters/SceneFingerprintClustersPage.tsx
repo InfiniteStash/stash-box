@@ -91,7 +91,7 @@ export const SceneFingerprintClustersPage: FC<Props> = ({ scene }) => {
       <h3 className="mb-2">
         Fingerprint clusters for <Link to={scenePath}>"{scene.title}"</Link>
       </h3>
-      <p className="text-muted">
+      <p className="text-muted-foreground">
         Phash fingerprints reachable from this scene within a Hamming distance.
         Node size scales with submission count.
         <br />

@@ -1,10 +1,10 @@
 import type React from "react";
 import { useState } from "react";
-import { Button, Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
-
 import DragList from "src/components/dragList";
 import { ErrorMessage, LoadingIndicator } from "src/components/fragments";
+import { Button } from "src/components/ui/button";
+import { Card, CardBody, CardHeader } from "src/components/ui/card";
 import {
   type ImageTypeEnum,
   type ImageTypeGroupEnum,
@@ -128,14 +128,14 @@ const UserImageTypePreferencesForm: React.FC<PreferencesProps> = ({
       </Link>
       <h4>Image preferences</h4>
       <hr />
-      <p className="text-muted">
+      <p className="text-muted-foreground">
         Sets which of an entity&apos;s images you see first, including through
         the API. Whatever you put at the top wins: the dimensions are compared
         from the top down, and within each one its values are. Drag by the
         handles to reorder, or focus a handle and use the arrow keys.
       </p>
 
-      {error && <div className="text-danger mb-2">Error: {error}</div>}
+      {error && <div className="text-destructive mb-2">Error: {error}</div>}
       {saved && <div className="text-success mb-2">Preferences saved.</div>}
 
       <DragList
@@ -150,13 +150,15 @@ const UserImageTypePreferencesForm: React.FC<PreferencesProps> = ({
       >
         {(group) => (
           <Card className="mb-3">
-            <Card.Header>
+            <CardHeader>
               <b>{group.name}</b>
               {group.description && (
-                <small className="text-muted ms-2">{group.description}</small>
+                <small className="text-muted-foreground ml-2">
+                  {group.description}
+                </small>
               )}
-            </Card.Header>
-            <Card.Body>
+            </CardHeader>
+            <CardBody>
               <DragList
                 items={group.types}
                 keyOf={(type) => type.key}
@@ -167,18 +169,20 @@ const UserImageTypePreferencesForm: React.FC<PreferencesProps> = ({
                   <>
                     <span>{type.name}</span>
                     {type.description && (
-                      <small className="text-muted">{type.description}</small>
+                      <small className="text-muted-foreground">
+                        {type.description}
+                      </small>
                     )}
                   </>
                 )}
               </DragList>
-            </Card.Body>
+            </CardBody>
           </Card>
         )}
       </DragList>
 
       <div className="mt-4">
-        <Button onClick={clear} disabled={saving} className="me-2">
+        <Button onClick={clear} disabled={saving} className="mr-2">
           Use site default
         </Button>
         <Button onClick={save} disabled={saving}>

@@ -68,7 +68,7 @@ const openLightbox = async (role: RoleEnum) => {
 
   const user = userEvent.setup();
   await user.click(screen.getByRole("button"));
-  await user.click(screen.getByRole("button", { name: "Categorization" }));
+  await user.click(screen.getByRole("tab", { name: "Categorization" }));
 
   return user;
 };
@@ -85,7 +85,7 @@ describe("lightbox categorization navigation", () => {
     await user.click(screen.getByRole("button", { name: "Keep editing" }));
     expect(screen.getByLabelText("Image date")).toHaveValue("2020");
 
-    await user.click(screen.getByRole("button", { name: "Images" }));
+    await user.click(screen.getByRole("tab", { name: "Images" }));
     expect(
       screen.getByText("Discard categorization changes?"),
     ).toBeInTheDocument();
