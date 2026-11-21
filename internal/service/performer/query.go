@@ -51,6 +51,9 @@ func (s *Performer) QueryCount(ctx context.Context, input models.PerformerQueryI
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query := s.buildPerformerQuery(psql, input, user.ID, true)
+	if performerStatsSortColumn(input) != "" {
+		query = query.Join(performerStatsJoin)
+	}
 
 	return queryhelper.ExecuteCountCustomPlan(ctx, query, s.queries.DB(), "QueryPerformersCount")
 }
@@ -301,6 +304,32 @@ func cupSizeOrderExpression(field string) string {
 	return fmt.Sprintf(`(CASE %s WHEN 'AAA' THEN 'A' WHEN 'A' THEN 'AAA' ELSE %s END) COLLATE "C"`, normalizedField, normalizedField)
 }
 
+const performerStatsJoin = "performer_popularity_all_time stats ON stats.performer_id = performers.id"
+
+func performerStatsSortColumn(input models.PerformerQueryInput) string {
+	if input.Sort == models.PerformerSortEnumPopularity {
+		return "user_count"
+	}
+	if input.StudioID != nil {
+		return ""
+	}
+	switch input.Sort {
+	case models.PerformerSortEnumDebut:
+		return "debut"
+	case models.PerformerSortEnumLastScene:
+		return "last_scene"
+	case models.PerformerSortEnumSharedSceneCount:
+		if input.PerformedWith != nil {
+			return ""
+		}
+		fallthrough
+	case models.PerformerSortEnumSceneCount:
+		return "scene_count"
+	default:
+		return ""
+	}
+}
+
 func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.PerformerQueryInput) sq.SelectBuilder {
 	sortField := "name"
 	sortDir := "ASC"
@@ -308,28 +337,20 @@ func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.Perf
 		sortDir = strings.ToUpper(input.Direction.String())
 	}
 
-	needsStudioJoin := input.StudioID != nil
-	const statsJoin = "performer_popularity_all_time stats ON stats.performer_id = performers.id"
+	if field := performerStatsSortColumn(input); field != "" {
+		nulls := ""
+		if input.Sort == models.PerformerSortEnumDebut || input.Sort == models.PerformerSortEnumLastScene {
+			nulls = " NULLS LAST"
+		}
+		return query.Join(performerStatsJoin).
+			OrderBy(fmt.Sprintf("stats.%s %s%s, stats.performer_name %s, stats.performer_id %s", field, sortDir, nulls, sortDir, sortDir))
+	}
 
 	switch input.Sort {
-	case models.PerformerSortEnumDebut, models.PerformerSortEnumLastScene:
-		field, aggregate := "debut", "MIN"
-		if input.Sort == models.PerformerSortEnumLastScene {
-			field, aggregate = "last_scene", "MAX"
-		}
-		orderBy := "D." + field
-		if !needsStudioJoin {
-			query = query.LeftJoin(statsJoin)
-			// Only performers created since the last refresh need a live lookup.
-			// A materialized NULL already means the performer has no dated scene.
-			orderBy = fmt.Sprintf(`CASE WHEN stats.performer_id IS NULL THEN (
-				SELECT %s(scenes.date)
-				FROM scene_performers
-				JOIN scenes ON scenes.id = scene_performers.scene_id
-				WHERE scene_performers.performer_id = performers.id
-			) ELSE stats.%s END`, aggregate, field)
-		}
-		return query.OrderBy(fmt.Sprintf("%s %s NULLS LAST, name %s", orderBy, sortDir, sortDir))
+	case models.PerformerSortEnumDebut:
+		return query.OrderBy(fmt.Sprintf("D.debut %s NULLS LAST, name %s", sortDir, sortDir))
+	case models.PerformerSortEnumLastScene:
+		return query.OrderBy(fmt.Sprintf("D.last_scene %s NULLS LAST, name %s", sortDir, sortDir))
 	case models.PerformerSortEnumSharedSceneCount:
 		if input.PerformedWith != nil {
 			query = query.LeftJoin(`(
@@ -343,14 +364,7 @@ func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.Perf
 		}
 		fallthrough
 	case models.PerformerSortEnumSceneCount:
-		if needsStudioJoin {
-			return query.OrderBy(fmt.Sprintf("D.scene_count %s, name %s", sortDir, sortDir))
-		}
-		return query.LeftJoin(statsJoin).OrderBy(fmt.Sprintf(`COALESCE(stats.scene_count, (
-			SELECT COUNT(*) FROM scene_performers WHERE scene_performers.performer_id = performers.id
-		)) %s, name %s`, sortDir, sortDir))
-	case models.PerformerSortEnumPopularity:
-		return query.LeftJoin(statsJoin).OrderBy(fmt.Sprintf("COALESCE(stats.user_count, 0) %s, name %s", sortDir, sortDir))
+		return query.OrderBy(fmt.Sprintf("D.scene_count %s, name %s", sortDir, sortDir))
 	default:
 		if input.Sort != "" {
 			sortField = strings.ToLower(input.Sort.String())

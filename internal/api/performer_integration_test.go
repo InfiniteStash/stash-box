@@ -1459,6 +1459,16 @@ func (s *performerTestRunner) testQueryPerformersSceneCountSort() {
 	})
 	assert.NoError(s.t, err)
 
+	beforeRefresh, err := s.client.queryPerformers(models.PerformerQueryInput{
+		Name:      &performerWithScenes.Name,
+		Sort:      models.PerformerSortEnumSceneCount,
+		Direction: models.SortDirectionEnumDesc,
+	})
+	if assert.NoError(s.t, err) {
+		assert.Zero(s.t, beforeRefresh.Count)
+		assert.Empty(s.t, beforeRefresh.Performers)
+	}
+
 	if !assert.NoError(s.t, dbtest.Factory().Performer().RefreshPopularityAllTime(s.ctx)) {
 		return
 	}
@@ -1667,6 +1677,10 @@ func (s *performerTestRunner) testQueryPerformersSharedSceneCountSort() {
 	assert.NotEqual(s.t, -1, sharedFrequent, "Partner missing from SHARED_SCENE_COUNT results")
 	assert.NotEqual(s.t, -1, sharedOccasional, "Partner missing from SHARED_SCENE_COUNT results")
 	assert.Less(s.t, sharedFrequent, sharedOccasional, "Partner with more shared scenes should sort first")
+
+	if !assert.NoError(s.t, dbtest.Factory().Performer().RefreshPopularityAllTime(s.ctx)) {
+		return
+	}
 
 	totalFrequent := indexOf(models.PerformerSortEnumSceneCount, frequent.ID)
 	totalOccasional := indexOf(models.PerformerSortEnumSceneCount, occasional.ID)

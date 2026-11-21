@@ -12,7 +12,7 @@ WITH credits AS (
     JOIN scene_performers sp ON sp.scene_id = sf.scene_id
     GROUP BY sp.performer_id
 )
-SELECT p.id AS performer_id, COALESCE(popularity.user_count, 0) AS user_count,
+SELECT p.id AS performer_id, p.name AS performer_name, COALESCE(popularity.user_count, 0) AS user_count,
        credits.debut, credits.last_scene, COALESCE(credits.scene_count, 0) AS scene_count
 FROM performers p
 LEFT JOIN credits ON credits.performer_id = p.id
@@ -21,7 +21,18 @@ LEFT JOIN popularity ON popularity.performer_id = p.id;
 CREATE UNIQUE INDEX performer_ordering_stats_performer_id_idx
     ON performer_ordering_stats (performer_id);
 CREATE INDEX performer_ordering_stats_user_count_idx
-    ON performer_ordering_stats (user_count DESC, performer_id DESC);
+    ON performer_ordering_stats (user_count DESC, performer_name DESC, performer_id DESC);
+CREATE INDEX performer_ordering_stats_scene_count_idx
+    ON performer_ordering_stats (scene_count DESC, performer_name DESC, performer_id DESC);
+CREATE INDEX performer_ordering_stats_debut_desc_idx
+    ON performer_ordering_stats (debut DESC NULLS LAST, performer_name DESC, performer_id DESC);
+CREATE INDEX performer_ordering_stats_debut_asc_idx
+    ON performer_ordering_stats (debut ASC NULLS LAST, performer_name ASC, performer_id ASC);
+CREATE INDEX performer_ordering_stats_last_scene_desc_idx
+    ON performer_ordering_stats (last_scene DESC NULLS LAST, performer_name DESC, performer_id DESC);
+CREATE INDEX performer_ordering_stats_last_scene_asc_idx
+    ON performer_ordering_stats (last_scene ASC NULLS LAST, performer_name ASC, performer_id ASC);
+ANALYZE performer_ordering_stats;
 
 DROP MATERIALIZED VIEW performer_popularity_all_time;
 ALTER MATERIALIZED VIEW performer_ordering_stats RENAME TO performer_popularity_all_time;
