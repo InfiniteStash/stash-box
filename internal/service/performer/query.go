@@ -59,34 +59,20 @@ func (s *Performer) QueryCount(ctx context.Context, input models.PerformerQueryI
 }
 
 func (s *Performer) buildPerformerQuery(psql sq.StatementBuilderType, input models.PerformerQueryInput, userID uuid.UUID, forCount bool) sq.SelectBuilder {
-	var query sq.SelectBuilder
-	needsStudioJoin := input.StudioID != nil
-
-	// Build base query with studio join if needed
+	columns := "performers.id"
 	if forCount {
-		if needsStudioJoin {
-			query = psql.Select("COUNT(DISTINCT performers.id)").From("performers").
-				Join(`(
-					SELECT performer_id, MIN(date) as debut, MAX(date) AS last_scene, COUNT(*) as scene_count
-					FROM scene_performers
-					JOIN scenes ON scene_id = id AND studio_id = ?
-					GROUP BY performer_id
-				) D ON performers.id = D.performer_id`, input.StudioID)
-		} else {
-			query = psql.Select("COUNT(*)").From("performers")
+		columns = "COUNT(*)"
+		if input.StudioID != nil {
+			columns = "COUNT(DISTINCT performers.id)"
 		}
-	} else {
-		if needsStudioJoin {
-			query = psql.Select("performers.id").From("performers").
-				Join(`(
-					SELECT performer_id, MIN(date) as debut, MAX(date) AS last_scene, COUNT(*) as scene_count
-					FROM scene_performers
-					JOIN scenes ON scene_id = id AND studio_id = ?
-					GROUP BY performer_id
-				) D ON performers.id = D.performer_id`, input.StudioID)
-		} else {
-			query = psql.Select("performers.id").From("performers")
-		}
+	}
+	query := psql.Select(columns).From("performers")
+	if input.StudioID != nil {
+		query = query.Where(`EXISTS (
+			SELECT 1 FROM scene_performers sp
+			JOIN scenes ON scenes.id = sp.scene_id
+			WHERE sp.performer_id = performers.id AND scenes.studio_id = ?
+		)`, *input.StudioID)
 	}
 
 	// Filter by URL
@@ -307,13 +293,9 @@ func cupSizeOrderExpression(field string) string {
 const performerStatsJoin = "performer_popularity_all_time stats ON stats.performer_id = performers.id"
 
 func performerStatsSortColumn(input models.PerformerQueryInput) string {
-	if input.Sort == models.PerformerSortEnumPopularity {
-		return "user_count"
-	}
-	if input.StudioID != nil {
-		return ""
-	}
 	switch input.Sort {
+	case models.PerformerSortEnumPopularity:
+		return "user_count"
 	case models.PerformerSortEnumDebut:
 		return "debut"
 	case models.PerformerSortEnumLastScene:
@@ -346,29 +328,18 @@ func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.Perf
 			OrderBy(fmt.Sprintf("stats.%s %s%s, stats.performer_name %s, stats.performer_id %s", field, sortDir, nulls, sortDir, sortDir))
 	}
 
-	switch input.Sort {
-	case models.PerformerSortEnumDebut:
-		return query.OrderBy(fmt.Sprintf("D.debut %s NULLS LAST, name %s", sortDir, sortDir))
-	case models.PerformerSortEnumLastScene:
-		return query.OrderBy(fmt.Sprintf("D.last_scene %s NULLS LAST, name %s", sortDir, sortDir))
-	case models.PerformerSortEnumSharedSceneCount:
-		if input.PerformedWith != nil {
-			query = query.LeftJoin(`(
-				SELECT SP.performer_id, COUNT(*) as shared_scene_count
-				FROM scene_performers SP
-				JOIN scene_performers SPP ON SPP.scene_id = SP.scene_id AND SPP.performer_id = ?
-				JOIN scenes ON scenes.id = SP.scene_id AND scenes.deleted = false
-				GROUP BY SP.performer_id
-			) SS ON performers.id = SS.performer_id`, input.PerformedWith)
-			return query.OrderBy(fmt.Sprintf("COALESCE(shared_scene_count, 0) %s, name %s", sortDir, sortDir))
-		}
-		fallthrough
-	case models.PerformerSortEnumSceneCount:
-		return query.OrderBy(fmt.Sprintf("D.scene_count %s, name %s", sortDir, sortDir))
-	default:
-		if input.Sort != "" {
-			sortField = strings.ToLower(input.Sort.String())
-		}
-		return query.OrderBy(fmt.Sprintf("%s %s", sortField, sortDir))
+	if input.Sort == models.PerformerSortEnumSharedSceneCount {
+		return query.LeftJoin(`(
+			SELECT SP.performer_id, COUNT(*) as shared_scene_count
+			FROM scene_performers SP
+			JOIN scene_performers SPP ON SPP.scene_id = SP.scene_id AND SPP.performer_id = ?
+			JOIN scenes ON scenes.id = SP.scene_id AND scenes.deleted = false
+			GROUP BY SP.performer_id
+		) SS ON performers.id = SS.performer_id`, input.PerformedWith).
+			OrderBy(fmt.Sprintf("COALESCE(shared_scene_count, 0) %s, name %s", sortDir, sortDir))
 	}
+	if input.Sort != "" {
+		sortField = strings.ToLower(input.Sort.String())
+	}
+	return query.OrderBy(fmt.Sprintf("%s %s", sortField, sortDir))
 }

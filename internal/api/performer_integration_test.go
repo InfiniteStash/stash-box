@@ -10,6 +10,7 @@ import (
 	dbtest "github.com/stashapp/stash-box/internal/database/testutil"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type performerTestRunner struct {
@@ -1617,6 +1618,69 @@ func TestQueryPerformersByAgeAndBirthYear(t *testing.T) {
 func TestQueryPerformersSceneCountSort(t *testing.T) {
 	pt := createPerformerTestRunner(t)
 	pt.testQueryPerformersSceneCountSort()
+}
+
+func TestQueryPerformersStudioFilterUsesGlobalSort(t *testing.T) {
+	runner := createPerformerTestRunner(t)
+	studio, err := runner.createTestStudio(nil)
+	require.NoError(t, err)
+	otherStudio, err := runner.createTestStudio(nil)
+	require.NoError(t, err)
+	localLeader, err := runner.createTestPerformer(nil)
+	require.NoError(t, err)
+	globalLeader, err := runner.createTestPerformer(nil)
+	require.NoError(t, err)
+	outsidePerformer, err := runner.createTestPerformer(nil)
+	require.NoError(t, err)
+
+	createScene := func(studioID uuid.UUID, date string, cast ...uuid.UUID) {
+		t.Helper()
+		appearances := make([]models.PerformerAppearanceInput, 0, len(cast))
+		for _, id := range cast {
+			appearances = append(appearances, models.PerformerAppearanceInput{PerformerID: id})
+		}
+		title := runner.generateSceneName()
+		_, err := runner.createTestScene(&models.SceneCreateInput{
+			StudioID:   &studioID,
+			Title:      &title,
+			Date:       date,
+			Performers: appearances,
+		})
+		require.NoError(t, err)
+	}
+	studioID := studio.UUID()
+	createScene(studioID, "2020-01-01", localLeader.UUID())
+	createScene(studioID, "2020-01-02", globalLeader.UUID())
+	createScene(studioID, "2020-01-03", localLeader.UUID())
+	createScene(otherStudio.UUID(), "2019-01-01", globalLeader.UUID(), outsidePerformer.UUID())
+	createScene(otherStudio.UUID(), "2021-01-01", globalLeader.UUID(), outsidePerformer.UUID())
+	require.NoError(t, dbtest.Factory().Performer().RefreshPopularityAllTime(runner.ctx))
+
+	for _, tc := range []struct {
+		sort      models.PerformerSortEnum
+		direction models.SortDirectionEnum
+	}{
+		{models.PerformerSortEnumDebut, models.SortDirectionEnumAsc},
+		{models.PerformerSortEnumLastScene, models.SortDirectionEnumDesc},
+		{models.PerformerSortEnumSceneCount, models.SortDirectionEnumDesc},
+		{models.PerformerSortEnumSharedSceneCount, models.SortDirectionEnumDesc},
+	} {
+		t.Run(tc.sort.String(), func(t *testing.T) {
+			for i, id := range []string{globalLeader.ID, localLeader.ID} {
+				result, err := runner.client.queryPerformers(models.PerformerQueryInput{
+					StudioID:  &studioID,
+					Page:      i + 1,
+					PerPage:   1,
+					Sort:      tc.sort,
+					Direction: tc.direction,
+				})
+				require.NoError(t, err)
+				assert.Equal(t, 2, result.Count)
+				require.Len(t, result.Performers, 1)
+				assert.Equal(t, id, result.Performers[0].ID)
+			}
+		})
+	}
 }
 
 // testQueryPerformersSharedSceneCountSort verifies that SHARED_SCENE_COUNT ranks
