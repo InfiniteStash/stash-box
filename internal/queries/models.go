@@ -286,6 +286,9 @@ type PerformerPiercing struct {
 type PerformerPopularityAllTime struct {
 	PerformerID uuid.UUID `db:"performer_id" json:"performer_id"`
 	UserCount   int       `db:"user_count" json:"user_count"`
+	Debut       *string   `db:"debut" json:"debut"`
+	LastScene   *string   `db:"last_scene" json:"last_scene"`
+	SceneCount  int64     `db:"scene_count" json:"scene_count"`
 }
 
 type PerformerRedirect struct {

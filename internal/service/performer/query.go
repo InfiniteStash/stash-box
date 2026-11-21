@@ -309,28 +309,27 @@ func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.Perf
 	}
 
 	needsStudioJoin := input.StudioID != nil
+	const statsJoin = "performer_popularity_all_time stats ON stats.performer_id = performers.id"
 
 	switch input.Sort {
-	case models.PerformerSortEnumDebut:
-		if !needsStudioJoin {
-			query = query.LeftJoin(`(
-				SELECT performer_id, MIN(date) as debut
-				FROM scene_performers
-				JOIN scenes ON scene_id = id
-				GROUP BY performer_id
-			) D ON performers.id = D.performer_id`)
+	case models.PerformerSortEnumDebut, models.PerformerSortEnumLastScene:
+		field, aggregate := "debut", "MIN"
+		if input.Sort == models.PerformerSortEnumLastScene {
+			field, aggregate = "last_scene", "MAX"
 		}
-		return query.OrderBy(fmt.Sprintf("debut %s NULLS LAST, name %s", sortDir, sortDir))
-	case models.PerformerSortEnumLastScene:
+		orderBy := "D." + field
 		if !needsStudioJoin {
-			query = query.LeftJoin(`(
-				SELECT performer_id, MAX(date) as last_scene
+			query = query.LeftJoin(statsJoin)
+			// Only performers created since the last refresh need a live lookup.
+			// A materialized NULL already means the performer has no dated scene.
+			orderBy = fmt.Sprintf(`CASE WHEN stats.performer_id IS NULL THEN (
+				SELECT %s(scenes.date)
 				FROM scene_performers
-				JOIN scenes ON scene_id = id
-				GROUP BY performer_id
-			) D ON performers.id = D.performer_id`)
+				JOIN scenes ON scenes.id = scene_performers.scene_id
+				WHERE scene_performers.performer_id = performers.id
+			) ELSE stats.%s END`, aggregate, field)
 		}
-		return query.OrderBy(fmt.Sprintf("last_scene %s NULLS LAST, name %s", sortDir, sortDir))
+		return query.OrderBy(fmt.Sprintf("%s %s NULLS LAST, name %s", orderBy, sortDir, sortDir))
 	case models.PerformerSortEnumSharedSceneCount:
 		if input.PerformedWith != nil {
 			query = query.LeftJoin(`(
@@ -344,17 +343,14 @@ func (s *Performer) applyPerformerSort(query sq.SelectBuilder, input models.Perf
 		}
 		fallthrough
 	case models.PerformerSortEnumSceneCount:
-		if !needsStudioJoin {
-			query = query.LeftJoin(`(
-				SELECT performer_id, COUNT(*) as scene_count
-				FROM scene_performers
-				GROUP BY performer_id
-			) D ON performers.id = D.performer_id`)
+		if needsStudioJoin {
+			return query.OrderBy(fmt.Sprintf("D.scene_count %s, name %s", sortDir, sortDir))
 		}
-		return query.OrderBy(fmt.Sprintf("COALESCE(scene_count, 0) %s, name %s", sortDir, sortDir))
+		return query.LeftJoin(statsJoin).OrderBy(fmt.Sprintf(`COALESCE(stats.scene_count, (
+			SELECT COUNT(*) FROM scene_performers WHERE scene_performers.performer_id = performers.id
+		)) %s, name %s`, sortDir, sortDir))
 	case models.PerformerSortEnumPopularity:
-		query = query.LeftJoin("performer_popularity_all_time ON performers.id = performer_popularity_all_time.performer_id")
-		return query.OrderBy(fmt.Sprintf("COALESCE(performer_popularity_all_time.user_count, 0) %s, name %s", sortDir, sortDir))
+		return query.LeftJoin(statsJoin).OrderBy(fmt.Sprintf("COALESCE(stats.user_count, 0) %s, name %s", sortDir, sortDir))
 	default:
 		if input.Sort != "" {
 			sortField = strings.ToLower(input.Sort.String())

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	dbtest "github.com/stashapp/stash-box/internal/database/testutil"
 	"github.com/stashapp/stash-box/internal/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -1458,6 +1459,10 @@ func (s *performerTestRunner) testQueryPerformersSceneCountSort() {
 	})
 	assert.NoError(s.t, err)
 
+	if !assert.NoError(s.t, dbtest.Factory().Performer().RefreshPopularityAllTime(s.ctx)) {
+		return
+	}
+
 	// Query performers sorted by SCENE_COUNT DESC (most scenes first)
 	result, err := s.client.queryPerformers(models.PerformerQueryInput{
 		Page:      1,
@@ -1526,24 +1531,27 @@ func (s *performerTestRunner) testQueryPerformersSceneCountSort() {
 	result, err = s.client.queryPerformers(models.PerformerQueryInput{
 		Page:      1,
 		PerPage:   100,
-		Direction: models.SortDirectionEnumDesc,
+		Direction: models.SortDirectionEnumAsc,
 		Sort:      models.PerformerSortEnumDebut,
 	})
 	assert.NoError(s.t, err, "Error querying performers by debut")
 
-	foundWithNoScenes = false
-	foundWithScenes = false
-	for _, p := range result.Performers {
-		if p.ID == performerWithNoScenes.ID {
-			foundWithNoScenes = true
+	assertDatedBeforeUndated := func(result *queryPerformersResultType, sort models.PerformerSortEnum) {
+		s.t.Helper()
+		withScenes, withoutScenes := -1, -1
+		for i, p := range result.Performers {
+			switch p.ID {
+			case performerWithScenes.ID:
+				withScenes = i
+			case performerWithNoScenes.ID:
+				withoutScenes = i
+			}
 		}
-		if p.ID == performerWithScenes.ID {
-			foundWithScenes = true
-		}
+		assert.NotEqual(s.t, -1, withScenes, "Dated performer missing from %s", sort)
+		assert.NotEqual(s.t, -1, withoutScenes, "Undated performer missing from %s", sort)
+		assert.Less(s.t, withScenes, withoutScenes, "%s should put null dates last", sort)
 	}
-
-	assert.True(s.t, foundWithNoScenes, "Performer with 0 scenes not found when sorting by DEBUT")
-	assert.True(s.t, foundWithScenes, "Performer with scenes not found when sorting by DEBUT")
+	assertDatedBeforeUndated(result, models.PerformerSortEnumDebut)
 
 	// Test sorting by LAST_SCENE
 	result, err = s.client.queryPerformers(models.PerformerQueryInput{
@@ -1554,19 +1562,7 @@ func (s *performerTestRunner) testQueryPerformersSceneCountSort() {
 	})
 	assert.NoError(s.t, err, "Error querying performers by last scene")
 
-	foundWithNoScenes = false
-	foundWithScenes = false
-	for _, p := range result.Performers {
-		if p.ID == performerWithNoScenes.ID {
-			foundWithNoScenes = true
-		}
-		if p.ID == performerWithScenes.ID {
-			foundWithScenes = true
-		}
-	}
-
-	assert.True(s.t, foundWithNoScenes, "Performer with 0 scenes not found when sorting by LAST_SCENE")
-	assert.True(s.t, foundWithScenes, "Performer with scenes not found when sorting by LAST_SCENE")
+	assertDatedBeforeUndated(result, models.PerformerSortEnumLastScene)
 
 	// Verify count matches actual performer count
 	totalCount := len(result.Performers)
